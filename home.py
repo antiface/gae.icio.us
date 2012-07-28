@@ -182,6 +182,7 @@ def sendbm(b):
       message.html = "%s (%s)<br>%s<br><br>%s" % (b.title, b.data, b.url, b.comment)
       message.send()
 
+debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
   ('/', MainPage),
@@ -192,7 +193,7 @@ app = webapp2.WSGIApplication([
   ('/archive', ArchiveBM),
   ('/archived', ArchivedPage),
   ('/search', SearchPage),
-  ], debug=True)
+  ], debug=debug)
 
 def main():
   run_wsgi_app(app)
