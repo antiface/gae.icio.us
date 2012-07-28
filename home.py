@@ -156,10 +156,10 @@ def sendbm(b):
       message = mail.EmailMessage()
       message.sender = b.user.email()
       message.to = b.user.email()
-      message.subject = '(%s) '+ b.title
+      message.subject = '(Pbox) '+ b.title
       message.html = """
 %s (%s)<br>%s<br><br>%s
-""" % (self.request.host, b.title, b.data, b.url, b.comment)
+""" % (b.title, b.data, b.url, b.comment)
       message.send()
 
 
