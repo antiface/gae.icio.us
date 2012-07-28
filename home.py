@@ -1,4 +1,4 @@
-import webapp2, jinja2
+import webapp2, jinja2, os
 from google.appengine.api import users, urlfetch, mail
 from google.appengine.ext import ndb, deferred
 
@@ -20,7 +20,8 @@ class Tags(ndb.Model):
   user = ndb.UserProperty()
   name = ndb.StringProperty()
   def bm_set(self):
-    return Bookmarks.query(Bookmarks.tags == self.key).order(Bookmarks.data)
+    return ndb.gql("""SELECT * FROM Bookmarks
+      WHERE tags = :1 ORDER BY data DESC""", self.key)
 
 
 class Bookmarks(ndb.Model):
@@ -62,8 +63,6 @@ javascript:location.href=
       'url': url,
       'linktext': linktext,
       'user': user,
-      'miniurl': miniurl(),
-      'version': ndb.Key('staff', 'chromium_v').get().version,
       }
     values.update(template_values)
     template = jinja_environment.get_template(template_name)
@@ -73,7 +72,9 @@ javascript:location.href=
 class MainPage(BaseHandler):
   def get(self):
     if self.utente():
-      bms = ndb.gql("SELECT * FROM Bookmarks WHERE user = :1 AND archived = FALSE ORDER BY data DESC", self.utente())
+      bms = ndb.gql("""SELECT * FROM Bookmarks 
+        WHERE user = :1 AND archived = FALSE 
+        ORDER BY data DESC""", self.utente())
       self.generate('home.html', {'bms': bms})
     else:
       self.generate('hero.html', {})
@@ -82,7 +83,9 @@ class MainPage(BaseHandler):
 class ArchivedPage(BaseHandler):
   def get(self):
     if self.utente():
-      bms = ndb.gql("SELECT * FROM Bookmarks WHERE user = :1 AND archived = TRUE ORDER BY data DESC LIMIT 25", self.utente())
+      bms = ndb.gql("""SELECT * FROM Bookmarks
+        WHERE user = :1 AND archived = TRUE 
+        ORDER BY data DESC LIMIT 25""", self.utente())
       self.generate('home.html', {'bms': bms})
     else:
       self.generate('hero.html', {})
@@ -92,7 +95,9 @@ class SearchPage(BaseHandler):
   def get(self):
     if self.utente():
       tag_name = self.request.get('tag')
-      q = ndb.gql("SELECT * FROM Tags WHERE user = :1 AND name = :2 ORDER BY data DESC", self.utente(), tag_name)
+      q = ndb.gql("""SELECT * FROM Tags 
+        WHERE user = :1 AND name = :2 
+        ORDER BY data DESC""", self.utente(), tag_name)
       bms = q.get().bm_set()
       self.generate('home.html', {'bms': bms})
     else:
@@ -113,14 +118,16 @@ class Bookmark(webapp2.RequestHandler):
 
 class Tag(webapp2.RequestHandler):
   def post(self):
+    user = users.get_current_user()
     bm = Bookmarks.get_by_id(int(self.request.get('id')))
     tag_str = self.request.get('tag')
-    if users.get_current_user() == bm.user:
-      tag = ndb.gql("SELECT * FROM Tags WHERE user = :1 AND name = :2", users.get_current_user(), tag_str).get()
+    if user == bm.user:
+      tag = ndb.gql("""SELECT * FROM Tags
+      WHERE user = :1 AND name = :2""", user, tag_str).get()
       if tag is None:
         newtag = Tags()
         newtag.name = tag_str
-        newtag.user = users.get_current_user()
+        newtag.user = user
         newtag.put()
       else:
         newtag = tag
@@ -130,7 +137,7 @@ class Tag(webapp2.RequestHandler):
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     tag = Tags.get_by_id(int(self.request.get('tag')))
-    if users.get_current_user() == bm.user:
+    if user == bm.user:
       bm.tags.remove(tag.key)
       bm.put()
     self.redirect(self.request.referer)
@@ -156,31 +163,16 @@ class ArchiveBM(webapp2.RequestHandler):
     self.redirect(self.request.referer)
 
 
-class Tasks(webapp2.RequestHandler):
-  def get(self):
-    deferred.defer(version)
-
-    
-def miniurl():
-  version = ndb.Key('staff', 'chromium_v').get().version
-  return "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Win/" + version + "/mini_installer.exe"
-
-def version():
-  url = "http://commondatastorage.googleapis.com/chromium-browser-snapshots/Win/LAST_CHANGE"
-  chromium = ndb.Key('staff', 'chromium_v').get()
-  result = urlfetch.fetch(url, deadline=1)
-  if chromium is None:
-    chromium = staff(id='chromium_v')
-  chromium.version = result.content
-  chromium.put()
-
 def sendbm(b):
       message = mail.EmailMessage()
       message.sender = b.user.email()
       message.to = b.user.email()
-      message.subject = '(Pbox) '+ b.title
-      message.html = "%s (%s)<br>%s<br><br>%s" % (b.title, b.data, b.url, b.comment)
+      message.subject = '(%s) '+ b.title
+      message.html = """
+%s (%s)<br>%s<br><br>%s
+""" % (self.request.host, b.title, b.data, b.url, b.comment)
       message.send()
+
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
