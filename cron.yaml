@@ -1,4 +1,0 @@
-cron:
-- description: get version
-  url: /admin/tasks
-  schedule: every 120 minutes

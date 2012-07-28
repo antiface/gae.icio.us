@@ -10,11 +10,6 @@ jinja_environment = jinja2.Environment(
 jinja_environment.filters['dtf'] = dtf
 
 
-class staff(ndb.Model):
-  version = ndb.StringProperty()
-  data = ndb.DateTimeProperty(auto_now=True)
-
-
 class Tags(ndb.Model):
   data = ndb.DateTimeProperty(auto_now=True)
   user = ndb.UserProperty()
@@ -116,6 +111,26 @@ class Bookmark(webapp2.RequestHandler):
     self.redirect('/')
 
 
+class DeleteBM(webapp2.RequestHandler):
+  def get(self):
+    b = Bookmarks.get_by_id(int(self.request.get('id')))
+    if users.get_current_user() == b.user:
+      b.key.delete()
+    self.redirect(self.request.referer)
+
+
+class ArchiveBM(webapp2.RequestHandler):
+  def get(self):
+    b = Bookmarks.get_by_id(int(self.request.get('id')))
+    if users.get_current_user() == b.user:
+      if b.archived == False:
+        b.archived = True
+      else:
+        b.archived = False
+      b.put()
+    self.redirect(self.request.referer)
+
+
 class Tag(webapp2.RequestHandler):
   def post(self):
     user = users.get_current_user()
@@ -143,26 +158,6 @@ class Tag(webapp2.RequestHandler):
     self.redirect(self.request.referer)
 
 
-class DeleteBM(webapp2.RequestHandler):
-  def get(self):
-    b = Bookmarks.get_by_id(int(self.request.get('id')))
-    if users.get_current_user() == b.user:
-      b.key.delete()
-    self.redirect(self.request.referer)
-
-
-class ArchiveBM(webapp2.RequestHandler):
-  def get(self):
-    b = Bookmarks.get_by_id(int(self.request.get('id')))
-    if users.get_current_user() == b.user:
-      if b.archived == False:
-        b.archived = True
-      else:
-        b.archived = False
-      b.put()
-    self.redirect(self.request.referer)
-
-
 def sendbm(b):
       message = mail.EmailMessage()
       message.sender = b.user.email()
@@ -178,7 +173,6 @@ debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
   ('/', MainPage),
-  ('/admin/tasks', Tasks),
   ('/submit', Bookmark),
   ('/tag', Tag),
   ('/delete', DeleteBM),

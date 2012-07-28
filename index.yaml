@@ -19,16 +19,6 @@ indexes:
 
 - kind: Bookmarks
   properties:
-  - name: tags
-  - name: data
-
-- kind: Bookmarks
-  properties:
-  - name: user
-  - name: data
-
-- kind: Bookmarks
-  properties:
   - name: user
   - name: data
     direction: desc
@@ -37,5 +27,11 @@ indexes:
   properties:
   - name: name
   - name: user
+  - name: data
+    direction: desc
+
+- kind: Bookmarks
+  properties:
+  - name: tags
   - name: data
     direction: desc
