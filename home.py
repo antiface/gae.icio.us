@@ -1,5 +1,5 @@
 import webapp2, jinja2, os
-from google.appengine.api import users, urlfetch, mail
+from google.appengine.api import users, mail
 from google.appengine.ext import ndb, deferred
 
 def dtf(value, format='%d-%m-%Y %H:%M'):
@@ -23,7 +23,7 @@ class Bookmarks(ndb.Model):
   data = ndb.DateTimeProperty(auto_now=True)
   user = ndb.UserProperty()
   url = ndb.StringProperty()
-  title = ndb.StringProperty(default='Senza titolo')
+  title = ndb.StringProperty()
   comment = ndb.TextProperty()
   tags = ndb.KeyProperty(kind=Tags,repeated=True)
   archived = ndb.BooleanProperty(default=False)
