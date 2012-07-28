@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+  <div class="hero-unit well">
+    <div class="row-fluid"> 
+      <h2>Welcome to Your Bookmark's Service</h2>
+      <p>The 'better' Bookmarking Service</p>    
+      <a class="btn btn-inverse" href="{{ url }}"> Login </a>
+      <hr>
+    </div>
+    <div class="row-fluid"> 
+      <div class="">
+        <h3>How to</h3>
+          <ul>
+            <li>Drag and drop the bookmarklet</li>
+            <li>The selected text is the comment</li>
+            <li>Email youself</li>
+            <li>Search by tag</li>
+            <li>...</li>
+          </ul>
+      </div>
+    </div>    
+  </div>
+</div>
+{% include "footer.html" %}
+{% endblock %}

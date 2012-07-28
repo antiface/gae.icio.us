@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  {% block title %}
+  {% endblock %}
+  <meta name="description" content="a bookmarking service">
+  <meta name="author" content="presveva">
+  <link rel="shortcut icon" href="/static/img/favicon.ico">
+  <link type="text/css" href="static/css/bootstrap.css" rel="stylesheet">
+  <style>
+    body {
+      padding-top: 45px;
+    }
+  </style>
+</head>
+<body>
+{% include "navbar.html" %}
+
+<script src="static/js/jquery-1.7.2.min.js"></script>
+<script src="static/js/jquery.cookie.js"></script>
+<script src="static/js/bootstrap-dropdown.js"></script>
+<script src="static/js/bootstrap-tab.js"></script>
+<script src="static/js/bootstrap-button.js"></script>
+{% block content %}
+{% endblock %}
+</body>
+</html>
