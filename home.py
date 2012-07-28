@@ -43,7 +43,7 @@ javascript:location.href=
 '&user='+'%s'+
 '&comment='+document.getSelection().toString()
 """ % (self.request.host_url, user.email())
-      url = users.create_logout_url(self.request.uri)
+      url = users.create_logout_url("/")
       linktext = 'Logout'
       nick = user.email()
     else:
@@ -77,26 +77,20 @@ class MainPage(BaseHandler):
 
 class ArchivedPage(BaseHandler):
   def get(self):
-    if self.utente():
       bms = ndb.gql("""SELECT * FROM Bookmarks
         WHERE user = :1 AND archived = TRUE 
         ORDER BY data DESC LIMIT 25""", self.utente())
       self.generate('home.html', {'bms': bms})
-    else:
-      self.generate('hero.html', {})
 
 
 class SearchPage(BaseHandler):
   def get(self):
-    if self.utente():
       tag_name = self.request.get('tag')
       q = ndb.gql("""SELECT * FROM Tags 
         WHERE user = :1 AND name = :2 
         ORDER BY data DESC""", self.utente(), tag_name)
       bms = q.get().bm_set()
       self.generate('home.html', {'bms': bms})
-    else:
-      self.generate('hero.html', {})
 
 
 class Bookmark(webapp2.RequestHandler):
