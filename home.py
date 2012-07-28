@@ -1,4 +1,4 @@
-import webapp2, jinja2, urllib
+import webapp2, jinja2
 from google.appengine.api import users, urlfetch, mail
 from google.appengine.ext import ndb, deferred
 
