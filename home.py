@@ -39,7 +39,7 @@ class BaseHandler(webapp2.RequestHandler):
 
   def generate(self, template_name, template_values={}):
     user = users.get_current_user()
-    if users.get_current_user():
+    if self.utente():
       bookmarklet = """
 javascript:location.href=
 '%s/submit?url='+encodeURIComponent(location.href)+
@@ -97,16 +97,10 @@ class SearchPage(BaseHandler):
       self.generate('home.html', {'bms': bms})
     else:
       self.generate('hero.html', {})
-      
 
-class Tasks(webapp2.RequestHandler):
-  def get(self):
-    deferred.defer(version)
 
-    
 class Bookmark(webapp2.RequestHandler):
-  """docstring for Bookmarks"""
-  def post(self):
+  def get(self):
     b = Bookmarks()
     b.url = self.request.get('url').encode('utf8')
     b.title = self.request.get('title').encode('utf8')
@@ -117,16 +111,16 @@ class Bookmark(webapp2.RequestHandler):
     self.redirect('/')
 
 
-class Tag(BaseHandler):
+class Tag(webapp2.RequestHandler):
   def post(self):
     bm = Bookmarks.get_by_id(int(self.request.get('id')))
     tag_str = self.request.get('tag')
-    if self.utente() == bm.user:
-      tag = ndb.gql("SELECT * FROM Tags WHERE user = :1 AND name = :2", self.utente(), tag_str).get()
+    if users.get_current_user() == bm.user:
+      tag = ndb.gql("SELECT * FROM Tags WHERE user = :1 AND name = :2", users.get_current_user(), tag_str).get()
       if tag is None:
         newtag = Tags()
         newtag.name = tag_str
-        newtag.user = self.utente()
+        newtag.user = users.get_current_user()
         newtag.put()
       else:
         newtag = tag
@@ -136,24 +130,24 @@ class Tag(BaseHandler):
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     tag = Tags.get_by_id(int(self.request.get('tag')))
-    if self.utente() == bm.user:
+    if users.get_current_user() == bm.user:
       bm.tags.remove(tag.key)
       bm.put()
     self.redirect(self.request.referer)
 
 
-class DeleteBM(BaseHandler):
+class DeleteBM(webapp2.RequestHandler):
   def get(self):
     b = Bookmarks.get_by_id(int(self.request.get('id')))
-    if self.utente() == b.user:
+    if users.get_current_user() == b.user:
       b.key.delete()
     self.redirect(self.request.referer)
 
 
-class ArchiveBM(BaseHandler):
+class ArchiveBM(webapp2.RequestHandler):
   def get(self):
     b = Bookmarks.get_by_id(int(self.request.get('id')))
-    if self.utente() == b.user:
+    if users.get_current_user() == b.user:
       if b.archived == False:
         b.archived = True
       else:
@@ -162,13 +156,10 @@ class ArchiveBM(BaseHandler):
     self.redirect(self.request.referer)
 
 
-def sendbm(b):
-      message = mail.EmailMessage()
-      message.sender = b.user.email()
-      message.to = b.user.email()
-      message.subject = '(Pbox) '+ b.title
-      message.html = "%s (%s)<br>%s<br><br>%s" % (b.title, b.data, b.url, b.comment)
-      message.send()
+class Tasks(webapp2.RequestHandler):
+  def get(self):
+    deferred.defer(version)
+
     
 def miniurl():
   version = ndb.Key('staff', 'chromium_v').get().version
@@ -183,6 +174,13 @@ def version():
   chromium.version = result.content
   chromium.put()
 
+def sendbm(b):
+      message = mail.EmailMessage()
+      message.sender = b.user.email()
+      message.to = b.user.email()
+      message.subject = '(Pbox) '+ b.title
+      message.html = "%s (%s)<br>%s<br><br>%s" % (b.title, b.data, b.url, b.comment)
+      message.send()
 
 
 app = webapp2.WSGIApplication([
