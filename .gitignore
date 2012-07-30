@@ -1,7 +1,7 @@
 #################
 ## Eclipse
 #################
-
+*.sublime-*
 *.pydevproject
 .project
 .metadata

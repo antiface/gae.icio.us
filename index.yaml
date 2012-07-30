@@ -19,9 +19,20 @@ indexes:
 
 - kind: Bookmarks
   properties:
+  - name: tags
+  - name: data
+    direction: desc
+
+- kind: Bookmarks
+  properties:
   - name: user
   - name: data
     direction: desc
+
+- kind: Bookmarks
+  properties:
+  - name: user
+  - name: tags
 
 - kind: Tags
   properties:
@@ -30,8 +41,13 @@ indexes:
   - name: data
     direction: desc
 
-- kind: Bookmarks
+- kind: Tags
   properties:
-  - name: tags
-  - name: data
+  - name: user
+  - name: count
+
+- kind: Tags
+  properties:
+  - name: user
+  - name: count
     direction: desc

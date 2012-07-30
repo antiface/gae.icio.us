@@ -11,9 +11,10 @@ jinja_environment.filters['dtf'] = dtf
 
 
 class Tags(ndb.Model):
-  data = ndb.DateTimeProperty(auto_now=True)
-  user = ndb.UserProperty()
-  name = ndb.StringProperty()
+  data  = ndb.DateTimeProperty(auto_now=True)
+  user  = ndb.UserProperty(required=True)
+  name  = ndb.StringProperty()
+  count = ndb.IntegerProperty(default=0)
   def bm_set(self):
     return ndb.gql("""SELECT * FROM Bookmarks
       WHERE tags = :1 ORDER BY data DESC""", self.key)
@@ -27,7 +28,13 @@ class Bookmarks(ndb.Model):
   comment = ndb.TextProperty()
   tags = ndb.KeyProperty(kind=Tags,repeated=True)
   archived = ndb.BooleanProperty(default=False)
-  
+  def other_tags(self):
+    q = ndb.gql("SELECT __key__ FROM Tags WHERE user = :1", self.user)
+    all_user_tags = [tagk for tagk in q]
+    for tagk in self.tags:
+      all_user_tags.remove(tagk)
+    return all_user_tags
+
 
 class BaseHandler(webapp2.RequestHandler):
   def utente(self):
@@ -35,6 +42,7 @@ class BaseHandler(webapp2.RequestHandler):
 
   def generate(self, template_name, template_values={}):
     user = users.get_current_user()
+    tag_list = ndb.gql("SELECT * FROM Tags WHERE user = :1 ORDER BY count DESC", user)
     if self.utente():
       bookmarklet = """
 javascript:location.href=
@@ -52,6 +60,7 @@ javascript:location.href=
       linktext = 'Login'
       nick = 'Welcome'
     values = {
+      'tag_list': tag_list,
       'brand': self.request.host,
       'bookmarklet': bookmarklet,
       'nick': nick,
@@ -63,6 +72,16 @@ javascript:location.href=
     template = jinja_environment.get_template(template_name)
     self.response.out.write(template.render(values))
 
+class script(BaseHandler):
+  def get(self):
+    if  users.is_current_user_admin():
+      q = Tags.query()
+      for t in q: 
+        c = ndb.gql("SELECT * FROM Bookmarks WHERE tags = :1", t.key).count()
+        # c = t.bm_count()
+        t.count = c
+        t.put()
+      self.redirect('/')
 
 class MainPage(BaseHandler):
   def get(self):
@@ -93,7 +112,7 @@ class SearchPage(BaseHandler):
       self.generate('home.html', {'bms': bms})
 
 
-class Bookmark(webapp2.RequestHandler):
+class AddBM(webapp2.RequestHandler):
   def get(self):
     b = Bookmarks()
     b.url = self.request.get('url').encode('utf8')
@@ -105,17 +124,21 @@ class Bookmark(webapp2.RequestHandler):
     self.redirect('/')
 
 
-class DeleteBM(webapp2.RequestHandler):
+class DelBM(webapp2.RequestHandler):
   def get(self):
-    b = Bookmarks.get_by_id(int(self.request.get('id')))
+    b = Bookmarks.get_by_id(int(self.request.get('bm')))
     if users.get_current_user() == b.user:
+      for tag in b.tags:
+        t = tag.get()
+        t.count -= 1
+        t.put()        
       b.key.delete()
     self.redirect(self.request.referer)
 
 
 class ArchiveBM(webapp2.RequestHandler):
   def get(self):
-    b = Bookmarks.get_by_id(int(self.request.get('id')))
+    b = Bookmarks.get_by_id(int(self.request.get('bm')))
     if users.get_current_user() == b.user:
       if b.archived == False:
         b.archived = True
@@ -125,32 +148,51 @@ class ArchiveBM(webapp2.RequestHandler):
     self.redirect(self.request.referer)
 
 
-class Tag(webapp2.RequestHandler):
-  def post(self):
+class AddTag(webapp2.RequestHandler):
+  def get(self):
     user = users.get_current_user()
-    bm = Bookmarks.get_by_id(int(self.request.get('id')))
     tag_str = self.request.get('tag')
-    if user == bm.user:
+    if user:
       tag = ndb.gql("""SELECT * FROM Tags
       WHERE user = :1 AND name = :2""", user, tag_str).get()
       if tag is None:
         newtag = Tags()
         newtag.name = tag_str
-        newtag.user = user
-        newtag.put()
+        newtag.user = user        
       else:
         newtag = tag
-      bm.tags.append(newtag.key)
-      bm.put()
+      newtag.put()
     self.redirect(self.request.referer)
+
+class AssignTag(webapp2.RequestHandler):
+  def get(self):
+    user = users.get_current_user()
+    bm  = Bookmarks.get_by_id(int(self.request.get('bm')))
+    tag = Tags.get_by_id(int(self.request.get('tag')))
+    if user == bm.user:
+      bm.tags.append(tag.key)
+      bm.put()
+      tag.count += 1
+      tag.put()
+    self.redirect(self.request.referer)
+
+class RemoveTag(webapp2.RequestHandler):
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     tag = Tags.get_by_id(int(self.request.get('tag')))
     if users.get_current_user() == bm.user:
       bm.tags.remove(tag.key)
       bm.put()
+      tag.count -= 1
+      tag.put()
     self.redirect(self.request.referer)
 
+class DeleteTag(webapp2.RequestHandler):
+  def get(self):
+    tag = Tags.get_by_id(int(self.request.get('tag')))
+    if users.get_current_user() == tag.user:
+      tag.key.delete()
+    self.redirect(self.request.referer)
 
 def sendbm(b):
       message = mail.EmailMessage()
@@ -167,12 +209,16 @@ debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
   ('/', MainPage),
-  ('/submit', Bookmark),
-  ('/tag', Tag),
-  ('/delete', DeleteBM),
+  ('/submit', AddBM),
+  ('/delete', DelBM),
+  ('/addtag', AddTag),
+  ('/deltag', DeleteTag),
+  ('/removetag', RemoveTag),
+  ('/asstag', AssignTag),
   ('/archive', ArchiveBM),
   ('/archived', ArchivedPage),
   ('/search', SearchPage),
+  ('/script', script),
   ], debug=debug)
 
 def main():
