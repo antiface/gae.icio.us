@@ -115,7 +115,7 @@ class SearchPage(BaseHandler):
 class AddBM(webapp2.RequestHandler):
   def get(self):
     b = Bookmarks()
-    b.url = self.request.get('url').encode('utf8')
+    b.url = self.request.get('url').encode('utf8').split('?')[0]
     b.title = self.request.get('title').encode('utf8')
     b.comment = self.request.get('comment').encode('utf8')
     b.user = users.User(str(self.request.get('user')))
@@ -195,14 +195,14 @@ class DeleteTag(webapp2.RequestHandler):
     self.redirect(self.request.referer)
 
 def sendbm(b):
-      message = mail.EmailMessage()
-      message.sender = b.user.email()
-      message.to = b.user.email()
-      message.subject = '(Pbox) '+ b.title
-      message.html = """
+  message = mail.EmailMessage()
+  message.sender = b.user.email()
+  message.to = b.user.email()
+  message.subject = '(Pbox) '+ b.title
+  message.html = """
 %s (%s)<br>%s<br><br>%s
 """ % (b.title, b.data, b.url, b.comment)
-      message.send()
+  message.send()
 
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
