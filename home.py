@@ -101,7 +101,8 @@ class ArchivedPage(BaseHandler):
       bms = ndb.gql("""SELECT * FROM Bookmarks
         WHERE user = :1 AND archived = TRUE 
         ORDER BY data DESC LIMIT 25""", self.utente())
-      self.generate('home.html', {'bms': bms, 'tag_list': tag_list})
+      self.generate('home.html', {'bms'     : bms, 
+                                  'tag_list': tag_list})
     else:
       self.generate('hero.html', {})
 
@@ -112,9 +113,10 @@ class SearchPage(BaseHandler):
     q = ndb.gql("""SELECT * FROM Tags 
       WHERE user = :1 AND name = :2 
       ORDER BY data DESC""", self.utente(), tag_name)
-    tag_obj = Tags.query(Tags.name == tag_name).get()
-    bms = q.get().bm_set()
-    self.generate('home.html', {'bms': bms, 'tag_obj': tag_obj, 'tag_list': tag_obj.refine_set()})
+    self.generate('home.html', {'tag_obj':  q.get(),
+                                'bms':      q.get().bm_set(),
+                                'tag_list': q.get().refine_set()
+                                })
 
 
 class RefinePage(BaseHandler):
