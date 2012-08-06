@@ -109,33 +109,39 @@ class ArchivedPage(BaseHandler):
 
 class SearchPage(BaseHandler):
   def get(self):
-    tag_name = self.request.get('tag')
-    q = ndb.gql("""SELECT * FROM Tags 
-      WHERE user = :1 AND name = :2 
-      ORDER BY data DESC""", self.utente(), tag_name)
-    self.generate('home.html', {'tag_obj':  q.get(),
-                                'bms':      q.get().bm_set(),
-                                'tag_list': q.get().refine_set()
-                                })
+    if users.get_current_user():
+      tag_name = self.request.get('tag')
+      q = ndb.gql("""SELECT * FROM Tags 
+        WHERE user = :1 AND name = :2 
+        ORDER BY data DESC""", self.utente(), tag_name)
+      self.generate('home.html', {'tag_obj':  q.get(),
+                                  'bms':      q.get().bm_set(),
+                                  'tag_list': q.get().refine_set()
+                                  })
+    else:
+      self.generate('hero.html', {})
 
 
 class RefinePage(BaseHandler):
   def get(self):
-    tag_name = self.request.get('tag')
-    refine = self.request.get('refine')
-    tag1 = ndb.gql("""SELECT __key__ FROM Tags 
-      WHERE user = :1 AND name = :2""", self.utente(), tag_name).get()
-    tag2 = ndb.gql("""SELECT __key__ FROM Tags 
-      WHERE user = :1 AND name = :2""", self.utente(), refine).get()
-    bms = ndb.gql("""SELECT * FROM Bookmarks 
-      WHERE user = :1 AND tags = :2 AND tags = :3
-      ORDER BY data DESC""", self.utente(), tag1, tag2)
-    self.generate('home.html', {'bms': bms, 'tag_obj': None})
+    if users.get_current_user():
+      tag_name = self.request.get('tag')
+      refine = self.request.get('refine')
+      tag1 = ndb.gql("""SELECT __key__ FROM Tags 
+        WHERE user = :1 AND name = :2""", self.utente(), tag_name).get()
+      tag2 = ndb.gql("""SELECT __key__ FROM Tags 
+        WHERE user = :1 AND name = :2""", self.utente(), refine).get()
+      bms = ndb.gql("""SELECT * FROM Bookmarks 
+        WHERE user = :1 AND tags = :2 AND tags = :3
+        ORDER BY data DESC""", self.utente(), tag1, tag2)
+      self.generate('home.html', {'bms': bms, 'tag_obj': None})
+    else:
+      self.generate('hero.html', {})
 
 
 class AddBM(webapp2.RequestHandler):
   def get(self):
-    if self.utente():
+    if users.get_current_user():
       b = Bookmarks()
       # b.url = self.request.get('url').encode('utf8').split('?')[0]
       b.url = self.request.get('url').encode('utf8')
@@ -191,10 +197,9 @@ class AddTag(webapp2.RequestHandler):
 
 class AssignTag(webapp2.RequestHandler):
   def get(self):
-    user = users.get_current_user()
     bm  = Bookmarks.get_by_id(int(self.request.get('bm')))
     tag = Tags.get_by_id(int(self.request.get('tag')))
-    if user == bm.user:
+    if users.get_current_user() == bm.user:
       bm.tags.append(tag.key)
       bm.put()
       tag.count += 1
