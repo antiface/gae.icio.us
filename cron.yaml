@@ -1,4 +1,4 @@
 cron:
-- description: resync counter
-  url: /script
-  schedule: every 120 minutes
+# - description: resync counter
+#   url: /script
+#   schedule: every 120 minutes

@@ -37,6 +37,7 @@ class Bookmarks(ndb.Model):
   comment = ndb.TextProperty()
   tags = ndb.KeyProperty(kind=Tags,repeated=True)
   archived = ndb.BooleanProperty(default=False)
+  have_tags = ndb.ComputedProperty(lambda self: bool(self.tags))
   def other_tags(self):
     q = ndb.gql("SELECT __key__ FROM Tags WHERE user = :1", self.user)
     all_user_tags = [tagk for tagk in q]
@@ -88,7 +89,9 @@ class MainPage(BaseHandler):
       bms = ndb.gql("""SELECT * FROM Bookmarks 
         WHERE user = :1 AND archived = FALSE 
         ORDER BY data DESC""", self.utente())
-      self.generate('home.html', {'bms': bms, 'tag_list': tag_list})
+      self.generate('home.html', {'bms': bms,
+                                  'tag_list': tag_list 
+                                  })
     else:
       self.generate('hero.html', {})
 
@@ -102,7 +105,23 @@ class ArchivedPage(BaseHandler):
         WHERE user = :1 AND archived = TRUE 
         ORDER BY data DESC LIMIT 25""", self.utente())
       self.generate('home.html', {'bms'     : bms, 
-                                  'tag_list': tag_list})
+                                  'tag_list': tag_list
+                                  })
+    else:
+      self.generate('hero.html', {})
+
+
+class NotagPage(BaseHandler):
+  def get(self):
+    if self.utente():
+      tag_list = ndb.gql("""SELECT * FROM Tags
+        WHERE user = :1 ORDER BY count DESC""", self.utente())
+      bms = ndb.gql("""SELECT * FROM Bookmarks
+        WHERE user = :1 AND have_tags = False
+        ORDER BY data DESC""", self.utente())
+      self.generate('home.html', {'bms'     : bms, 
+                                  'tag_list': tag_list
+                                  })
     else:
       self.generate('hero.html', {})
 
@@ -114,10 +133,13 @@ class SearchPage(BaseHandler):
       q = ndb.gql("""SELECT * FROM Tags 
         WHERE user = :1 AND name = :2 
         ORDER BY data DESC""", self.utente(), tag_name)
-      self.generate('home.html', {'tag_obj':  q.get(),
-                                  'bms':      q.get().bm_set(),
-                                  'tag_list': q.get().refine_set()
-                                  })
+      if q.get().count != 0:
+        self.generate('home.html', {'tag_obj':  q.get(),
+                                    'bms':      q.get().bm_set(),
+                                    'tag_list': q.get().refine_set()
+                                    })
+      else:
+        self.redirect('/')
     else:
       self.generate('hero.html', {})
 
@@ -249,6 +271,7 @@ app = webapp2.WSGIApplication([
   ('/archived', ArchivedPage),
   ('/search', SearchPage),
   ('/refine', RefinePage),
+  ('/notag', NotagPage),
   ], debug=debug)
 
 def main():
