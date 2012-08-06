@@ -18,7 +18,16 @@ class Tags(ndb.Model):
   def bm_set(self):
     return ndb.gql("""SELECT * FROM Bookmarks
       WHERE tags = :1 ORDER BY data DESC""", self.key)
-
+  def refine_set(self):
+    q = ndb.gql("""SELECT * FROM Bookmarks
+      WHERE tags = :1 AND user = :2""", self.key, self.user)
+    other = []
+    for bm in q:
+      for tag in bm.tags:
+        if not tag in other:
+          other.append(tag)
+    other.remove(self.key)
+    return other
 
 class Bookmarks(ndb.Model):
   data = ndb.DateTimeProperty(auto_now=True)
@@ -41,8 +50,7 @@ class BaseHandler(webapp2.RequestHandler):
     return users.get_current_user()
 
   def generate(self, template_name, template_values={}):
-    user = users.get_current_user()
-    tag_list = ndb.gql("SELECT * FROM Tags WHERE user = :1 ORDER BY count DESC", user)
+    user = users.get_current_user()    
     if self.utente():
       bookmarklet = """
 javascript:location.href=
@@ -59,8 +67,7 @@ javascript:location.href=
       url = users.create_login_url(self.request.uri)
       linktext = 'Login'
       nick = 'Welcome'
-    values = {
-      'tag_list': tag_list,
+    values = {      
       'brand': self.request.host,
       'bookmarklet': bookmarklet,
       'nick': nick,
@@ -72,56 +79,72 @@ javascript:location.href=
     template = jinja_environment.get_template(template_name)
     self.response.out.write(template.render(values))
 
-class script(BaseHandler):
-  def get(self):
-    if  users.is_current_user_admin():
-      q = Tags.query()
-      for t in q: 
-        c = ndb.gql("SELECT * FROM Bookmarks WHERE tags = :1", t.key).count()
-        # c = t.bm_count()
-        t.count = c
-        t.put()
-      self.redirect('/')
 
 class MainPage(BaseHandler):
   def get(self):
     if self.utente():
+      tag_list = ndb.gql("""SELECT * FROM Tags
+        WHERE user = :1 ORDER BY count DESC""", self.utente())
       bms = ndb.gql("""SELECT * FROM Bookmarks 
         WHERE user = :1 AND archived = FALSE 
         ORDER BY data DESC""", self.utente())
-      self.generate('home.html', {'bms': bms})
+      self.generate('home.html', {'bms': bms, 'tag_list': tag_list})
     else:
       self.generate('hero.html', {})
 
 
 class ArchivedPage(BaseHandler):
   def get(self):
+    if self.utente():
+      tag_list = ndb.gql("""SELECT * FROM Tags
+        WHERE user = :1 ORDER BY count DESC""", self.utente())
       bms = ndb.gql("""SELECT * FROM Bookmarks
         WHERE user = :1 AND archived = TRUE 
         ORDER BY data DESC LIMIT 25""", self.utente())
-      self.generate('home.html', {'bms': bms})
+      self.generate('home.html', {'bms': bms, 'tag_list': tag_list})
+    else:
+      self.generate('hero.html', {})
 
 
 class SearchPage(BaseHandler):
   def get(self):
-      tag_name = self.request.get('tag')
-      q = ndb.gql("""SELECT * FROM Tags 
-        WHERE user = :1 AND name = :2 
-        ORDER BY data DESC""", self.utente(), tag_name)
-      bms = q.get().bm_set()
-      self.generate('home.html', {'bms': bms})
+    tag_name = self.request.get('tag')
+    q = ndb.gql("""SELECT * FROM Tags 
+      WHERE user = :1 AND name = :2 
+      ORDER BY data DESC""", self.utente(), tag_name)
+    tag_obj = Tags.query(Tags.name == tag_name).get()
+    bms = q.get().bm_set()
+    self.generate('home.html', {'bms': bms, 'tag_obj': tag_obj, 'tag_list': tag_obj.refine_set()})
+
+
+class RefinePage(BaseHandler):
+  def get(self):
+    tag_name = self.request.get('tag')
+    refine = self.request.get('refine')
+    tag1 = ndb.gql("""SELECT __key__ FROM Tags 
+      WHERE user = :1 AND name = :2""", self.utente(), tag_name).get()
+    tag2 = ndb.gql("""SELECT __key__ FROM Tags 
+      WHERE user = :1 AND name = :2""", self.utente(), refine).get()
+    bms = ndb.gql("""SELECT * FROM Bookmarks 
+      WHERE user = :1 AND tags = :2 AND tags = :3
+      ORDER BY data DESC""", self.utente(), tag1, tag2)
+    self.generate('home.html', {'bms': bms, 'tag_obj': None})
 
 
 class AddBM(webapp2.RequestHandler):
   def get(self):
-    b = Bookmarks()
-    b.url = self.request.get('url').encode('utf8').split('?')[0]
-    b.title = self.request.get('title').encode('utf8')
-    b.comment = self.request.get('comment').encode('utf8')
-    b.user = users.User(str(self.request.get('user')))
-    b.put()
-    deferred.defer(sendbm, b)
-    self.redirect('/')
+    if self.utente():
+      b = Bookmarks()
+      # b.url = self.request.get('url').encode('utf8').split('?')[0]
+      b.url = self.request.get('url').encode('utf8')
+      b.title = self.request.get('title').encode('utf8')
+      b.comment = self.request.get('comment').encode('utf8')
+      b.user = users.User(str(self.request.get('user')))
+      b.put()
+      deferred.defer(sendbm, b)
+      self.redirect('/')
+    else:
+      self.generate('hero.html', {})
 
 
 class DelBM(webapp2.RequestHandler):
@@ -218,7 +241,7 @@ app = webapp2.WSGIApplication([
   ('/archive', ArchiveBM),
   ('/archived', ArchivedPage),
   ('/search', SearchPage),
-  ('/script', script),
+  ('/refine', RefinePage),
   ], debug=debug)
 
 def main():
