@@ -15,7 +15,7 @@
         </div>
       {% endfor %}
       </div>
-      <!-- <hr> -->
+      
       <form class="form-horizontal" action="/edit?bm={{ bm.key.id() }}" method="post">
         <fieldset>
             <label>Title</label> <input type="text" class="span12" name="title" value="{{ bm.title }}">
@@ -26,7 +26,7 @@
           </div>
         </fieldset>
       </form>
-      <!-- <hr> -->
+
       <label>Your tag cloud (click to add)</label> 
       {% for tag in bm.other_tags() %}
       <a href="/asstag?bm={{ bm.key.id() }}&tag={{ tag.id() }}" > {{ tag.get().name }}</a>
