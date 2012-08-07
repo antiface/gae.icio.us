@@ -11,7 +11,8 @@ class Tags(ndb.Model):
       WHERE tags = :1 ORDER BY data DESC""", self.key)
   def refine_set(self):
     q = ndb.gql("""SELECT * FROM Bookmarks
-      WHERE tags = :1 AND user = :2""", self.key, self.user)
+      WHERE tags = :1 AND user = :2
+      ORDER BY data DESC""", self.key, self.user)
     other = []
     for bm in q:
       for tag in bm.tags:
@@ -29,6 +30,7 @@ class Bookmarks(ndb.Model):
   tags = ndb.KeyProperty(kind=Tags,repeated=True)
   archived = ndb.BooleanProperty(default=False)
   have_tags = ndb.ComputedProperty(lambda self: bool(self.tags))
+  have_prev = ndb.ComputedProperty(lambda self: bool(self.preview))
   def other_tags(self):
     q = ndb.gql("SELECT __key__ FROM Tags WHERE user = :1", self.user)
     all_user_tags = [tagk for tagk in q]
@@ -42,4 +44,4 @@ class Bookmarks(ndb.Model):
       video = query["v"][0]
       return video
     except:
-      return None
+      return False

@@ -12,28 +12,34 @@
     <dt> <i class="icon-bookmark"></i> <a href="{{ bm.url }}">{{ bm.title }}</a> </dt>
     <dd> {{ bm.comment }} </dd>
     <dd>
-
-    <div class="btn-toolbar">        
+      
+    <div class="btn-toolbar">
       <div class="btn-group">
-
+        {% if bm.preview() %} 
+        <a class="btn btn-mini btn-inverse" href="/edit?bm={{ bm.key.id() }}">
+          <i class="icon-eye-open icon-white"></i> preview</a>
+        {% else %}
         <a class="btn btn-mini" href="/edit?bm={{ bm.key.id() }}">
-        {% if bm.preview() %} <i class="icon-eye-open"> {% else %} <i class="icon-eye-close"> {% endif %}</i> preview</a>
+          <i class="icon-eye-close"> </i> preview</a>
+        {% endif %}
+      </div>
 
+      <div class="btn-group">
         <a class="btn btn-mini" href="/archive?bm={{ bm.key.id() }}">
         {% if bm.archived %} <i class="icon-flag"></i> inbox</a> {% else %} <i class="icon-check"></i> archive</a> {% endif %}
 
-        <div class="modal fade" id="{{ bm.key.id() }}">
-          <div class="modal-header">
-            <h4>Are you sure?</h4>
-          </div>
-          <div class="modal-footer">
-            <a class="btn btn-danger" href="/delete?bm={{ bm.key.id() }}">Yes</a>
-            <a class="btn" href="#" data-dismiss="modal">No</a>
-          </div>
-        </div>
-        <a data-toggle="modal" data-target="#{{ bm.key.id() }}" class="btn btn-mini" ><i class="icon-remove"></i> delete</a>        
-
+            <div class="modal fade" id="{{ bm.key.id() }}">
+              <div class="modal-header">
+                <h4>Are you sure?</h4>
+              </div>
+              <div class="modal-footer">
+                <a class="btn btn-danger" href="/delete?bm={{ bm.key.id() }}">Yes</a>
+                <a class="btn" href="#" data-dismiss="modal">No</a>
+              </div>
+            </div>
+        <a data-toggle="modal" data-target="#{{ bm.key.id() }}" class="btn btn-mini" ><i class="icon-remove"></i> delete</a>
       </div>
+
       <div class="btn-group">
         <button class="btn disabled btn-mini"><i class="icon-calendar"></i> {{ bm.data|dtf }}</button>
       </div>

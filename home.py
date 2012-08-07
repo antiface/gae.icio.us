@@ -52,7 +52,7 @@ class MainPage(BaseHandler):
       tag_list = ndb.gql("""SELECT * FROM Tags
         WHERE user = :1 ORDER BY count DESC""", self.utente())
       bms = ndb.gql("""SELECT * FROM Bookmarks 
-        WHERE user = :1 AND archived = FALSE 
+        WHERE user = :1 AND archived = False 
         ORDER BY data DESC""", self.utente())
       self.generate('home.html', {'bms': bms,
                                   'tag_list': tag_list 
@@ -67,7 +67,7 @@ class ArchivedPage(BaseHandler):
       tag_list = ndb.gql("""SELECT * FROM Tags
         WHERE user = :1 ORDER BY count DESC""", self.utente())
       bms = ndb.gql("""SELECT * FROM Bookmarks
-        WHERE user = :1 AND archived = TRUE 
+        WHERE user = :1 AND archived = True 
         ORDER BY data DESC LIMIT 25""", self.utente())
       self.generate('home.html', {'bms'     : bms, 
                                   'tag_list': tag_list
@@ -83,6 +83,21 @@ class NotagPage(BaseHandler):
         WHERE user = :1 ORDER BY count DESC""", self.utente())
       bms = ndb.gql("""SELECT * FROM Bookmarks
         WHERE user = :1 AND have_tags = False
+        ORDER BY data DESC""", self.utente())
+      self.generate('home.html', {'bms'     : bms, 
+                                  'tag_list': tag_list
+                                  })
+    else:
+      self.generate('hero.html', {})
+
+
+class PreviewPage(BaseHandler):
+  def get(self):
+    if self.utente():
+      tag_list = ndb.gql("""SELECT * FROM Tags
+        WHERE user = :1 ORDER BY count DESC""", self.utente())
+      bms = ndb.gql("""SELECT * FROM Bookmarks
+        WHERE user = :1 AND have_prev = True
         ORDER BY data DESC""", self.utente())
       self.generate('home.html', {'bms'     : bms, 
                                   'tag_list': tag_list
@@ -150,6 +165,7 @@ app = webapp2.WSGIApplication([
   ('/search', SearchPage),
   ('/refine', RefinePage),
   ('/notag', NotagPage),
+  ('/previews', PreviewPage),
   ('/edit', EditPage),  
   ('/archived', ArchivedPage),
   ('/submit', core.AddBM),

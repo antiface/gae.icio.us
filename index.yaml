@@ -19,6 +19,13 @@ indexes:
 
 - kind: Bookmarks
   properties:
+  - name: have_prev
+  - name: user
+  - name: data
+    direction: desc
+
+- kind: Bookmarks
+  properties:
   - name: have_tags
   - name: user
   - name: data
@@ -26,13 +33,6 @@ indexes:
 
 - kind: Bookmarks
   properties:
-  - name: notags
-  - name: user
-  - name: data
-    direction: desc
-
-- kind: Bookmarks
-  properties:
   - name: tags
   - name: data
     direction: desc
@@ -43,17 +43,6 @@ indexes:
   - name: user
   - name: data
     direction: desc
-
-- kind: Bookmarks
-  properties:
-  - name: user
-  - name: data
-    direction: desc
-
-- kind: Bookmarks
-  properties:
-  - name: user
-  - name: tags
 
 - kind: Tags
   properties:
@@ -61,11 +50,6 @@ indexes:
   - name: user
   - name: data
     direction: desc
-
-- kind: Tags
-  properties:
-  - name: user
-  - name: count
 
 - kind: Tags
   properties:
