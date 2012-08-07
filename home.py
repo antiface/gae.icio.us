@@ -14,7 +14,9 @@ jinja_environment.filters['dtf'] = dtf
 class BaseHandler(webapp2.RequestHandler):
   def utente(self):
     return users.get_current_user()
-
+  def tag_list(self):
+    return ndb.gql("""SELECT * FROM Tags
+        WHERE user = :1 ORDER BY count DESC""", self.utente())
   def generate(self, template_name, template_values={}):
     user = users.get_current_user()    
     if self.utente():
@@ -48,14 +50,12 @@ javascript:location.href=
 
 class MainPage(BaseHandler):
   def get(self):
-    if self.utente():
-      tag_list = ndb.gql("""SELECT * FROM Tags
-        WHERE user = :1 ORDER BY count DESC""", self.utente())
+    if self.utente():      
       bms = ndb.gql("""SELECT * FROM Bookmarks 
         WHERE user = :1 AND archived = False 
         ORDER BY data DESC""", self.utente())
       self.generate('home.html', {'bms': bms,
-                                  'tag_list': tag_list 
+                                  'tag_list': self.tag_list()
                                   })
     else:
       self.generate('hero.html', {})
@@ -64,13 +64,11 @@ class MainPage(BaseHandler):
 class ArchivedPage(BaseHandler):
   def get(self):
     if self.utente():
-      tag_list = ndb.gql("""SELECT * FROM Tags
-        WHERE user = :1 ORDER BY count DESC""", self.utente())
       bms = ndb.gql("""SELECT * FROM Bookmarks
         WHERE user = :1 AND archived = True 
         ORDER BY data DESC LIMIT 25""", self.utente())
       self.generate('home.html', {'bms'     : bms, 
-                                  'tag_list': tag_list
+                                  'tag_list': self.tag_list()
                                   })
     else:
       self.generate('hero.html', {})
@@ -79,13 +77,11 @@ class ArchivedPage(BaseHandler):
 class NotagPage(BaseHandler):
   def get(self):
     if self.utente():
-      tag_list = ndb.gql("""SELECT * FROM Tags
-        WHERE user = :1 ORDER BY count DESC""", self.utente())
       bms = ndb.gql("""SELECT * FROM Bookmarks
         WHERE user = :1 AND have_tags = False
         ORDER BY data DESC""", self.utente())
       self.generate('home.html', {'bms'     : bms, 
-                                  'tag_list': tag_list
+                                  'tag_list': self.tag_list()
                                   })
     else:
       self.generate('hero.html', {})
@@ -94,13 +90,11 @@ class NotagPage(BaseHandler):
 class PreviewPage(BaseHandler):
   def get(self):
     if self.utente():
-      tag_list = ndb.gql("""SELECT * FROM Tags
-        WHERE user = :1 ORDER BY count DESC""", self.utente())
       bms = ndb.gql("""SELECT * FROM Bookmarks
         WHERE user = :1 AND have_prev = True
         ORDER BY data DESC""", self.utente())
       self.generate('home.html', {'bms'     : bms, 
-                                  'tag_list': tag_list
+                                  'tag_list': self.tag_list()
                                   })
     else:
       self.generate('hero.html', {})

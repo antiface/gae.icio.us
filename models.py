@@ -10,11 +10,8 @@ class Tags(ndb.Model):
     return ndb.gql("""SELECT * FROM Bookmarks
       WHERE tags = :1 ORDER BY data DESC""", self.key)
   def refine_set(self):
-    q = ndb.gql("""SELECT * FROM Bookmarks
-      WHERE tags = :1 AND user = :2
-      ORDER BY data DESC""", self.key, self.user)
     other = []
-    for bm in q:
+    for bm in self.bm_set():
       for tag in bm.tags:
         if not tag in other:
           other.append(tag)
