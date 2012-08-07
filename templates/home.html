@@ -49,14 +49,13 @@
       <dd>
       <div class="btn-toolbar">        
         <div class="btn-group">
+          <a class="btn btn-mini" href="/edit?bm={{ bm.key.id() }}"><i class="icon-pencil"></i> edit</a>
           <a class="btn btn-mini" href="/archive?bm={{ bm.key.id() }}">
           {% if bm.archived %}
           <i class="icon-flag"></i> inbox</a>
           {% else %}
           <i class="icon-check"></i> archive</a>
           {% endif %}
-        </div>
-        <div class="btn-group">
           <a class="btn btn-mini" href="/delete?bm={{ bm.key.id() }}"><i class="icon-remove"></i> delete</a>
         </div>
         <div class="btn-group">
@@ -71,7 +70,7 @@
         {% endfor %}
       </div>      
       </dd> 
-      <dd><i class="icon-plus-sign"></i>
+      <dd class="hide"><i class="icon-plus-sign"></i>
         {% for tag in bm.other_tags() %}
         <a href="/asstag?bm={{ bm.key.id() }}&tag={{ tag.id() }}" > {{ tag.get().name }}</a>
         {% endfor %}

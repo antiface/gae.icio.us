@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+  <div class="row-fluid">
+
+    <div class="span6 well ">
+      <form class="form-horizontal" action="/edit?bm={{ bm.key.id() }}" method="post">
+        <fieldset>
+            <label>Title</label> <input type="text" class="span12" name="title" value="{{ bm.title }}">
+            <label>Url</label> <input type="text" class="span12" name="url" value="{{ bm.url }}">
+            <label>Comment</label><textarea class="span12" rows="3" name="comment" >{{ bm.comment }}</textarea>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary pull-right">Save changes</button>
+          </div>
+        </fieldset>
+      </form>
+      <hr>
+      <div class="btn-toolbar">
+      {% for tag in bm.tags %}      
+        <div class="btn-group">          
+          <a class="btn btn-mini" href="/search?tag={{ tag.get().name }}"><i class="icon-tag"></i> {{ tag.get().name }}</a>
+          <a class="btn btn-mini" href="/removetag?bm={{ bm.key.id() }}&tag={{ tag.id() }}"><i class="icon-remove"></i></a>
+        </div>
+      {% endfor %}
+      </div>
+      <hr>
+      {% for tag in bm.other_tags() %}
+      <a href="/asstag?bm={{ bm.key.id() }}&tag={{ tag.id() }}" > {{ tag.get().name }}</a>
+      {% endfor %}
+    </div>
+
+    <div class="span6 well">
+      <h3>Preview</h3>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

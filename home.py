@@ -64,7 +64,7 @@ javascript:location.href=
       linktext = 'Logout'
       nick = user.email()
     else:
-      bookmarklet = None
+      bookmarklet = '%s' % self.request.host_url
       url = users.create_login_url(self.request.uri)
       linktext = 'Login'
       nick = 'Welcome'
@@ -161,17 +161,36 @@ class RefinePage(BaseHandler):
       self.generate('hero.html', {})
 
 
+class EditPage(BaseHandler):
+  def get(self):
+    if users.get_current_user():
+      bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+      self.generate('edit.html', {'bm': bm})
+    else:
+      self.redirect('/')
+  def post(self):
+    if users.get_current_user():
+      bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+      bm.url = self.request.get('url').encode('utf8')
+      bm.title = self.request.get('title').encode('utf8')
+      bm.comment = self.request.get('comment').encode('utf8')
+      bm.put()
+      self.redirect(self.request.referer)
+    else:
+      self.redirect('/')
+
+
 class AddBM(webapp2.RequestHandler):
   def get(self):
     if users.get_current_user():
-      b = Bookmarks()
-      # b.url = self.request.get('url').encode('utf8').split('?')[0]
-      b.url = self.request.get('url').encode('utf8')
-      b.title = self.request.get('title').encode('utf8')
-      b.comment = self.request.get('comment').encode('utf8')
-      b.user = users.User(str(self.request.get('user')))
-      b.put()
-      deferred.defer(sendbm, b)
+      bm = Bookmarks()
+      # bm.url = self.request.get('url').encode('utf8').split('?')[0]
+      bm.url = self.request.get('url').encode('utf8')
+      bm.title = self.request.get('title').encode('utf8')
+      bm.comment = self.request.get('comment').encode('utf8')
+      bm.user = users.User(str(self.request.get('user')))
+      bm.put()
+      deferred.defer(sendbm, bm)
       self.redirect('/')
     else:
       self.generate('hero.html', {})
@@ -179,25 +198,25 @@ class AddBM(webapp2.RequestHandler):
 
 class DelBM(webapp2.RequestHandler):
   def get(self):
-    b = Bookmarks.get_by_id(int(self.request.get('bm')))
-    if users.get_current_user() == b.user:
-      for tag in b.tags:
+    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+    if users.get_current_user() == bm.user:
+      for tag in bm.tags:
         t = tag.get()
         t.count -= 1
         t.put()        
-      b.key.delete()
+      bm.key.delete()
     self.redirect(self.request.referer)
 
 
 class ArchiveBM(webapp2.RequestHandler):
   def get(self):
-    b = Bookmarks.get_by_id(int(self.request.get('bm')))
-    if users.get_current_user() == b.user:
-      if b.archived == False:
-        b.archived = True
+    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+    if users.get_current_user() == bm.user:
+      if bm.archived == False:
+        bm.archived = True
       else:
-        b.archived = False
-      b.put()
+        bm.archived = False
+      bm.put()
     self.redirect(self.request.referer)
 
 
@@ -246,14 +265,14 @@ class DeleteTag(webapp2.RequestHandler):
       tag.key.delete()
     self.redirect(self.request.referer)
 
-def sendbm(b):
+def sendbm(bm):
   message = mail.EmailMessage()
-  message.sender = b.user.email()
-  message.to = b.user.email()
-  message.subject = '(Pbox) '+ b.title
+  message.sender = bm.user.email()
+  message.to = bm.user.email()
+  message.subject = '(Pbox) '+ bm.title
   message.html = """
 %s (%s)<br>%s<br><br>%s
-""" % (b.title, b.data, b.url, b.comment)
+""" % (bm.title, bm.data, bm.url, bm.comment)
   message.send()
 
 
@@ -272,6 +291,7 @@ app = webapp2.WSGIApplication([
   ('/search', SearchPage),
   ('/refine', RefinePage),
   ('/notag', NotagPage),
+  ('/edit', EditPage),
   ], debug=debug)
 
 def main():
