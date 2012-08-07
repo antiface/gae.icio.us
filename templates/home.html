@@ -3,87 +3,66 @@
 
 <div class="container">
 <div class="row">
+{% include "sidebar.html" %}
 
-  <div class="span3">
-    <div class="well sidebar-nav">
-      <ul class="nav nav-list">
-        <li class="nav-header"><i class="icon-plus-sign"></i> Add a tag</li>
-        <form action="/addtag" method="get"> 
-          <input type="text" class="input input-medium" name="tag" allowBlank="true">
-        </form>
 
-        {% if tag_obj is none %}
-        {% elif not tag_obj %}
-        <li class="nav-header"><i class="icon-search"></i> Search by tag</li>
+<div class="span9">
+  {% for bm in bms %}
+  <dl> 
+    <dt><i class="icon-bookmark"></i> <a href="{{ bm.url }}">{{ bm.title }}</a></dt>
+    <dd>{{ bm.comment }} </dd>
+    <dd>
+    <div class="btn-toolbar">        
+      <div class="btn-group">
+        <a class="btn btn-mini" href="/edit?bm={{ bm.key.id() }}"><i class="icon-pencil"></i> edit</a>
+        <a class="btn btn-mini" href="/archive?bm={{ bm.key.id() }}">
+        {% if bm.archived %}
+        <i class="icon-flag"></i> inbox</a>
         {% else %}
-        <li class="nav-header"><i class="icon-filter"></i> Refine the search<li>
+        <i class="icon-check"></i> archive</a>
         {% endif %}
-
-        {% for tag in tag_list %}
-          {% if tag_obj %}
-          <li>            
-            <a href="/refine?tag={{ tag_obj.name }}&refine={{ tag.get().name }}"> {{ tag.get().name }} </a>
-          </li>          
-          {% else %}
-          <li>          
-            {% if tag.count == 0 %}
-            <a href="/deltag?tag={{ tag.key.id() }}"> ({{ tag.count }})  {{ tag.name }}
-            <button class="close">&times;</button>
-            {% else %}
-            <a href="/search?tag={{ tag.name }}"> ({{ tag.count }})  {{ tag.name }}
-            {% endif %}
-            </a> 
-          </li>
-          {% endif %}
-        {% endfor %}
-
-      </ul>
-    </div>
-  </div>
-
-  <div class="span9">
-    {% for bm in bms %}
-    <dl> 
-      <dt><i class="icon-bookmark"></i> <a href="{{ bm.url }}">{{ bm.title }}</a></dt>
-      <dd>{{ bm.comment }} </dd>
-      <dd>
-      <div class="btn-toolbar">        
-        <div class="btn-group">
-          <a class="btn btn-mini" href="/edit?bm={{ bm.key.id() }}"><i class="icon-pencil"></i> edit</a>
-          <a class="btn btn-mini" href="/archive?bm={{ bm.key.id() }}">
-          {% if bm.archived %}
-          <i class="icon-flag"></i> inbox</a>
-          {% else %}
-          <i class="icon-check"></i> archive</a>
-          {% endif %}
-          <a class="btn btn-mini" href="/delete?bm={{ bm.key.id() }}"><i class="icon-remove"></i> delete</a>
+        <div class="modal fade" id="{{ bm.key.id() }}">
+          <div class="modal-header">
+            <h4>Are you sure?</h4>
+          </div>
+          <div class="modal-footer">
+            <a class="btn btn-danger" href="/delete?bm={{ bm.key.id() }}">Yes</a>
+            <a class="btn" href="#" data-dismiss="modal">No</a>
+          </div>
         </div>
-        <div class="btn-group">
-          <button class="btn disabled btn-mini"><i class="icon-calendar"></i> {{ bm.data|dtf }}</button>
-        </div>
-        
-        {% for tag in bm.tags %}        
-        <div class="btn-group">          
-          <a class="btn btn-mini" href="/search?tag={{ tag.get().name }}"><i class="icon-tag"></i> {{ tag.get().name }}</a>
-          <a class="btn btn-mini" href="/removetag?bm={{ bm.key.id() }}&tag={{ tag.id() }}"><i class="icon-remove"></i></a>
-        </div>
-        {% endfor %}
-      </div>      
-      </dd> 
-      <dd class="hide"><i class="icon-plus-sign"></i>
-        {% for tag in bm.other_tags() %}
-        <a href="/asstag?bm={{ bm.key.id() }}&tag={{ tag.id() }}" > {{ tag.get().name }}</a>
-        {% endfor %}
-      </dd>
-    </dl>
-    <hr>
-    <script>
-      $("#toggle-{{ bm.key.id() }}").click(function () {
-      $("#rigo-{{ bm.key.id() }}").toggle();
-      });
-    </script>
-  {% endfor %}
-  </div>
+        <a data-toggle="modal" data-target="#{{ bm.key.id() }}" class="btn btn-mini" ><i class="icon-remove"></i> delete</a>
+      </div>
+      <div class="btn-group">
+        <button class="btn disabled btn-mini"><i class="icon-calendar"></i> {{ bm.data|dtf }}</button>
+      </div>
+      
+      {% for tag in bm.tags %}        
+      <div class="btn-group">          
+        <a class="btn btn-mini" href="/search?tag={{ tag.get().name }}"><i class="icon-tag"></i> {{ tag.get().name }}</a>
+        <a class="btn btn-mini" href="/removetag?bm={{ bm.key.id() }}&tag={{ tag.id() }}"><i class="icon-remove"></i></a>
+      </div>
+      {% endfor %}
+    </div>      
+    </dd>
+  </dl>
+  <hr>
+  <script>
+    $("#toggle-{{ bm.key.id() }}").click(function () {
+    $("#rigo-{{ bm.key.id() }}").toggle();
+    });
+  </script>
+{% endfor %}
+</div>
+
+
 </div>
 </div>
+
+
+
 {% endblock %}
+
+
+    <li><a data-toggle="modal" data-target="#{{ bm.key.id() }}"><i class="icon-trash"></i> delete</a></li>
+  </ul>
+</div>

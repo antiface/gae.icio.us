@@ -1,0 +1,36 @@
+<div class="span3">
+  <div class="well sidebar-nav">
+    <ul class="nav nav-list">
+      <li class="nav-header"><i class="icon-plus-sign"></i> Add a tag</li>
+      <form action="/addtag" method="get"> 
+        <input type="text" class="input input-medium" name="tag" allowBlank="true">
+      </form>
+
+      {% if tag_obj is none %}
+      {% elif not tag_obj %}
+      <li class="nav-header"><i class="icon-search"></i> Search by tag</li>
+      {% else %}
+      <li class="nav-header"><i class="icon-filter"></i> Refine the search<li>
+      {% endif %}
+
+      {% for tag in tag_list %}
+        {% if tag_obj %}
+        <li>            
+          <a href="/refine?tag={{ tag_obj.name }}&refine={{ tag.get().name }}"> {{ tag.get().name }} </a>
+        </li>          
+        {% else %}
+        <li>          
+          {% if tag.count == 0 %}
+          <a href="/deltag?tag={{ tag.key.id() }}"> ({{ tag.count }})  {{ tag.name }}
+          <button class="close">&times;</button>
+          {% else %}
+          <a href="/search?tag={{ tag.name }}"> ({{ tag.count }})  {{ tag.name }}
+          {% endif %}
+          </a> 
+        </li>
+        {% endif %}
+      {% endfor %}
+
+    </ul>
+  </div>
+</div>

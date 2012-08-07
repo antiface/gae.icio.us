@@ -163,21 +163,21 @@ class RefinePage(BaseHandler):
 
 class EditPage(BaseHandler):
   def get(self):
-    if users.get_current_user():
-      bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+    if users.get_current_user() == bm.user:      
       self.generate('edit.html', {'bm': bm})
     else:
       self.redirect('/')
   def post(self):
-    if users.get_current_user():
+    if users.get_current_user() == bm.user:
       bm = Bookmarks.get_by_id(int(self.request.get('bm')))
       bm.url = self.request.get('url').encode('utf8')
       bm.title = self.request.get('title').encode('utf8')
       bm.comment = self.request.get('comment').encode('utf8')
       bm.put()
-      self.redirect(self.request.referer)
-    else:
-      self.redirect('/')
+      # self.redirect(self.request.referer)
+    # else:
+    self.redirect('/')
 
 
 class AddBM(webapp2.RequestHandler):
@@ -191,7 +191,7 @@ class AddBM(webapp2.RequestHandler):
       bm.user = users.User(str(self.request.get('user')))
       bm.put()
       deferred.defer(sendbm, bm)
-      self.redirect('/')
+      self.redirect('/edit?bm=%s' % bm.key.id())
     else:
       self.generate('hero.html', {})
 
