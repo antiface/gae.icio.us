@@ -5,9 +5,8 @@
   <title>{% block title %}{{ brand }}{% endblock %}</title>
   <meta name="description" content="gae.icio.us">
   <meta name="author" content="presveva">
-  <link rel="shortcut icon" href="static/img/favicon.ico">
-  <link type="text/css" href="static/css/bootstrap-responsive.css" rel="stylesheet">
-  <link type="text/css" href="static/css/bootstrap.css" rel="stylesheet">
+  <link rel="shortcut icon" href="static/favicon.ico">
+  <link type="text/css" href="static/bootstrap.css" rel="stylesheet">
   <meta name="description" content="a bookmarking service">
   <style>
     body {
@@ -18,10 +17,11 @@
 <body>
 {% include "navbar.html" %}
 
-<script src="static/js/jquery-1.7.2.min.js"></script>
-<script src="static/js/bootstrap-dropdown.js"></script>
-<script src="static/js/bootstrap-button.js"></script>
-<script src="static/js/bootstrap-modal.js"></script>
+<script src="static/jquery-1.7.2.min.js"></script>
+<script src="static/bootstrap.min.js"></script>
+<!-- <script src="static/js/bootstrap-dropdown.js"></script> -->
+<!-- <script src="static/js/bootstrap-button.js"></script> -->
+<!-- <script src="static/js/bootstrap-modal.js"></script> -->
 {% block content %}
 {% endblock %}
 </body>
