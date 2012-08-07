@@ -1,21 +1,12 @@
 {% extends "base.html" %}
+{% block title %}{{ bm.title }}{% endblock %}
 {% block content %}
 
 <div class="container">
   <div class="row-fluid">
 
-    <div class="span6 well ">
-      <form class="form-horizontal" action="/edit?bm={{ bm.key.id() }}" method="post">
-        <fieldset>
-            <label>Title</label> <input type="text" class="span12" name="title" value="{{ bm.title }}">
-            <label>Url</label> <input type="text" class="span12" name="url" value="{{ bm.url }}">
-            <label>Comment</label><textarea class="span12" rows="3" name="comment" >{{ bm.comment }}</textarea>
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary pull-right">Save changes</button>
-          </div>
-        </fieldset>
-      </form>
-      <hr>
+    <div class="span5 well ">
+      <label>Tags</label> 
       <div class="btn-toolbar">
       {% for tag in bm.tags %}      
         <div class="btn-group">          
@@ -24,14 +15,33 @@
         </div>
       {% endfor %}
       </div>
-      <hr>
+      <!-- <hr> -->
+      <form class="form-horizontal" action="/edit?bm={{ bm.key.id() }}" method="post">
+        <fieldset>
+            <label>Title</label> <input type="text" class="span12" name="title" value="{{ bm.title }}">
+            <label>Url</label> <input type="text" class="span12" name="url" value="{{ bm.url }}">
+            <label>Comment</label><textarea class="span12" rows="5" name="comment" >{{ bm.comment }}</textarea>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary pull-right">Save changes</button>
+          </div>
+        </fieldset>
+      </form>
+      <!-- <hr> -->
+      <label>Your tag cloud (click to add)</label> 
       {% for tag in bm.other_tags() %}
       <a href="/asstag?bm={{ bm.key.id() }}&tag={{ tag.id() }}" > {{ tag.get().name }}</a>
       {% endfor %}
     </div>
 
-    <div class="span6 well">
+    <div class="span7 well">
       <h3>Preview</h3>
+      {% if bm.preview() %}        
+      <iframe width="500" height="375" src="http://www.youtube.com/embed/{{ bm.preview() }}?rel=0" frameborder="0" allowfullscreen></iframe>
+      {% else %}
+      <p></i> No preview (only youtube url)</p>
+      {% endif %}
+      <h3>Share</h3>
+      {% include "tweet.html" %}
     </div>
 
   </div>

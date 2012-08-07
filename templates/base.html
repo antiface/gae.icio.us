@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="it">
+<html>
 <head>
-  {% block title %}
-  {% endblock %}
-  <meta name="description" content="a bookmarking service">
+  <meta charset="utf-8">
+  <title>{% block title %}{{ brand }}{% endblock %}</title>
+  <meta name="description" content="gae.icio.us">
   <meta name="author" content="presveva">
-  <link rel="shortcut icon" href="/static/img/favicon.ico">
+  <link rel="shortcut icon" href="static/img/favicon.ico">
+  <link type="text/css" href="static/css/bootstrap-responsive.css" rel="stylesheet">
   <link type="text/css" href="static/css/bootstrap.css" rel="stylesheet">
+  <meta name="description" content="a bookmarking service">
   <style>
     body {
       padding-top: 45px;

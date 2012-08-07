@@ -1,4 +1,4 @@
-import webapp2, jinja2, os
+import webapp2, jinja2, os, urlparse
 from google.appengine.api import users, mail
 from google.appengine.ext import ndb, deferred
 
@@ -44,6 +44,14 @@ class Bookmarks(ndb.Model):
     for tagk in self.tags:
       all_user_tags.remove(tagk)
     return all_user_tags
+  def preview(self):
+    url_data = urlparse.urlparse(self.url)
+    query = urlparse.parse_qs(url_data.query)
+    try:
+      video = query["v"][0]
+      return video
+    except:
+      return None
 
 
 class BaseHandler(webapp2.RequestHandler):
@@ -169,14 +177,12 @@ class EditPage(BaseHandler):
     else:
       self.redirect('/')
   def post(self):
+    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     if users.get_current_user() == bm.user:
-      bm = Bookmarks.get_by_id(int(self.request.get('bm')))
       bm.url = self.request.get('url').encode('utf8')
       bm.title = self.request.get('title').encode('utf8')
       bm.comment = self.request.get('comment').encode('utf8')
       bm.put()
-      # self.redirect(self.request.referer)
-    # else:
     self.redirect('/')
 
 
