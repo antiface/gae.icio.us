@@ -2,6 +2,7 @@ import webapp2, jinja2, os, core
 from google.appengine.api import users
 from google.appengine.ext import ndb
 from models import Tags, Bookmarks
+from utils import *
 
 def dtf(value, format='%d-%m-%Y %H:%M'):
   return value.strftime(format)
@@ -10,14 +11,7 @@ jinja_environment = jinja2.Environment(
   loader=jinja2.FileSystemLoader('templates'))
 jinja_environment.filters['dtf'] = dtf
 
-def login_required(handler_method):
-  def check_login(self):
-    user = users.get_current_user()
-    if not user:
-      return self.redirect(users.create_login_url(self.request.url))
-    else:
-      handler_method(self)
-  return check_login
+
 
 class BaseHandler(webapp2.RequestHandler):
   def utente(self):
@@ -62,8 +56,7 @@ class MainPage(BaseHandler):
         WHERE user = :1 AND archived = False 
         ORDER BY data DESC""", self.utente())
       self.generate('home.html', {'bms': bms,
-                                  'tag_list': self.tag_list()
-                                  })
+                                  'tag_list': self.tag_list() })
     else:
       self.generate('hero.html', {})
 
@@ -75,8 +68,7 @@ class ArchivedPage(BaseHandler):
         WHERE user = :1 AND archived = True 
         ORDER BY data DESC LIMIT 25""", self.utente())
       self.generate('home.html', {'bms'     : bms, 
-                                  'tag_list': self.tag_list()
-                                  })
+                                  'tag_list': self.tag_list() })
 
 
 class NotagPage(BaseHandler):
@@ -86,8 +78,7 @@ class NotagPage(BaseHandler):
         WHERE user = :1 AND have_tags = False
         ORDER BY data DESC""", self.utente())
       self.generate('home.html', {'bms'     : bms, 
-                                  'tag_list': self.tag_list()
-                                  })
+                                  'tag_list': self.tag_list() })
 
 
 class PreviewPage(BaseHandler):
@@ -97,24 +88,22 @@ class PreviewPage(BaseHandler):
         WHERE user = :1 AND have_prev = True
         ORDER BY data DESC""", self.utente())
       self.generate('home.html', {'bms'     : bms, 
-                                  'tag_list': self.tag_list()
-                                  })
+                                  'tag_list': self.tag_list() })
 
 
 class SearchPage(BaseHandler):
   @login_required
   def get(self):
     tag_name = self.request.get('tag')
-    q = ndb.gql("""SELECT * FROM Tags 
+    tag_obj = ndb.gql("""SELECT * FROM Tags 
       WHERE user = :1 AND name = :2 
-      ORDER BY data DESC""", self.utente(), tag_name)
-    if q.get().count != 0:
-      self.generate('home.html', {'tag_obj':  q.get(),
-                                  'bms':      q.get().bm_set(),
-                                  'tag_list': q.get().refine_set()
-                                  })
-    else:
+      ORDER BY data DESC""", self.utente(), tag_name).get()
+    if tag_obj.count == 0:
       self.redirect('/')
+    else:
+      self.generate('home.html', {'tag_obj':  tag_obj,
+                                  'bms':      tag_obj.bm_set(),
+                                  'tag_list': tag_obj.refine_set() })        
 
 
 class RefinePage(BaseHandler):

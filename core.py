@@ -2,21 +2,20 @@ from webapp2 import RequestHandler
 from google.appengine.api import users, mail
 from google.appengine.ext import ndb, deferred
 from models import Tags, Bookmarks
+from utils import *
 
 
 class AddBM(RequestHandler):
+  @login_required
   def get(self):
-    if users.get_current_user():
-      bm = Bookmarks()
-      bm.url = self.request.get('url').encode('utf8')
-      bm.title = self.request.get('title').encode('utf8')
-      bm.comment = self.request.get('comment').encode('utf8')
-      bm.user = users.User(str(self.request.get('user')))
-      bm.put()
-      deferred.defer(sendbm, bm)
-      self.redirect('/edit?bm=%s' % bm.key.id())
-    else:
-      self.generate('hero.html', {})
+    bm = Bookmarks()
+    bm.url = self.request.get('url').encode('utf8')
+    bm.title = self.request.get('title').encode('utf8')
+    bm.comment = self.request.get('comment').encode('utf8')
+    bm.user = users.User(str(self.request.get('user')))
+    bm.put()
+    deferred.defer(sendbm, bm)
+    self.redirect('/edit?bm=%s' % bm.key.id())
 
 class DelBM(RequestHandler):
   def get(self):
@@ -86,12 +85,3 @@ class DeleteTag(RequestHandler):
     self.redirect(self.request.referer)
 
 
-def sendbm(bm):
-  message = mail.EmailMessage()
-  message.sender = bm.user.email()
-  message.to = bm.user.email()
-  message.subject = '(Pbox) '+ bm.title
-  message.html = """
-%s (%s)<br>%s<br><br>%s
-""" % (bm.title, bm.data, bm.url, bm.comment)
-  message.send()
