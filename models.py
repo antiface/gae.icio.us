@@ -27,7 +27,7 @@ class Bookmarks(ndb.Model):
   tags = ndb.KeyProperty(kind=Tags,repeated=True)
   archived = ndb.BooleanProperty(default=False)
   have_tags = ndb.ComputedProperty(lambda self: bool(self.tags))
-  have_prev = ndb.ComputedProperty(lambda self: bool(self.preview))
+  have_prev = ndb.ComputedProperty(lambda self: bool(self.preview()))
   def other_tags(self):
     q = ndb.gql("SELECT __key__ FROM Tags WHERE user = :1", self.user)
     all_user_tags = [tagk for tagk in q]

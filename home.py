@@ -1,8 +1,9 @@
 import webapp2, jinja2, os, core
-from google.appengine.api import users
+from google.appengine.api import users, mail
 from google.appengine.ext import ndb
 from models import Tags, Bookmarks
 from utils import *
+
 
 def dtf(value, format='%d-%m-%Y %H:%M'):
   return value.strftime(format)
@@ -10,7 +11,6 @@ def dtf(value, format='%d-%m-%Y %H:%M'):
 jinja_environment = jinja2.Environment(
   loader=jinja2.FileSystemLoader('templates'))
 jinja_environment.filters['dtf'] = dtf
-
 
 
 class BaseHandler(webapp2.RequestHandler):
@@ -155,6 +155,7 @@ app = webapp2.WSGIApplication([
   ('/removetag', core.RemoveTag),
   ('/asstag', core.AssignTag),
   ('/archive', core.ArchiveBM),
+  ('/_ah/mail/.+', core.ReceiveMail),
   ], debug=debug)
 
 def main():
