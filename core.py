@@ -17,7 +17,7 @@ class ReceiveMail(RequestHandler):
     bm = Bookmarks()
     bm.url = txtmsg.encode('utf8')
     bm.user = users.User(parseaddr(message.sender)[1])
-    bm.title = (message.subject).decode().encode('utf8')
+    bm.title = (message.subject).decode().encode('utf8') #???
     bm.comment = 'Sent via email'
     bm.put()
     deferred.defer(sendbm, bm)
@@ -26,8 +26,8 @@ class AddBM(RequestHandler):
   @login_required
   def get(self):
     bm = Bookmarks()
-    bm.url = self.request.get('url').encode('utf8').split('?utm_')[0]
-    # bm.url = self.request.get('url').encode('utf8')
+    url = self.request.get('url').encode('utf8')
+    bm.url = url.split('?utm_')[0].split('&feature')[0]
     bm.title = self.request.get('title').encode('utf8')
     bm.comment = self.request.get('comment').encode('utf8')
     bm.user = users.User(str(self.request.get('user')))
