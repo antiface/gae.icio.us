@@ -1,3 +1,6 @@
+#!/usr/local/bin/python
+# -*- coding: utf-8 -*-
+
 from google.appengine.api import users, mail
 
 def login_required(handler_method):

@@ -1,3 +1,6 @@
+#!/usr/local/bin/python
+# -*- coding: utf-8 -*-
+
 import webapp2, jinja2, os, core
 from google.appengine.api import users, mail
 from google.appengine.ext import ndb

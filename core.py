@@ -1,23 +1,26 @@
+#!/usr/local/bin/python
+# -*- coding: utf-8 -*-
+
 from webapp2 import RequestHandler
-from email.utils import parseaddr
+from email import header, utils
 from google.appengine.api import users, mail
 from google.appengine.ext import ndb, deferred
 from models import Tags, Bookmarks
 from utils import *
-
+import base64, logging
 
 class ReceiveMail(RequestHandler):
   def post(self):
     message = mail.InboundEmailMessage(self.request.body)
     texts = message.bodies('text/plain')
-    # title = (message.subject)
     for text in texts:
       txtmsg = ""
       txtmsg = text[1].decode()
     bm = Bookmarks()
-    bm.url = txtmsg.encode('utf8')
-    bm.user = users.User(parseaddr(message.sender)[1])
-    bm.title = (message.subject).decode().encode('utf8') #???
+    url = txtmsg.encode('utf8')
+    bm.url = url.split('?utm_')[0].split('&feature')[0]
+    bm.user = users.User(utils.parseaddr(message.sender)[1])
+    bm.title = header.decode_header(message.subject)[0][0]
     bm.comment = 'Sent via email'
     bm.put()
     deferred.defer(sendbm, bm)
