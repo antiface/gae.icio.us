@@ -6,24 +6,24 @@ from email import header, utils
 from google.appengine.api import users, mail
 from google.appengine.ext import ndb, deferred
 from models import Tags, Bookmarks
-from utils import *
+from myutils import *
 import base64, logging
 
 class ReceiveMail(RequestHandler):
-  def post(self):
+  def post(self):    
     message = mail.InboundEmailMessage(self.request.body)
     texts = message.bodies('text/plain')
     for text in texts:
       txtmsg = ""
       txtmsg = text[1].decode()
-    bm = Bookmarks()
     url = txtmsg.encode('utf8')
+    bm = Bookmarks()
     bm.url = url.split('?utm_')[0].split('&feature')[0]
-    bm.user = users.User(utils.parseaddr(message.sender)[1])
     bm.title = header.decode_header(message.subject)[0][0]
     bm.comment = 'Sent via email'
+    bm.user = users.User(utils.parseaddr(message.sender)[1])
     bm.put()
-    deferred.defer(sendbm, bm)
+    
 
 class AddBM(RequestHandler):
   @login_required
@@ -37,6 +37,7 @@ class AddBM(RequestHandler):
     bm.put()
     deferred.defer(sendbm, bm)
     self.redirect('/edit?bm=%s' % bm.key.id())
+
 
 class DelBM(RequestHandler):
   def get(self):

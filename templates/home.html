@@ -14,17 +14,10 @@
     <dd>
       
     <div class="btn-toolbar">
-      <div class="btn-group">
-        {% if bm.preview() %} 
-        <a class="btn btn-mini btn-inverse" href="/edit?bm={{ bm.key.id() }}">
-          <i class="icon-eye-open icon-white"></i> preview</a>
-        {% else %}
-        <a class="btn btn-mini" href="/edit?bm={{ bm.key.id() }}">
-          <i class="icon-eye-close"> </i> preview</a>
-        {% endif %}
-      </div>
 
       <div class="btn-group">
+        <a class="btn btn-mini" href="/edit?bm={{ bm.key.id() }}">
+          {% if bm.preview() %} <i class="icon-eye-open"></i> {% else %} <i class="icon-edit"> </i>{% endif %} edit</a>
         <a class="btn btn-mini" href="/archive?bm={{ bm.key.id() }}">
         {% if bm.archived %} <i class="icon-flag"></i> inbox</a> {% else %} <i class="icon-check"></i> archive</a> {% endif %}
 
@@ -54,11 +47,6 @@
     </dd>
   </dl>
   <hr>
-  <script>
-    // $("#toggle-{{ bm.key.id() }}").click(function () {
-    // $("#rigo-{{ bm.key.id() }}").toggle();
-    // });
-  </script>
 {% endfor %}
 </div>
 

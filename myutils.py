@@ -12,6 +12,14 @@ def login_required(handler_method):
       handler_method(self)
   return check_login
 
+# def post_bm(bmk, url, title, comment, user):
+#   bm = bmk.get()
+#   bm.url = url
+#   bm.title = title
+#   bm.comment = comment
+#   bm.user = user
+#   bm.put()
+#   deferred.defer(sendbm, bm)
 
 def sendbm(bm):
   message = mail.EmailMessage()
@@ -22,3 +30,5 @@ def sendbm(bm):
 %s (%s)<br>%s<br><br>%s
 """ % (bm.title, bm.data, bm.url, bm.comment)
   message.send()
+
+

@@ -5,7 +5,7 @@ import webapp2, jinja2, os, core
 from google.appengine.api import users, mail
 from google.appengine.ext import ndb
 from models import Tags, Bookmarks
-from utils import *
+from myutils import login_required
 
 
 def dtf(value, format='%d-%m-%Y %H:%M'):
