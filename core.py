@@ -23,19 +23,20 @@ class ReceiveMail(RequestHandler):
     bm.comment = 'Sent via email'
     bm.user = users.User(utils.parseaddr(message.sender)[1])
     bm.put()
-    
+    deferred.defer(sendbm, bm, _target="gaeicious")
 
 class AddBM(RequestHandler):
   @login_required
   def get(self):
     bm = Bookmarks()
-    url = self.request.get('url').encode('utf8')
+    url = self.request.get('url')#.encode('utf8')
     bm.url = url.split('?utm_')[0].split('&feature')[0]
-    bm.title = self.request.get('title').encode('utf8')
-    bm.comment = self.request.get('comment').encode('utf8')
+    bm.title = self.request.get('title')#.encode('utf8')
+    # logging.warning(str(self.request.get('comment')))
+    bm.comment = self.request.get('comment').encode('utf-8')#.encode("utf-8")#.decode('base64').encode('utf8')
     bm.user = users.User(str(self.request.get('user')))
     bm.put()
-    deferred.defer(sendbm, bm)
+    deferred.defer(sendbm, bm, _target="gaeicious")
     self.redirect('/edit?bm=%s' % bm.key.id())
 
 
