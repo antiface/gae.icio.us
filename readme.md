@@ -1,4 +1,4 @@
-try [gaeicious.appspot.com](http://http://gaeicious.appspot.com/)
+try [gaeicious.appspot.com](http://gaeicious.appspot.com/)
 
 - Drag and drop the bookmarklet (the selected text is the comment)
 - Email youself  
