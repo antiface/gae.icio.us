@@ -1,4 +1,4 @@
-try [here](http://box.dinoia.eu)
+try [gaeicious.appspot.com](http://http://gaeicious.appspot.com/)
 
 - Drag and drop the bookmarklet (the selected text is the comment)
 - Email youself  

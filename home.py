@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import webapp2, jinja2, os, core
-from google.appengine.api import users, mail
+from google.appengine.api import users, mail, app_identity
 from google.appengine.ext import ndb
 from models import Tags, Bookmarks
 from myutils import login_required
-
 
 def dtf(value, format='%d-%m-%Y %H:%M'):
   return value.strftime(format)
@@ -40,7 +39,7 @@ javascript:location.href=
       linktext = 'Login'
       nick = 'Welcome'
     values = {      
-      'brand': self.request.host,
+      'brand': app_identity.get_application_id(),
       'bookmarklet': bookmarklet,
       'nick': nick,
       'url': url,

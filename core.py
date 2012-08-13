@@ -32,8 +32,7 @@ class AddBM(RequestHandler):
     url = self.request.get('url')#.encode('utf8')
     bm.url = url.split('?utm_')[0].split('&feature')[0]
     bm.title = self.request.get('title')#.encode('utf8')
-    # logging.warning(str(self.request.get('comment')))
-    bm.comment = self.request.get('comment').encode('utf-8')#.encode("utf-8")#.decode('base64').encode('utf8')
+    bm.comment = self.request.get('comment').encode('utf-8')
     bm.user = users.User(str(self.request.get('user')))
     bm.put()
     deferred.defer(sendbm, bm, _target="gaeicious")
