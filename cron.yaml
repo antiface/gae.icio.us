@@ -1,0 +1,4 @@
+cron:
+- description: check new posts
+  url: /checkfeeds
+  schedule: every 120 minutes

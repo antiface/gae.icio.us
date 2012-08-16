@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+<div class="row-fluid">
+  <label>Add Feed</label>
+  <form action="/feed" method="post"> 
+    <input type="text" class="input span12" name="url" allowBlank="true">
+  </form>
+  <hr>
+</div>
+{% for feed in feeds %}
+<div class="row-fluid">
+  <div class="span1">
+    <a class="btn btn-mini" href="/feed?id={{ feed.key.id() }}" >delete</a>
+  </div>
+  <div class="span11">
+    <p><strong> {{ feed.blog }}</strong> - last update: {{ feed.data|dtf }} <br><a href="{{ feed.root }}" >home</a> {{ feed.feed }}</p>
+  </div>
+</div>
+{% endfor %}
+</div>
+
+{% endblock %}

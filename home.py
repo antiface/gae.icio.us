@@ -1,10 +1,10 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-import webapp2, jinja2, os, core
-from google.appengine.api import users, mail, app_identity
+import webapp2, jinja2, os, core, feedparser, time
+from google.appengine.api import users, mail, app_identity#, urlfetch
 from google.appengine.ext import ndb
-from models import Tags, Bookmarks
+from models import *
 from myutils import login_required
 
 def dtf(value, format='%d-%m-%Y %H:%M'):
@@ -18,6 +18,14 @@ jinja_environment.filters['dtf'] = dtf
 class BaseHandler(webapp2.RequestHandler):
   def utente(self):
     return users.get_current_user()
+  def ui(self):
+    try:
+      return UserInfo.query(UserInfo.user == self.utente()).get()
+    except:
+      ui = UserInfo()
+      ui.user = users.get_current_user()
+      ui.put()
+      return UserInfo.query(UserInfo.user == self.utente()).get()
   def tag_list(self):
     return ndb.gql("""SELECT * FROM Tags
         WHERE user = :1 ORDER BY count DESC""", self.utente())
@@ -53,7 +61,7 @@ javascript:location.href=
 
 class MainPage(BaseHandler):
   def get(self):
-    if self.utente():      
+    if self.utente():
       bms = ndb.gql("""SELECT * FROM Bookmarks 
         WHERE user = :1 AND archived = False 
         ORDER BY data DESC""", self.utente())
@@ -140,24 +148,42 @@ class EditPage(BaseHandler):
     self.redirect('/')
 
 
+class SettingPage(BaseHandler):
+  @login_required
+  def get(self):
+      feeds = Feeds.query(Feeds.user == self.utente())
+      self.generate('setting.html', {'feeds': feeds})
+
+#### Test ####
+class ViewPage(BaseHandler):
+  def get(self):
+    url = "http://www.google.com/reader/public/atom/user/{{id}}/state/com.google/starred"
+    p = feedparser.parse(url)
+    d = p.entries[0]    
+    self.generate('feed.html', {'d': d})
+
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
-  ('/', MainPage),
-  ('/search', SearchPage),
-  ('/refine', RefinePage),
-  ('/notag', NotagPage),
-  ('/previews', PreviewPage),
-  ('/edit', EditPage),  
-  ('/archived', ArchivedPage),
-  ('/submit', core.AddBM),
-  ('/delete', core.DelBM),
-  ('/addtag', core.AddTag),
-  ('/deltag', core.DeleteTag),
-  ('/removetag', core.RemoveTag),
-  ('/asstag', core.AssignTag),
-  ('/archive', core.ArchiveBM),
-  ('/_ah/mail/.+', core.ReceiveMail),
+  ('/',           MainPage),
+  ('/setting',    SettingPage),
+  ('/search',     SearchPage),
+  ('/refine',     RefinePage),
+  ('/notag',      NotagPage),
+  ('/previews',   PreviewPage),
+  ('/edit',       EditPage),  
+  ('/archived',   ArchivedPage),
+  ('/checkfeeds', core.CheckFeeds),
+  ('/submit',     core.AddBM),
+  ('/delete',     core.DelBM),
+  ('/addtag',     core.AddTag),
+  ('/deltag',     core.DeleteTag),
+  ('/removetag',  core.RemoveTag),
+  ('/asstag',     core.AssignTag),
+  ('/archive',    core.ArchiveBM),
+  ('/feed',       core.AddFeed),
+  ('/_ah/mail/.+',core.ReceiveMail),
+  ('/view',       ViewPage),#for tests
   ], debug=debug)
 
 def main():

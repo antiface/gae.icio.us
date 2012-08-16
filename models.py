@@ -4,6 +4,23 @@
 import urlparse
 from google.appengine.ext import ndb
 
+class UserInfo(ndb.Model):
+  user = ndb.UserProperty() 
+  data = ndb.DateTimeProperty(auto_now=True)
+  self = ndb.BooleanProperty(default=False)
+
+class Feeds(ndb.Model):
+  user = ndb.UserProperty() 
+  data = ndb.DateTimeProperty(auto_now=True)
+  feed = ndb.StringProperty()#url
+  blog = ndb.StringProperty()#feed.title
+  root = ndb.StringProperty()#feed.link
+
+  url = ndb.StringProperty()#link
+  title = ndb.StringProperty()#title
+  comment = ndb.TextProperty()#description
+
+
 class Tags(ndb.Model):
   data  = ndb.DateTimeProperty(auto_now=True)
   user  = ndb.UserProperty(required=True)

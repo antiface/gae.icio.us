@@ -17,7 +17,7 @@
 
       <div class="btn-group">
         <a class="btn btn-mini" href="/edit?bm={{ bm.key.id() }}">
-          {% if bm.preview() %} <i class="icon-eye-open"></i> {% else %} <i class="icon-edit"> </i>{% endif %} edit</a>
+        {% if bm.preview() %} <i class="icon-eye-open"></i> {% else %} <i class="icon-edit"> </i>{% endif %} edit</a>
         <a class="btn btn-mini" href="/archive?bm={{ bm.key.id() }}">
         {% if bm.archived %} <i class="icon-flag"></i> inbox</a> {% else %} <i class="icon-check"></i> archive</a> {% endif %}
 

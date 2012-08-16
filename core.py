@@ -3,11 +3,52 @@
 
 from webapp2 import RequestHandler
 from email import header, utils
+from feedparser import parse
 from google.appengine.api import users, mail
 from google.appengine.ext import ndb, deferred
-from models import Tags, Bookmarks
+from models import *
 from myutils import *
-import base64, logging
+
+
+class CheckFeeds(RequestHandler):
+  def get(self):
+    feeds = Feeds.query()
+    for feed in feeds:
+      deferred.defer(pop_feed, feed, _target="gaeicious", _queue="admin")
+
+
+class AddFeed(RequestHandler):
+  def post(self):
+    user = users.get_current_user()
+    url = self.request.get('url')
+    p = parse(url)
+    d = p.entries[0]
+    if user:
+      q = ndb.gql("""SELECT * FROM Feeds
+      WHERE user = :1 AND url = :2""", user, url)
+      if q.get() is None:
+        feed = Feeds()
+        def txn():
+          feed.blog = p.feed.title
+          feed.root = p.feed.link
+          feed.user = user
+          feed.feed = url
+          feed.url  = d.link
+          feed.title = d.title
+          feed.comment = d.description
+          feed.put()
+        ndb.transaction(txn)
+        deferred.defer(new_bm, feed, _queue="fast")
+      else:
+        pass
+      self.redirect(self.request.referer)
+    else:
+      self.redirect('/')
+  def get(self):
+    feed = Feeds.get_by_id(int(self.request.get('id')))
+    feed.key.delete()
+    self.redirect(self.request.referer)
+
 
 class ReceiveMail(RequestHandler):
   def post(self):    
@@ -23,7 +64,7 @@ class ReceiveMail(RequestHandler):
     bm.comment = 'Sent via email'
     bm.user = users.User(utils.parseaddr(message.sender)[1])
     bm.put()
-    deferred.defer(sendbm, bm, _target="gaeicious")
+    deferred.defer(sendbm, bm, _queue="emails")
 
 class AddBM(RequestHandler):
   @login_required
@@ -35,7 +76,7 @@ class AddBM(RequestHandler):
     bm.comment = self.request.get('comment').encode('utf-8')
     bm.user = users.User(str(self.request.get('user')))
     bm.put()
-    deferred.defer(sendbm, bm, _target="gaeicious")
+    deferred.defer(sendbm, bm, _queue="emails")
     self.redirect('/edit?bm=%s' % bm.key.id())
 
 
@@ -105,5 +146,3 @@ class DeleteTag(RequestHandler):
     if users.get_current_user() == tag.user:
       tag.key.delete()
     self.redirect(self.request.referer)
-
-
