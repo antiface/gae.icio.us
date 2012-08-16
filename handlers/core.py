@@ -3,11 +3,11 @@
 
 from webapp2 import RequestHandler
 from email import header, utils
-from feedparser import parse
 from google.appengine.api import users, mail
 from google.appengine.ext import ndb, deferred
-from models import *
-from myutils import *
+from handlers.feedparser import parse
+from handlers.myutils import *
+from handlers.models import *
 
 
 class CheckFeeds(RequestHandler):

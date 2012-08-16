@@ -18,10 +18,11 @@ def login_required(handler_method):
 
 def pop_feed(feed):
   from feedparser import parse
+  last = feed.url
   p = parse(feed.feed)
   e = 0
   d = p.entries[e]
-  while feed.url != d.link:
+  for last != d.link:
     feed.url = d.link
     feed.title = d.title
     feed.comment = d.description

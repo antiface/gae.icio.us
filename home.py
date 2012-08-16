@@ -1,11 +1,13 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-import webapp2, jinja2, os, core, feedparser, time
-from google.appengine.api import users, mail, app_identity#, urlfetch
+import webapp2, jinja2, os
+from google.appengine.api import users, mail, app_identity
 from google.appengine.ext import ndb
-from models import *
-from myutils import login_required
+from handlers.feedparser import parse
+from handlers.myutils import login_required
+from handlers.models import *
+from handlers.core import *
 
 def dtf(value, format='%d-%m-%Y %H:%M'):
   return value.strftime(format)
@@ -157,10 +159,10 @@ class SettingPage(BaseHandler):
 #### Test ####
 class ViewPage(BaseHandler):
   def get(self):
-    url = "http://www.google.com/reader/public/atom/user/{{id}}/state/com.google/starred"
-    p = feedparser.parse(url)
-    d = p.entries[0]    
-    self.generate('feed.html', {'d': d})
+    url = "http://www.google.com/reader/public/atom/user/09422248633387831593/state/com.google/starred"
+    d = parse(url)
+    e = d.entries[0]    
+    self.generate('feed.html', {'d': d, 'e': e})
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
@@ -173,16 +175,16 @@ app = webapp2.WSGIApplication([
   ('/previews',   PreviewPage),
   ('/edit',       EditPage),  
   ('/archived',   ArchivedPage),
-  ('/checkfeeds', core.CheckFeeds),
-  ('/submit',     core.AddBM),
-  ('/delete',     core.DelBM),
-  ('/addtag',     core.AddTag),
-  ('/deltag',     core.DeleteTag),
-  ('/removetag',  core.RemoveTag),
-  ('/asstag',     core.AssignTag),
-  ('/archive',    core.ArchiveBM),
-  ('/feed',       core.AddFeed),
-  ('/_ah/mail/.+',core.ReceiveMail),
+  ('/checkfeeds', CheckFeeds),
+  ('/submit',     AddBM),
+  ('/delete',     DelBM),
+  ('/addtag',     AddTag),
+  ('/deltag',     DeleteTag),
+  ('/removetag',  RemoveTag),
+  ('/asstag',     AssignTag),
+  ('/archive',    ArchiveBM),
+  ('/feed',       AddFeed),
+  ('/_ah/mail/.+',ReceiveMail),
   ('/view',       ViewPage),#for tests
   ], debug=debug)
 
