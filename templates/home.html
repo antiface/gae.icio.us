@@ -8,18 +8,20 @@
 
 <div class="span9">
   {% for bm in bms %}
-  <dl> 
-    <dt> <i class="icon-bookmark"></i> <a href="{{ bm.url }}">{{ bm.title }}</a> </dt>
-    <dd> {{ bm.comment }} </dd>
+  <dl class="well"> 
+    <dt> <i class="icon-bookmark"></i> <a href="{{ bm.url }}" target="_blank">{{ bm.title }}</a> </dt>
     <dd>
       
     <div class="btn-toolbar">
 
       <div class="btn-group">
+        <a class="btn btn-mini" href="/star?bm={{ bm.key.id() }}">
+        {% if bm.starred %} <i class="icon-star"></i></a> {% else %} <i class="icon-star-empty"></i></a> {% endif %}
         <a class="btn btn-mini" href="/edit?bm={{ bm.key.id() }}">
         {% if bm.preview() %} <i class="icon-eye-open"></i> {% else %} <i class="icon-edit"> </i>{% endif %} edit</a>
         <a class="btn btn-mini" href="/archive?bm={{ bm.key.id() }}">
         {% if bm.archived %} <i class="icon-flag"></i> inbox</a> {% else %} <i class="icon-check"></i> archive</a> {% endif %}
+
 
             <div class="modal fade" id="{{ bm.key.id() }}">
               <div class="modal-header">
@@ -45,8 +47,16 @@
       {% endfor %}
     </div>      
     </dd>
+    <dd> {{ bm.comment }} </dd>
+    <hr>
+    <dd> 
+      {% for tag in bm.other_tags() %} 
+      <a href="/asstag?bm={{ bm.key.id() }}&tag={{ tag.id() }}" > {{ tag.get().name }}</a>
+      {% endfor %} 
+    </dd>
+    
   </dl>
-  <hr>
+  <!-- <hr> -->
 {% endfor %}
 </div>
 

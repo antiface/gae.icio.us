@@ -82,6 +82,15 @@ class ArchivedPage(BaseHandler):
       self.generate('home.html', {'bms'     : bms, 
                                   'tag_list': self.tag_list() })
 
+class StarredPage(BaseHandler):
+  @login_required
+  def get(self):
+      bms = ndb.gql("""SELECT * FROM Bookmarks
+        WHERE user = :1 AND starred = True 
+        ORDER BY data DESC LIMIT 25""", self.utente())
+      self.generate('home.html', {'bms'     : bms, 
+                                  'tag_list': self.tag_list() })
+
 
 class NotagPage(BaseHandler):
   @login_required
@@ -159,7 +168,7 @@ class SettingPage(BaseHandler):
 #### Test ####
 class ViewPage(BaseHandler):
   def get(self):
-    url = "http://www.google.com/reader/public/atom/user/09422248633387831593/state/com.google/starred"
+    url = "http://www.google.com/reader/public/atom/user/09422248633387831593/state/com.google/starred?n=10"
     d = parse(url)
     e = d.entries[0]    
     self.generate('feed.html', {'d': d, 'e': e})
@@ -175,6 +184,7 @@ app = webapp2.WSGIApplication([
   ('/previews',   PreviewPage),
   ('/edit',       EditPage),  
   ('/archived',   ArchivedPage),
+  ('/starred',    StarredPage),
   ('/checkfeeds', CheckFeeds),
   ('/submit',     AddBM),
   ('/delete',     DelBM),
@@ -183,6 +193,7 @@ app = webapp2.WSGIApplication([
   ('/removetag',  RemoveTag),
   ('/asstag',     AssignTag),
   ('/archive',    ArchiveBM),
+  ('/star',       StarBM),
   ('/feed',       AddFeed),
   ('/_ah/mail/.+',ReceiveMail),
   ('/view',       ViewPage),#for tests

@@ -18,16 +18,17 @@ def login_required(handler_method):
 
 def pop_feed(feed):
   from feedparser import parse
-  last = feed.url
   p = parse(feed.feed)
   e = 0
   d = p.entries[e]
-  for last != d.link:
+  q = Bookmarks.query(Bookmarks.url == d.link)
+  while q.get() is None and e < 5:
     feed.url = d.link
     feed.title = d.title
     feed.comment = d.description
     feed.put()
     e = e + 1
+    d = p.entries[e]
     deferred.defer(new_bm, feed, _target="gaeicious", _queue="admin")
 
 def new_bm(feed):

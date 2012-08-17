@@ -102,6 +102,17 @@ class ArchiveBM(RequestHandler):
       bm.put()
     self.redirect(self.request.referer)
 
+class StarBM(RequestHandler):
+  def get(self):
+    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+    if users.get_current_user() == bm.user:
+      if bm.starred == False:
+        bm.starred = True
+      else:
+        bm.starred = False
+      bm.put()
+    self.redirect(self.request.referer)
+
 class AssignTag(RequestHandler):
   def get(self):
     bm  = Bookmarks.get_by_id(int(self.request.get('bm')))
