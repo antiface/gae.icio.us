@@ -7,7 +7,7 @@ from google.appengine.ext import ndb
 class UserInfo(ndb.Model):
   user = ndb.UserProperty() 
   data = ndb.DateTimeProperty(auto_now=True)
-  self = ndb.BooleanProperty(default=False)
+  mys = ndb.BooleanProperty(default=False)
 
 class Feeds(ndb.Model):
   user = ndb.UserProperty() 
@@ -40,7 +40,7 @@ class Tags(ndb.Model):
 
 class Bookmarks(ndb.Model):
   data = ndb.DateTimeProperty(auto_now=True)
-  user = ndb.UserProperty()
+  user = ndb.UserProperty(required=True)
   url = ndb.StringProperty()
   title = ndb.StringProperty()
   comment = ndb.TextProperty()
@@ -50,8 +50,8 @@ class Bookmarks(ndb.Model):
   have_tags = ndb.ComputedProperty(lambda self: bool(self.tags))
   have_prev = ndb.ComputedProperty(lambda self: bool(self.preview()))
   def other_tags(self):
-    q = ndb.gql("SELECT __key__ FROM Tags WHERE user = :1", self.user)
-    all_user_tags = [tagk for tagk in q]
+    q = ndb.gql("SELECT name FROM Tags WHERE user = :1", self.user)
+    all_user_tags = [tagk.key for tagk in q]
     for tagk in self.tags:
       all_user_tags.remove(tagk)
     return all_user_tags
@@ -63,3 +63,5 @@ class Bookmarks(ndb.Model):
       return video
     except:
       return False
+  def ha_mys(self):
+    return UserInfo.query(UserInfo.user == self.user).get().mys

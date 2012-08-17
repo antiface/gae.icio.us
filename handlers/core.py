@@ -15,7 +15,18 @@ class CheckFeeds(RequestHandler):
     feeds = Feeds.query()
     for feed in feeds:
       deferred.defer(pop_feed, feed, _target="gaeicious", _queue="admin")
+    self.redirect('/')
 
+
+class SetMys(RequestHandler):
+  def get(self):
+    ui = UserInfo.query(UserInfo.user == users.get_current_user()).get()
+    if ui.mys == False:
+      ui.mys = True
+    else:
+      ui.mys = False
+    ui.put()
+    self.redirect(self.request.referer)
 
 class AddFeed(RequestHandler):
   def post(self):
@@ -64,7 +75,8 @@ class ReceiveMail(RequestHandler):
     bm.comment = 'Sent via email'
     bm.user = users.User(utils.parseaddr(message.sender)[1])
     bm.put()
-    deferred.defer(sendbm, bm, _queue="emails")
+    if bm.ha_mys():
+      deferred.defer(sendbm, bm, _queue="emails")
 
 class AddBM(RequestHandler):
   @login_required
@@ -76,7 +88,8 @@ class AddBM(RequestHandler):
     bm.comment = self.request.get('comment').encode('utf-8')
     bm.user = users.User(str(self.request.get('user')))
     bm.put()
-    deferred.defer(sendbm, bm, _queue="emails")
+    if bm.ha_mys():
+      deferred.defer(sendbm, bm, _queue="emails")
     self.redirect('/edit?bm=%s' % bm.key.id())
 
 

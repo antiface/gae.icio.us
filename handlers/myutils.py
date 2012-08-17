@@ -33,12 +33,15 @@ def pop_feed(feed):
 
 def new_bm(feed):
   bm = Bookmarks()
-  bm.url = feed.url
-  bm.title = feed.title
-  bm.comment = feed.comment
-  bm.user = feed.user
-  bm.put()
-  deferred.defer(sendbm, bm, _target="gaeicious", _queue="emails")
+  def txn():    
+    bm.url = feed.url.split('?utm_')[0].split('&feature')[0]
+    bm.title = feed.title.encode('utf-8')
+    bm.comment = feed.comment.encode('utf-8')
+    bm.user = feed.user
+    bm.put()
+  ndb.transaction(txn)  
+  if bm.ha_mys():
+    deferred.defer(sendbm, bm, _target="gaeicious", _queue="emails")
 
 
 def sendbm(bm):

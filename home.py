@@ -21,13 +21,14 @@ class BaseHandler(webapp2.RequestHandler):
   def utente(self):
     return users.get_current_user()
   def ui(self):
-    try:
-      return UserInfo.query(UserInfo.user == self.utente()).get()
-    except:
+    q = UserInfo.query(UserInfo.user == users.get_current_user())
+    if q.get():
+      return q.get()
+    else:
       ui = UserInfo()
       ui.user = users.get_current_user()
       ui.put()
-      return UserInfo.query(UserInfo.user == self.utente()).get()
+      return ui
   def tag_list(self):
     return ndb.gql("""SELECT * FROM Tags
         WHERE user = :1 ORDER BY count DESC""", self.utente())
@@ -43,6 +44,7 @@ javascript:location.href=
       url = users.create_logout_url("/")
       linktext = 'Logout'
       nick = self.utente().email()
+      ui = self.ui()
     else:
       bookmarklet = '%s' % self.request.host_url
       url = users.create_login_url(self.request.uri)
@@ -55,6 +57,7 @@ javascript:location.href=
       'url': url,
       'linktext': linktext,
       'user': self.utente(),
+      'ui': self.ui(),
       }
     values.update(template_values)
     template = jinja_environment.get_template(template_name)
@@ -159,7 +162,7 @@ class EditPage(BaseHandler):
     self.redirect('/')
 
 
-class SettingPage(BaseHandler):
+class SubsPage(BaseHandler):
   @login_required
   def get(self):
       feeds = Feeds.query(Feeds.user == self.utente())
@@ -173,11 +176,12 @@ class ViewPage(BaseHandler):
     e = d.entries[0]    
     self.generate('feed.html', {'d': d, 'e': e})
 
+
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
   ('/',           MainPage),
-  ('/setting',    SettingPage),
+  ('/subs',       SubsPage),
   ('/search',     SearchPage),
   ('/refine',     RefinePage),
   ('/notag',      NotagPage),
@@ -195,6 +199,7 @@ app = webapp2.WSGIApplication([
   ('/archive',    ArchiveBM),
   ('/star',       StarBM),
   ('/feed',       AddFeed),
+  ('/setmys',     SetMys),
   ('/_ah/mail/.+',ReceiveMail),
   ('/view',       ViewPage),#for tests
   ], debug=debug)

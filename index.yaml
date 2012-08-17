@@ -63,3 +63,8 @@ indexes:
   - name: user
   - name: count
     direction: desc
+
+- kind: Tags
+  properties:
+  - name: user
+  - name: name

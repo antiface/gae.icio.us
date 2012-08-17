@@ -15,7 +15,7 @@
     <a class="btn btn-mini" href="/feed?id={{ feed.key.id() }}" >delete</a>
   </div>
   <div class="span11">
-    <p><strong> {{ feed.blog }}</strong> - last update: {{ feed.data|dtf }} <br><a href="{{ feed.root }}" >home</a> {{ feed.feed }}</p>
+    <p><a href="{{ feed.root }}" ><strong> {{ feed.blog }}</strong></a> - last update: {{ feed.data|dtf }}<br>  {{ feed.feed }}</p>
   </div>
 </div>
 {% endfor %}
