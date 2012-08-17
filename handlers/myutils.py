@@ -15,7 +15,13 @@ def login_required(handler_method):
       handler_method(self)
   return check_login
 
-
+def decr_tags(tag):
+  def txn():
+    t = tag.get()
+    t.count -= 1
+    t.put() 
+  ndb.transaction(txn)
+  
 def pop_feed(feed):
   from feedparser import parse
   p = parse(feed.feed)

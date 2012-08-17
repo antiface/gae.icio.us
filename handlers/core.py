@@ -82,15 +82,18 @@ class AddBM(RequestHandler):
   @login_required
   def get(self):
     bm = Bookmarks()
-    url = self.request.get('url')#.encode('utf8')
-    bm.url = url.split('?utm_')[0].split('&feature')[0]
-    bm.title = self.request.get('title')#.encode('utf8')
-    bm.comment = self.request.get('comment').encode('utf-8')
-    bm.user = users.User(str(self.request.get('user')))
-    bm.put()
+    def txn():
+      url = self.request.get('url')#.encode('utf8')
+      bm.url = url.split('?utm_')[0].split('&feature')[0]
+      bm.title = self.request.get('title')#.encode('utf8')
+      bm.comment = self.request.get('comment').encode('utf-8')
+      bm.user = users.User(str(self.request.get('user')))
+      bm.put()
+    ndb.transaction(txn)
     if bm.ha_mys():
       deferred.defer(sendbm, bm, _queue="emails")
-    self.redirect('/edit?bm=%s' % bm.key.id())
+    self.redirect('/')
+    # self.redirect('/edit?bm=%s' % bm.key.id())
 
 
 class DelBM(RequestHandler):
@@ -98,11 +101,10 @@ class DelBM(RequestHandler):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     if users.get_current_user() == bm.user:
       for tag in bm.tags:
-        t = tag.get()
-        t.count -= 1
-        t.put()        
+        deferred.defer(decr_tags, tag, _queue="fast")
       bm.key.delete()
     self.redirect(self.request.referer)
+
 
 class ArchiveBM(RequestHandler):
   def get(self):
