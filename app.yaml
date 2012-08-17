@@ -26,7 +26,7 @@ handlers:
   upload: static/favicon\.ico
   mime_type: image/x-icon
 
-- url: /_ah/mail/.+ 
+- url: /_ah/mail/post@.*
   script: home.app
   login: admin
 

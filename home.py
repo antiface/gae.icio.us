@@ -200,8 +200,8 @@ app = webapp2.WSGIApplication([
   ('/star',       StarBM),
   ('/feed',       AddFeed),
   ('/setmys',     SetMys),
-  ('/_ah/mail/.+',ReceiveMail),
   ('/view',       ViewPage),#for tests
+  ('/_ah/mail/post@.*',ReceiveMail),
   ], debug=debug)
 
 def main():

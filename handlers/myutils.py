@@ -21,7 +21,7 @@ def decr_tags(tag):
     t.count -= 1
     t.put() 
   ndb.transaction(txn)
-  
+
 def pop_feed(feed):
   from feedparser import parse
   p = parse(feed.feed)
@@ -52,6 +52,7 @@ def new_bm(feed):
 
 def sendbm(bm):
   message = mail.EmailMessage()
+  message.sender = 'action@' + "%s" % app_identity.get_application_id() + '.appspotmail.com'
   message.sender = bm.user.email()
   message.to = bm.user.email()
   message.subject =  "(%s) %s" % (app_identity.get_application_id(), bm.title)
