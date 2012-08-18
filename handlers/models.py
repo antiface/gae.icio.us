@@ -8,6 +8,11 @@ class UserInfo(ndb.Model):
   user = ndb.UserProperty() 
   data = ndb.DateTimeProperty(auto_now=True)
   mys = ndb.BooleanProperty(default=False)
+  @property
+  def tag_list(self):
+    return ndb.gql("""SELECT * FROM Tags
+      WHERE user = :1 ORDER BY count DESC""", self.user)
+
 
 class Feeds(ndb.Model):
   user = ndb.UserProperty() 
@@ -26,9 +31,11 @@ class Tags(ndb.Model):
   user  = ndb.UserProperty(required=True)
   name  = ndb.StringProperty()
   count = ndb.IntegerProperty(default=0)
+  @property
   def bm_set(self):
     return ndb.gql("""SELECT * FROM Bookmarks
       WHERE tags = :1 ORDER BY data DESC""", self.key)
+  @property
   def refine_set(self):
     other = []
     for bm in self.bm_set():
@@ -49,12 +56,15 @@ class Bookmarks(ndb.Model):
   starred = ndb.BooleanProperty(default=False)
   have_tags = ndb.ComputedProperty(lambda self: bool(self.tags))
   have_prev = ndb.ComputedProperty(lambda self: bool(self.preview()))
+
+  @property
   def other_tags(self):
     q = ndb.gql("SELECT name FROM Tags WHERE user = :1", self.user)
     all_user_tags = [tagk.key for tagk in q]
     for tagk in self.tags:
       all_user_tags.remove(tagk)
     return all_user_tags
+
   def preview(self):
     url_data = urlparse.urlparse(self.url)
     query = urlparse.parse_qs(url_data.query)
@@ -63,5 +73,6 @@ class Bookmarks(ndb.Model):
       return video
     except:
       return False
+
   def ha_mys(self):
     return UserInfo.query(UserInfo.user == self.user).get().mys

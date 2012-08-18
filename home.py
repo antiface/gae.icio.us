@@ -18,8 +18,6 @@ jinja_environment.filters['dtf'] = dtf
 
 
 class BaseHandler(webapp2.RequestHandler):
-  def utente(self):
-    return users.get_current_user()
   def ui(self):
     q = UserInfo.query(UserInfo.user == users.get_current_user())
     if q.get():
@@ -29,21 +27,19 @@ class BaseHandler(webapp2.RequestHandler):
       ui.user = users.get_current_user()
       ui.put()
       return ui
-  def tag_list(self):
-    return ndb.gql("""SELECT * FROM Tags
-        WHERE user = :1 ORDER BY count DESC""", self.utente())
+    
   def generate(self, template_name, template_values={}):
-    if self.utente():
+    if self.ui().user:
       bookmarklet = """
 javascript:location.href=
 '%s/submit?url='+encodeURIComponent(location.href)+
 '&title='+encodeURIComponent(document.title)+
 '&user='+'%s'+
 '&comment='+document.getSelection().toString()
-""" % (self.request.host_url, self.utente().email())
+""" % (self.request.host_url, self.ui().user.email())
       url = users.create_logout_url("/")
       linktext = 'Logout'
-      nick = self.utente().email()
+      nick = self.ui().user.email()
       ui = self.ui()
     else:
       bookmarklet = '%s' % self.request.host_url
@@ -56,7 +52,7 @@ javascript:location.href=
       'nick': nick,
       'url': url,
       'linktext': linktext,
-      'user': self.utente(),
+      'user': self.ui().user,
       'ui': self.ui(),
       }
     values.update(template_values)
@@ -66,12 +62,11 @@ javascript:location.href=
 
 class MainPage(BaseHandler):
   def get(self):
-    if self.utente():
+    if self.ui().user:
       bms = ndb.gql("""SELECT * FROM Bookmarks 
         WHERE user = :1 AND archived = False 
-        ORDER BY data DESC""", self.utente())
-      self.generate('home.html', {'bms': bms,
-                                  'tag_list': self.tag_list() })
+        ORDER BY data DESC LIMIT 10""", self.ui().user)
+      self.generate('home.html', {'bms': bms })
     else:
       self.generate('hero.html', {})
 
@@ -81,18 +76,16 @@ class ArchivedPage(BaseHandler):
   def get(self):
       bms = ndb.gql("""SELECT * FROM Bookmarks
         WHERE user = :1 AND archived = True 
-        ORDER BY data DESC LIMIT 25""", self.utente())
-      self.generate('home.html', {'bms'     : bms, 
-                                  'tag_list': self.tag_list() })
+        ORDER BY data DESC LIMIT 10""", self.ui().user)
+      self.generate('home.html', {'bms' : bms })
 
 class StarredPage(BaseHandler):
   @login_required
   def get(self):
       bms = ndb.gql("""SELECT * FROM Bookmarks
         WHERE user = :1 AND starred = True 
-        ORDER BY data DESC LIMIT 25""", self.utente())
-      self.generate('home.html', {'bms'     : bms, 
-                                  'tag_list': self.tag_list() })
+        ORDER BY data DESC LIMIT 10""", self.ui().user)
+      self.generate('home.html', {'bms' : bms })
 
 
 class NotagPage(BaseHandler):
@@ -100,9 +93,8 @@ class NotagPage(BaseHandler):
   def get(self):
       bms = ndb.gql("""SELECT * FROM Bookmarks
         WHERE user = :1 AND have_tags = False
-        ORDER BY data DESC""", self.utente())
-      self.generate('home.html', {'bms'     : bms, 
-                                  'tag_list': self.tag_list() })
+        ORDER BY data DESC LIMIT 10""", self.ui().user)
+      self.generate('home.html', {'bms' : bms })
 
 
 class PreviewPage(BaseHandler):
@@ -110,9 +102,8 @@ class PreviewPage(BaseHandler):
   def get(self):
       bms = ndb.gql("""SELECT * FROM Bookmarks
         WHERE user = :1 AND have_prev = True
-        ORDER BY data DESC""", self.utente())
-      self.generate('home.html', {'bms'     : bms, 
-                                  'tag_list': self.tag_list() })
+        ORDER BY data DESC LIMIT 10""", self.ui().user)
+      self.generate('home.html', {'bms' : bms })
 
 
 class SearchPage(BaseHandler):
@@ -121,13 +112,13 @@ class SearchPage(BaseHandler):
     tag_name = self.request.get('tag')
     tag_obj = ndb.gql("""SELECT * FROM Tags 
       WHERE user = :1 AND name = :2 
-      ORDER BY data DESC""", self.utente(), tag_name).get()
+      ORDER BY data DESC LIMIT 10""", self.ui().user, tag_name).get()
     if tag_obj.count == 0:
       self.redirect('/')
     else:
       self.generate('home.html', {'tag_obj':  tag_obj,
-                                  'bms':      tag_obj.bm_set(),
-                                  'tag_list': tag_obj.refine_set() })        
+                                  'bms':      tag_obj.bm_set,
+                                  })        
 
 
 class RefinePage(BaseHandler):
@@ -136,25 +127,25 @@ class RefinePage(BaseHandler):
     tag_name = self.request.get('tag')
     refine = self.request.get('refine')
     tag1 = ndb.gql("""SELECT __key__ FROM Tags 
-      WHERE user = :1 AND name = :2""", self.utente(), tag_name).get()
+      WHERE user = :1 AND name = :2""", self.ui().user, tag_name).get()
     tag2 = ndb.gql("""SELECT __key__ FROM Tags 
-      WHERE user = :1 AND name = :2""", self.utente(), refine).get()
+      WHERE user = :1 AND name = :2""", self.ui().user, refine).get()
     bms = ndb.gql("""SELECT * FROM Bookmarks 
       WHERE user = :1 AND tags = :2 AND tags = :3
-      ORDER BY data DESC""", self.utente(), tag1, tag2)
+      ORDER BY data DESC""", self.ui().user, tag1, tag2)
     self.generate('home.html', {'bms': bms, 'tag_obj': None})
 
 
 class EditPage(BaseHandler):
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    if self.utente() == bm.user:      
+    if self.ui().user == bm.user:      
       self.generate('edit.html', {'bm': bm})
     else:
       self.redirect('/')
   def post(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    if self.utente() == bm.user:
+    if self.ui().user == bm.user:
       bm.url = self.request.get('url').encode('utf8')
       bm.title = self.request.get('title').encode('utf8')
       bm.comment = self.request.get('comment').encode('utf8')
@@ -165,7 +156,7 @@ class EditPage(BaseHandler):
 class SubsPage(BaseHandler):
   @login_required
   def get(self):
-      feeds = Feeds.query(Feeds.user == self.utente())
+      feeds = Feeds.query(Feeds.user == self.ui().user)
       self.generate('setting.html', {'feeds': feeds})
 
 #### Test ####

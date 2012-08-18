@@ -99,11 +99,11 @@ class AddBM(RequestHandler):
 class DelBM(RequestHandler):
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    if users.get_current_user() == bm.user:
+    if users.get_current_user() == bm.user:      
+      bm.key.delete()
+      self.redirect(self.request.referer)
       for tag in bm.tags:
         deferred.defer(decr_tags, tag, _queue="fast")
-      bm.key.delete()
-    self.redirect(self.request.referer)
 
 
 class ArchiveBM(RequestHandler):

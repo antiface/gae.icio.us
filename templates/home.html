@@ -50,7 +50,7 @@
     <dd> {{ bm.comment }} </dd>
     <hr>
     <dd> 
-      {% for tag in bm.other_tags() %} 
+      {% for tag in bm.other_tags %} 
       <a href="/asstag?bm={{ bm.key.id() }}&tag={{ tag.id() }}" > {{ tag.get().name }}</a>
       {% endfor %} 
     </dd>

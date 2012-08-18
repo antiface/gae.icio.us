@@ -13,12 +13,9 @@
       <li class="nav-header"><i class="icon-filter"></i> Refine the search<li>
       {% endif %}
 
-      {% for tag in tag_list %}
-        {% if tag_obj %}
-        <li>            
-          <a href="/refine?tag={{ tag_obj.name }}&refine={{ tag.get().name }}"> {{ tag.get().name }} </a>
-        </li>          
-        {% else %}
+        {% if tag_obj is none %}
+        {% elif not tag_obj %}
+        {% for tag in ui.tag_list %}
         <li>          
           {% if tag.count == 0 %}
           <a href="/deltag?tag={{ tag.key.id() }}"> ({{ tag.count }})  {{ tag.name }}
@@ -28,9 +25,14 @@
           {% endif %}
           </a> 
         </li>
+        {% endfor %}        
+        {% else %}
+        {% for tag in ui.tag_list %}
+        <li>            
+          <a href="/refine?tag={{ tag_obj.name }}&refine={{ tag.name }}"> {{ tag.name }} </a>
+        </li> 
+        {% endfor %}        
         {% endif %}
-      {% endfor %}
-
     </ul>
   </div>
 </div>
