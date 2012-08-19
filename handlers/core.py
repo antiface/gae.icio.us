@@ -10,11 +10,16 @@ from handlers.myutils import *
 from handlers.models import *
 
 
+
+class GetComment(RequestHandler):
+  def get(self):
+    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+    self.response.write(bm.comment)
+
 class CheckFeeds(RequestHandler):
   def get(self):
-    feeds = Feeds.query()
-    for feed in feeds:
-      deferred.defer(pop_feed, feed, _target="gaeicious", _queue="admin")
+    for feed in Feeds.query():
+      deferred.defer(pop_feed, feed, _target="gaeicious", _queue="admin")    
     self.redirect('/')
 
 
@@ -70,11 +75,13 @@ class ReceiveMail(RequestHandler):
       txtmsg = text[1].decode()
     url = txtmsg.encode('utf8')
     bm = Bookmarks()
+    bm.original = url
     bm.url = url.split('?utm_')[0].split('&feature')[0]
     bm.title = header.decode_header(message.subject)[0][0]
     bm.comment = 'Sent via email'
     bm.user = users.User(utils.parseaddr(message.sender)[1])
     bm.put()
+    deferred.defer(preview, bm, _queue="admin")
     if bm.ha_mys():
       deferred.defer(sendbm, bm, _queue="emails")
 
@@ -84,16 +91,31 @@ class AddBM(RequestHandler):
     bm = Bookmarks()
     def txn():
       url = self.request.get('url')#.encode('utf8')
+      bm.original = url
       bm.url = url.split('?utm_')[0].split('&feature')[0]
       bm.title = self.request.get('title')#.encode('utf8')
       bm.comment = self.request.get('comment').encode('utf-8')
       bm.user = users.User(str(self.request.get('user')))
       bm.put()
     ndb.transaction(txn)
+    deferred.defer(preview, bm, _queue="admin")
     if bm.ha_mys():
       deferred.defer(sendbm, bm, _queue="emails")
     self.redirect('/')
     # self.redirect('/edit?bm=%s' % bm.key.id())
+
+
+class TrashBM(RequestHandler):
+  def get(self):
+    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+    if users.get_current_user() == bm.user:
+      if bm.trashed == False:
+        bm.trashed = True
+        bm.archived = False
+      else:
+        bm.trashed = False
+      bm.put()
+    self.redirect(self.request.referer)
 
 
 class DelBM(RequestHandler):

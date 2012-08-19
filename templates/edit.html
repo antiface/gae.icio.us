@@ -1,49 +1,32 @@
-{% extends "base.html" %}
-{% block title %}{{ bm.title }}{% endblock %}
-{% block content %}
-
-<div class="container">
-  <div class="row-fluid">
-
-    <div class="span5 well ">
-      <label>Tags</label> 
-      <div class="btn-toolbar">
-      {% for tag in bm.tags %}      
-        <div class="btn-group">          
-          <a class="btn btn-mini" href="/search?tag={{ tag.get().name }}"><i class="icon-tag"></i> {{ tag.get().name }}</a>
-          <a class="btn btn-mini" href="/removetag?bm={{ bm.key.id() }}&tag={{ tag.id() }}"><i class="icon-remove"></i></a>
-        </div>
-      {% endfor %}
+<hr>
+<form class="form-horizontal" action="/edit" id="save-{{ bm.key.id() }}" >
+  <fieldset>
+    <div class="control-group hide">
+      <label class="control-label" for="bm">Title</label>
+      <div class="controls">
+        <input type="number" class="span6" name="bm" value="{{ bm.key.id() }}">
       </div>
-      
-      <form class="form-horizontal" action="/edit?bm={{ bm.key.id() }}" method="post">
-        <fieldset>
-            <label>Title</label> <input type="text" class="span12" name="title" value="{{ bm.title }}">
-            <label>Url</label> <input type="text" class="span12" name="url" value="{{ bm.url }}">
-            <label>Comment</label><textarea class="span12" rows="5" name="comment" >{{ bm.comment }}</textarea>
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary pull-right">Save changes</button>
-          </div>
-        </fieldset>
-      </form>
-
-      <label>Your tag cloud (click to add)</label> 
-      {% for tag in bm.other_tags %}
-      <a href="/asstag?bm={{ bm.key.id() }}&tag={{ tag.id() }}" > {{ tag.get().name }}</a>
-      {% endfor %}
     </div>
-
-    <div class="span7 well">
-      <h3>Preview</h3>
-      {% if bm.preview() %}        
-      <iframe width="500" height="375" src="http://www.youtube.com/embed/{{ bm.preview() }}?rel=0" frameborder="0" allowfullscreen></iframe>
-      {% else %}
-      <p></i> No preview (only youtube url)</p>
-      {% endif %}
-      <h3>Share</h3>
-      {% include "tweet.html" %}
+    <div class="control-group">
+      <label class="control-label" for="Title">Title</label>
+      <div class="controls">
+        <input type="text" class="span6" name="title" value="{{ bm.title }}">
+      </div>
     </div>
-
-  </div>
-</div>
-{% endblock %}
+    <div class="control-group">
+      <label class="control-label" for="Url">Url</label>
+      <div class="controls">
+        <input type="text" class="span6" name="url" value="{{ bm.url }}">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="comment">Comment</label>
+      <div class="controls">
+        <textarea class="span6" rows="10" name="comment" >{{ bm.comment }}</textarea></label>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" >Save changes</button>
+    </div>
+  </fieldset>
+</form>

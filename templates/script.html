@@ -1,0 +1,96 @@
+<script type="text/javascript">
+
+// $('#save-{{ bm.key.id() }}').submit(function() { // catch the form's submit event
+//   // event.preventDefault(); 
+//   $.ajax({ // create an AJAX call...
+//     // type: $(this).attr('method'), // GET or POST
+//     url: "/edit", // the file to call
+//     data: $(this).serialize(), // get the form data
+//     success: function(html) { // on success..
+//       $('#row-{{ bm.key.id() }}').html(html); // update the DIV
+//     }
+//   });
+// })
+
+$("#tags-{{ bm.key.id() }}").toggle(
+  function() {
+    $().button('toggle');
+    $.ajax({
+      url: "/gettags",
+      data: { bm: "{{ bm.key.id() }}" },
+      success: function(html) {
+        $("#comment-{{ bm.key.id() }}").html(html);
+      }
+    });
+    $.button('toggle');
+  },
+  function() {
+    $("#comment-{{ bm.key.id() }}").html('');
+    $.button('toggle');
+  }
+)
+
+$("#edit-{{ bm.key.id() }}").toggle(
+  function() {    
+    $.ajax({
+      url: "/getedit",
+      data: { bm: "{{ bm.key.id() }}" },
+      success: function(html) {
+        $("#comment-{{ bm.key.id() }}").html(html);
+      }
+    });
+    $.button('toggle');
+  },
+  function() {
+    $("#comment-{{ bm.key.id() }}").html('');
+    $.button('toggle');
+  }
+)
+
+$("#prev-{{ bm.key.id() }}").toggle(  
+  function() {
+    $().button('toggle');
+    $.ajax({
+      url: "/getcomment",
+      data: { bm: "{{ bm.key.id() }}" },
+      success: function(html) {
+        $("#comment-{{ bm.key.id() }}").html(html);
+      }
+    });
+    $.button('toggle');
+  },
+  function() {
+    $("#comment-{{ bm.key.id() }}").html('');
+    $.button('toggle');
+  }
+)
+
+$("#arch-{{ bm.key.id() }}").click(function() {
+  $.ajax({
+    url: "/archive",
+    data: { bm: "{{ bm.key.id() }}" },
+    success: function() {
+      $("#row-{{ bm.key.id() }}").addClass('hide');
+    },
+  });
+})
+
+$("#trash-{{ bm.key.id() }}").click(function() {
+  $.ajax({
+    url: "/trash",
+    data: { bm: "{{ bm.key.id() }}" },
+    success: function() {
+      $("#row-{{ bm.key.id() }}").addClass('hide');
+    },
+  });
+})
+
+$("#tagcloud").toggle(function() {
+  $("#cloud").removeClass('hide');
+  }, function() {
+  $("#cloud").addClass('hide');
+  });
+
+
+</script>
+

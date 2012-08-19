@@ -1,4 +1,3 @@
-# application: box-dinoia
 application: gaeicious
 version: 1
 runtime: python27

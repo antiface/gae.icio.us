@@ -21,6 +21,7 @@ class Feeds(ndb.Model):
   blog = ndb.StringProperty()#feed.title
   root = ndb.StringProperty()#feed.link
 
+  original = ndb.StringProperty()#link
   url = ndb.StringProperty()#link
   title = ndb.StringProperty()#title
   comment = ndb.TextProperty()#description
@@ -48,12 +49,14 @@ class Tags(ndb.Model):
 class Bookmarks(ndb.Model):
   data = ndb.DateTimeProperty(auto_now=True)
   user = ndb.UserProperty(required=True)
+  original = ndb.StringProperty()
   url = ndb.StringProperty()
   title = ndb.StringProperty()
   comment = ndb.TextProperty()
   tags = ndb.KeyProperty(kind=Tags,repeated=True)
   archived = ndb.BooleanProperty(default=False)
   starred = ndb.BooleanProperty(default=False)
+  trashed = ndb.BooleanProperty(default=False)
   have_tags = ndb.ComputedProperty(lambda self: bool(self.tags))
   have_prev = ndb.ComputedProperty(lambda self: bool(self.preview()))
 

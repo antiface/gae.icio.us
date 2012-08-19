@@ -59,14 +59,22 @@ javascript:location.href=
     template = jinja_environment.get_template(template_name)
     self.response.out.write(template.render(values))
 
+def tag_set(bmq):
+  tagset = []
+  for bm in bmq:
+    for tag in bm.tags:
+      if not tag in tagset:
+        tagset.append(tag)
+  return tagset
 
 class MainPage(BaseHandler):
   def get(self):
     if self.ui().user:
-      bms = ndb.gql("""SELECT * FROM Bookmarks 
-        WHERE user = :1 AND archived = False 
-        ORDER BY data DESC LIMIT 10""", self.ui().user)
-      self.generate('home.html', {'bms': bms })
+      bmq = ndb.gql("""SELECT * FROM Bookmarks 
+        WHERE user = :1 AND archived = False AND trashed = False 
+        ORDER BY data DESC""", self.ui().user)
+      bms = bmq.fetch(10)
+      self.generate('home.html', {'bms': bms, 'tags': tag_set(bmq) })
     else:
       self.generate('hero.html', {})
 
@@ -74,36 +82,49 @@ class MainPage(BaseHandler):
 class ArchivedPage(BaseHandler):
   @login_required
   def get(self):
-      bms = ndb.gql("""SELECT * FROM Bookmarks
-        WHERE user = :1 AND archived = True 
-        ORDER BY data DESC LIMIT 10""", self.ui().user)
-      self.generate('home.html', {'bms' : bms })
+      bmq = ndb.gql("""SELECT * FROM Bookmarks
+        WHERE user = :1 AND archived = True AND trashed = False 
+        ORDER BY data DESC""", self.ui().user)
+      bms = bmq.fetch(10)
+      self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq) })
+
+class TrashedPage(BaseHandler):
+  @login_required
+  def get(self):
+      bmq = ndb.gql("""SELECT * FROM Bookmarks
+        WHERE user = :1 AND trashed = True 
+        ORDER BY data DESC""", self.ui().user)
+      bms = bmq.fetch(10)
+      self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq) })
 
 class StarredPage(BaseHandler):
   @login_required
   def get(self):
-      bms = ndb.gql("""SELECT * FROM Bookmarks
-        WHERE user = :1 AND starred = True 
-        ORDER BY data DESC LIMIT 10""", self.ui().user)
-      self.generate('home.html', {'bms' : bms })
+      bmq = ndb.gql("""SELECT * FROM Bookmarks
+        WHERE user = :1 AND starred = True AND trashed = False 
+        ORDER BY data DESC""", self.ui().user)
+      bms = bmq.fetch(10)
+      self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq) })
 
 
 class NotagPage(BaseHandler):
   @login_required
   def get(self):
-      bms = ndb.gql("""SELECT * FROM Bookmarks
-        WHERE user = :1 AND have_tags = False
-        ORDER BY data DESC LIMIT 10""", self.ui().user)
-      self.generate('home.html', {'bms' : bms })
+      bmq = ndb.gql("""SELECT * FROM Bookmarks
+        WHERE user = :1 AND have_tags = False AND trashed = False 
+        ORDER BY data DESC""", self.ui().user)
+      bms = bmq.fetch(10)
+      self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq) })
 
 
 class PreviewPage(BaseHandler):
   @login_required
   def get(self):
-      bms = ndb.gql("""SELECT * FROM Bookmarks
+      bmq = ndb.gql("""SELECT * FROM Bookmarks
         WHERE user = :1 AND have_prev = True
-        ORDER BY data DESC LIMIT 10""", self.ui().user)
-      self.generate('home.html', {'bms' : bms })
+        ORDER BY data DESC""", self.ui().user)
+      bms = bmq.fetch(10)
+      self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq) })
 
 
 class SearchPage(BaseHandler):
@@ -112,12 +133,13 @@ class SearchPage(BaseHandler):
     tag_name = self.request.get('tag')
     tag_obj = ndb.gql("""SELECT * FROM Tags 
       WHERE user = :1 AND name = :2 
-      ORDER BY data DESC LIMIT 10""", self.ui().user, tag_name).get()
+      ORDER BY data DESC""", self.ui().user, tag_name).get()
     if tag_obj.count == 0:
       self.redirect('/')
     else:
-      self.generate('home.html', {'tag_obj':  tag_obj,
-                                  'bms':      tag_obj.bm_set,
+      self.generate('home.html', {'tag_obj': tag_obj,
+                                  'bms': tag_obj.bm_set,
+                                  'tags': tag_set(tag_obj.bm_set)
                                   })        
 
 
@@ -139,25 +161,40 @@ class RefinePage(BaseHandler):
 class EditPage(BaseHandler):
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    if self.ui().user == bm.user:      
-      self.generate('edit.html', {'bm': bm})
-    else:
-      self.redirect('/')
-  def post(self):
-    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     if self.ui().user == bm.user:
       bm.url = self.request.get('url').encode('utf8')
       bm.title = self.request.get('title').encode('utf8')
       bm.comment = self.request.get('comment').encode('utf8')
       bm.put()
     self.redirect('/')
+    # template = jinja_environment.get_template('bookmark.html')   
+    # values = {'bm': bm} 
+    # html_page = template.render(values)
+    # self.response.write(html_page)
+
+
+class GetTags(RequestHandler):
+  def get(self):
+    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+    template = jinja_environment.get_template('tags.html')   
+    values = {'bm': bm} 
+    html_page = template.render(values)
+    self.response.write(html_page)
+
+class GetEdit(RequestHandler):
+  def get(self):
+    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+    template = jinja_environment.get_template('edit.html')   
+    values = {'bm': bm} 
+    html_page = template.render(values)
+    self.response.write(html_page)
 
 
 class SubsPage(BaseHandler):
   @login_required
   def get(self):
       feeds = Feeds.query(Feeds.user == self.ui().user)
-      self.generate('setting.html', {'feeds': feeds})
+      self.generate('subs.html', {'feeds': feeds})
 
 #### Test ####
 class ViewPage(BaseHandler):
@@ -180,6 +217,7 @@ app = webapp2.WSGIApplication([
   ('/edit',       EditPage),  
   ('/archived',   ArchivedPage),
   ('/starred',    StarredPage),
+  ('/trashed',    TrashedPage),
   ('/checkfeeds', CheckFeeds),
   ('/submit',     AddBM),
   ('/delete',     DelBM),
@@ -189,8 +227,12 @@ app = webapp2.WSGIApplication([
   ('/asstag',     AssignTag),
   ('/archive',    ArchiveBM),
   ('/star',       StarBM),
+  ('/trash',      TrashBM),
   ('/feed',       AddFeed),
   ('/setmys',     SetMys),
+  ('/gettags',    GetTags),
+  ('/getcomment', GetComment),
+  ('/getedit',    GetEdit),
   ('/view',       ViewPage),#for tests
   ('/_ah/mail/post@.*',ReceiveMail),
   ], debug=debug)

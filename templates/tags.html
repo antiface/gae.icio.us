@@ -1,0 +1,5 @@
+<hr>
+<button class="btn btn-mini"><i class="icon-tags"></i></button>
+{% for tag in bm.other_tags %}   
+  <a class="btn btn-mini" href="/asstag?tag={{ tag.id() }}&bm={{ bm.key.id() }}">{{ tag.get().name }}</a>
+{% endfor %}
