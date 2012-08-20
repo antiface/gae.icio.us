@@ -4,21 +4,42 @@
 <div class="container">
   <div class="hero-unit well">
     <div class="row-fluid"> 
-      <h2>Welcome to Your Bookmark's Service</h2>
-      <p>The 'better' Bookmarking Service</p>    
+      <h2>Welcome to {{brand}}</h2>
+      <p>A private-only Bookmarking Service</p>    
       <a class="btn btn-inverse" href="{{ url }}"> Login </a>
       <hr>
     </div>
     <div class="row-fluid"> 
-      <div class="">
-        <h3>How to</h3>
-          <ul>
-            <li>Drag and drop the bookmarklet</li>
-            <li>The selected text is the comment</li>
-            <li>Email youself</li>
-            <li>Search by tag</li>
-            <li>...</li>
-          </ul>
+      <div class="span6">
+        <legend>How to post</legend>
+        <dl>
+          <dt>Bookmarklet</dt>
+            <dd>Drag and drop the bookmarklet in your bookmarks bar</dd>
+            <dd>Selected text and click on bookmarklet</dd>
+          <dt>Post via email</dt>
+            <dd>From:  the email used in {{brand}}</dd>
+            <dd>To:      post@{{brand}}.appspotmail.com</dd>
+            <dd>Subject: the title of the post</dd>
+            <dd>Body:    the link of the post</dd>
+          <dt>Feed subscription</dt>
+            <dd>Add a feed link in subscriptions page</dd>
+            <dd>{{brand}} create new bookmarks for any new items in the feed</dd>
+        </dl>
+      </div>
+      <div class="span6">
+        <legend>Other goodies</legend>
+        <dl>
+          <dt>Tagging</dt>
+            <dd>Associate tags to the bookmark</dd>
+            <dd>Filter and refine the bookmarks by tags</dd>
+          <dt>Preview</dt>
+            <dd>Youtube video is incorporate</dd>
+            <dd>Link is parsed and cleaned</dd>
+          <dt>Mail yourself (MYS) </dt>
+            <dd>An optional ability for send any new bookmark in you inbox.</dd>
+          <dt>Open Source</dt>
+            <dd><a href="https://github.com/presveva/gae.icio.us">gaeicious on gitub</a> </dd>
+        </dl>
       </div>
     </div>    
   </div>

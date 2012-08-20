@@ -24,22 +24,18 @@
   </dl>
 
   {% for bm in bms %}
-  <dl class="well" id="row-{{ bm.key.id() }}"> 
-    {% include "bookmark.html" %}
-  </dl>
-    {% include "script.html" %}
+    <dl class="well" id="row-{{ bm.key.id() }}"> 
+      {% include "bookmark.html" %}
+    </dl>
+      {% include "script.html" %}
   {% endfor %}
 
-  {% if c %}
-  <ul class="pager">
-    <li><!-- 
-      <a href="/?c={{c}}">Previous</a>
-    </li> -->
-    <li>
-      <a href="?c={{c}}">Next</a>
-    </li>
-  </ul>
-  {% endif %}
+{% if c %}
+<ul class="breadcrumb" onclick="location.href='?c={{c}}'">
+  <li class="active">more..</li>
+</ul>
+{% endif %}
+
 </div>
 
 

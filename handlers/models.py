@@ -21,7 +21,6 @@ class Feeds(ndb.Model):
   blog = ndb.StringProperty()#feed.title
   root = ndb.StringProperty()#feed.link
 
-  original = ndb.StringProperty()#link
   url = ndb.StringProperty()#link
   title = ndb.StringProperty()#title
   comment = ndb.TextProperty()#description
@@ -69,7 +68,7 @@ class Bookmarks(ndb.Model):
     return all_user_tags
 
   def preview(self):
-    url_data = urlparse.urlparse(self.url)
+    url_data = urlparse.urlparse(self.original)
     query = urlparse.parse_qs(url_data.query)
     try:
       video = query["v"][0]

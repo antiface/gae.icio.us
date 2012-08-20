@@ -66,42 +66,39 @@ class ReceiveMail(RequestHandler):
       txtmsg = text[1].decode()
     url = txtmsg.encode('utf8')
     bm = Bookmarks()
-    bm.original = url
-    bm.url = url.split('?utm_')[0].split('&feature')[0]
-    bm.title = header.decode_header(message.subject)[0][0]
-    bm.comment = 'Sent via email'
-    bm.user = users.User(utils.parseaddr(message.sender)[1])
-    bm.put()
-    deferred.defer(preview, bm, _queue="admin")
-    if bm.ha_mys():
-      deferred.defer(sendbm, bm, _queue="emails")
+    def txn():
+      bm.original = url
+      bm.title = header.decode_header(message.subject)[0][0]
+      bm.comment = 'Sent via email'
+      bm.user = users.User(utils.parseaddr(message.sender)[1])
+      bm.put()
+    ndb.transaction(txn)
+    deferred.defer(parsebm, bm, _queue="admin")
 
 class AddBM(RequestHandler):
   @login_required
   def get(self):
     bm = Bookmarks()
-    def txn():
-      url = self.request.get('url')#.encode('utf8')
-      bm.original = url
-      bm.url = url.split('?utm_')[0].split('&feature')[0]
-      bm.title = self.request.get('title')#.encode('utf8')
-      bm.comment = self.request.get('comment').encode('utf-8')
+    def txn(): 
+      bm.original = self.request.get('url')
+      bm.title = self.request.get('title')
+      bm.comment = self.request.get('comment')
       bm.user = users.User(str(self.request.get('user')))
       bm.put()
     ndb.transaction(txn)
-    deferred.defer(preview, bm, _queue="admin")
-    if bm.ha_mys():
-      deferred.defer(sendbm, bm, _queue="emails")
+    deferred.defer(parsebm, bm, _queue="fast")
     self.redirect('/')
 
 class EditBM(RequestHandler):
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     if self.ui().user == bm.user:
-      bm.url = self.request.get('url').encode('utf8')
-      bm.title = self.request.get('title').encode('utf8')
-      bm.comment = self.request.get('comment').encode('utf8')
-      bm.put()
+      def txn():
+        bm.url = self.request.get('url').encode('utf8')
+        bm.title = self.request.get('title').encode('utf8')
+        bm.comment = self.request.get('comment').encode('utf8')
+        bm.put()
+      ndb.transaction(txn)
     self.redirect('/')
 
 class TrashBM(RequestHandler):

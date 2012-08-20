@@ -87,74 +87,74 @@ class MainPage(BaseHandler):
 class ArchivedPage(BaseHandler):
   @login_required
   def get(self):
-      bmq = ndb.gql("""SELECT * FROM Bookmarks
-        WHERE user = :1 AND archived = True AND trashed = False 
-        ORDER BY data DESC""", self.ui().user)
-      c = ndb.Cursor(urlsafe=self.request.get('c'))
-      bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-      if more:
-        next_c = next_curs.urlsafe()
-      else:
-        next_c = None
-      self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
+    bmq = ndb.gql("""SELECT * FROM Bookmarks
+      WHERE user = :1 AND archived = True AND trashed = False 
+      ORDER BY data DESC""", self.ui().user)
+    c = ndb.Cursor(urlsafe=self.request.get('c'))
+    bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+    if more:
+      next_c = next_curs.urlsafe()
+    else:
+      next_c = None
+    self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
 
 class TrashedPage(BaseHandler):
   @login_required
   def get(self):
-      bmq = ndb.gql("""SELECT * FROM Bookmarks
-        WHERE user = :1 AND trashed = True 
-        ORDER BY data DESC""", self.ui().user)
-      c = ndb.Cursor(urlsafe=self.request.get('c'))
-      bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-      if more:
-        next_c = next_curs.urlsafe()
-      else:
-        next_c = None
-      self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
+    bmq = ndb.gql("""SELECT * FROM Bookmarks
+      WHERE user = :1 AND trashed = True 
+      ORDER BY data DESC""", self.ui().user)
+    c = ndb.Cursor(urlsafe=self.request.get('c'))
+    bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+    if more:
+      next_c = next_curs.urlsafe()
+    else:
+      next_c = None
+    self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
 
 class StarredPage(BaseHandler):
   @login_required
   def get(self):
-      bmq = ndb.gql("""SELECT * FROM Bookmarks
-        WHERE user = :1 AND starred = True AND trashed = False 
-        ORDER BY data DESC""", self.ui().user)
-      c = ndb.Cursor(urlsafe=self.request.get('c'))
-      bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-      if more:
-        next_c = next_curs.urlsafe()
-      else:
-        next_c = None
-      self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
+    bmq = ndb.gql("""SELECT * FROM Bookmarks
+      WHERE user = :1 AND starred = True AND trashed = False 
+      ORDER BY data DESC""", self.ui().user)
+    c = ndb.Cursor(urlsafe=self.request.get('c'))
+    bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+    if more:
+      next_c = next_curs.urlsafe()
+    else:
+      next_c = None
+    self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
 
 
 class NotagPage(BaseHandler):
   @login_required
   def get(self):
-      bmq = ndb.gql("""SELECT * FROM Bookmarks
-        WHERE user = :1 AND have_tags = False AND trashed = False 
-        ORDER BY data DESC""", self.ui().user)
-      c = ndb.Cursor(urlsafe=self.request.get('c'))
-      bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-      if more:
-        next_c = next_curs.urlsafe()
-      else:
-        next_c = None
-      self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
+    bmq = ndb.gql("""SELECT * FROM Bookmarks
+      WHERE user = :1 AND have_tags = False AND trashed = False 
+      ORDER BY data DESC""", self.ui().user)
+    c = ndb.Cursor(urlsafe=self.request.get('c'))
+    bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+    if more:
+      next_c = next_curs.urlsafe()
+    else:
+      next_c = None
+    self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
 
 
 class PreviewPage(BaseHandler):
   @login_required
   def get(self):
-      bmq = ndb.gql("""SELECT * FROM Bookmarks
-        WHERE user = :1 AND have_prev = True
-        ORDER BY data DESC""", self.ui().user)
-      c = ndb.Cursor(urlsafe=self.request.get('c'))
-      bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-      if more:
-        next_c = next_curs.urlsafe()
-      else:
-        next_c = None
-      self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
+    bmq = ndb.gql("""SELECT * FROM Bookmarks
+      WHERE user = :1 AND have_prev = True
+      ORDER BY data DESC""", self.ui().user)
+    c = ndb.Cursor(urlsafe=self.request.get('c'))
+    bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+    if more:
+      next_c = next_curs.urlsafe()
+    else:
+      next_c = None
+    self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
 
 
 class FilterPage(BaseHandler):
