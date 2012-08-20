@@ -11,9 +11,16 @@
   <dl class="well hide" id="cloud">     
     <dt> <div class="btn-toolbar">
       {% for tag in ui.tag_list %}
-      <a class="btn btn-mini" href="/search?tag={{ tag.name }}"> <i class="icon-tag"></i> {{ tag.name }} ({{ tag.count }})</a>
+      <a class="btn btn-mini" href="/filter?tag={{ tag.name }}"> <i class="icon-tag"></i> {{ tag.name }} ({{ tag.count }})</a>
       {% endfor %}
-    </div> </dt>    
+    </div> </dt>
+    <script type="text/javascript">
+    $("#tagcloud").toggle(function() {
+      $("#cloud").removeClass('hide');
+      }, function() {
+      $("#cloud").addClass('hide');
+      });
+    </script>
   </dl>
 
   {% for bm in bms %}
@@ -22,6 +29,17 @@
   </dl>
     {% include "script.html" %}
   {% endfor %}
+
+  {% if c %}
+  <ul class="pager">
+    <li><!-- 
+      <a href="/?c={{c}}">Previous</a>
+    </li> -->
+    <li>
+      <a href="?c={{c}}">Next</a>
+    </li>
+  </ul>
+  {% endif %}
 </div>
 
 

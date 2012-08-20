@@ -9,19 +9,10 @@ from handlers.feedparser import parse
 from handlers.myutils import *
 from handlers.models import *
 
-
-
-class GetComment(RequestHandler):
-  def get(self):
-    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    self.response.write(bm.comment)
-
 class CheckFeeds(RequestHandler):
   def get(self):
     for feed in Feeds.query():
       deferred.defer(pop_feed, feed, _target="gaeicious", _queue="admin")    
-    self.redirect('/')
-
 
 class SetMys(RequestHandler):
   def get(self):
@@ -102,8 +93,16 @@ class AddBM(RequestHandler):
     if bm.ha_mys():
       deferred.defer(sendbm, bm, _queue="emails")
     self.redirect('/')
-    # self.redirect('/edit?bm=%s' % bm.key.id())
 
+class EditBM(RequestHandler):
+  def get(self):
+    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+    if self.ui().user == bm.user:
+      bm.url = self.request.get('url').encode('utf8')
+      bm.title = self.request.get('title').encode('utf8')
+      bm.comment = self.request.get('comment').encode('utf8')
+      bm.put()
+    self.redirect('/')
 
 class TrashBM(RequestHandler):
   def get(self):
@@ -117,7 +116,6 @@ class TrashBM(RequestHandler):
       bm.put()
     self.redirect(self.request.referer)
 
-
 class DelBM(RequestHandler):
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
@@ -126,7 +124,6 @@ class DelBM(RequestHandler):
       self.redirect(self.request.referer)
       for tag in bm.tags:
         deferred.defer(decr_tags, tag, _queue="fast")
-
 
 class ArchiveBM(RequestHandler):
   def get(self):

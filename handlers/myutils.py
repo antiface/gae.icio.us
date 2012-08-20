@@ -36,6 +36,7 @@ def pop_feed(feed):
     feed.put()
     e = e + 1
     d = p.entries[e]
+    q = Bookmarks.query(Bookmarks.original == d.link)
     deferred.defer(new_bm, feed, _target="gaeicious", _queue="admin")
 
 def new_bm(feed):
