@@ -4,8 +4,9 @@
       <ul class="nav">
         <a class="brand" href="/">{{ brand }}</a>
         <li class="divider-vertical"></li>
-        <form class="navbar-search pull-left" action="/addtag" method="get"> 
-          <input type="text" class="search-query input-medium" name="tag" placeholder="Create a new tag" allowBlank="true">
+        <form class="navbar-form pull-left" action="/addtag" method="get">
+          <input type="text" class="span2" name="tag" placeholder="new tag" allowBlank="true">
+          <button type="submit" class="btn">create</button>
         </form>
         <li class="divider-vertical"></li>
         <form class="navbar-search pull-right hide" action="/search">
@@ -13,14 +14,14 @@
         </form>
       </ul>
       <ul class="nav pull-right">
-        {% if user %}        
-        <li><a href="/setmys"><i class="icon-envelope icon-white"></i>
+        {% if ui.user %}        
+        <li><a href="/setmys"><i class="icon-envelope"></i>
           {% if ui.mys %}MYS active!{% else %}MYS inactive{% endif %}</a></li>
-        <li><a href="{{ bookmarklet }}"><i class="icon-bookmark icon-white"></i> {{ brand }} it!</a></li>        
+        <li><a href="{{ bookmarklet }}"><i class="icon-bookmark"></i> {{ brand }} it!</a></li>        
         {% endif %}
         <li class="dropdown">
           <a href="" class="dropdown-toggle" data-toggle="dropdown">
-            <i class="icon-user icon-white"></i> {{ nick }} <b class="caret"></b>
+            <i class="icon-user"></i> {{ nick }} <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
             <li><a href="/subs"><i class="icon-wrench"></i> Subscriptions</a></li>

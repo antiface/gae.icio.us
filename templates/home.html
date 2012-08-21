@@ -8,7 +8,7 @@
 
 <div class="span9">
 
-  <dl class="well hide" id="cloud">     
+  <dl class="well well-small hide" id="cloud">     
     <dt> <div class="btn-toolbar">
       {% for tag in ui.tag_list %}
       <a class="btn btn-mini" href="/filter?tag={{ tag.name }}"> <i class="icon-tag"></i> {{ tag.name }} ({{ tag.count }})</a>
@@ -24,16 +24,14 @@
   </dl>
 
   {% for bm in bms %}
-    <dl class="well" id="row-{{ bm.key.id() }}"> 
-      {% include "bookmark.html" %}
-    </dl>
-      {% include "script.html" %}
+  <dl class="well well-small" id="row-{{ bm.key.id() }}"> 
+    {% include "bookmark.html" %}
+  </dl>
+    {% include "script.html" %}
   {% endfor %}
 
 {% if c %}
-<ul class="breadcrumb" onclick="location.href='?c={{c}}'">
-  <li class="active">more..</li>
-</ul>
+<a class="btn btn-large btn-block" href="?c={{c}}" type="button">more..</a>
 {% endif %}
 
 </div>

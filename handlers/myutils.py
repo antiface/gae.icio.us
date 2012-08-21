@@ -36,7 +36,7 @@ def pop_feed(feed):
     e = e + 1
     d = p.entries[e]
     q = Bookmarks.query(Bookmarks.original == d.link)
-    deferred.defer(new_bm, feed, _target="gaeicious", _queue="admin")
+    deferred.defer(new_bm, feed, _target="worker", _queue="parser")
     
 def new_bm(feed):
   bm = Bookmarks()
@@ -47,7 +47,7 @@ def new_bm(feed):
     bm.user = feed.user
     bm.put()
   ndb.transaction(txn)
-  deferred.defer(parsebm, bm, _target="gaeicious", _queue="admin")
+  deferred.defer(parsebm, bm, _target="worker", _queue="bookmarks")
 
 def parsebm(bm):  
   if bm.preview():

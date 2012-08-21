@@ -12,7 +12,7 @@ from handlers.models import *
 class CheckFeeds(RequestHandler):
   def get(self):
     for feed in Feeds.query():
-      deferred.defer(pop_feed, feed, _target="gaeicious", _queue="admin")    
+      deferred.defer(pop_feed, feed, _target="worker", _queue="admin")    
 
 class SetMys(RequestHandler):
   def get(self):
@@ -73,7 +73,7 @@ class ReceiveMail(RequestHandler):
       bm.user = users.User(utils.parseaddr(message.sender)[1])
       bm.put()
     ndb.transaction(txn)
-    deferred.defer(parsebm, bm, _queue="admin")
+    deferred.defer(parsebm, bm, _queue="parser")
 
 class AddBM(RequestHandler):
   @login_required

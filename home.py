@@ -19,17 +19,18 @@ jinja_environment.filters['dtf'] = dtf
 
 class BaseHandler(webapp2.RequestHandler):
   def ui(self):
-    q = UserInfo.query(UserInfo.user == users.get_current_user())
-    if q.get():
-      return q.get()
-    else:
-      ui = UserInfo()
-      ui.user = users.get_current_user()
-      ui.put()
-      return ui
+    if users.get_current_user():
+      q = UserInfo.query(UserInfo.user == users.get_current_user())
+      if q.get():
+        return q.get()
+      else:
+        ui = UserInfo()
+        ui.user = users.get_current_user()
+        ui.put()
+        return ui
     
   def generate(self, template_name, template_values={}):
-    if self.ui().user:
+    if users.get_current_user():
       bookmarklet = """
 javascript:location.href=
 '%s/submit?url='+encodeURIComponent(location.href)+
@@ -52,7 +53,6 @@ javascript:location.href=
       'nick': nick,
       'url': url,
       'linktext': linktext,
-      'user': self.ui().user,
       'ui': self.ui(),
       }
     values.update(template_values)
@@ -69,7 +69,7 @@ def tag_set(bmq):
 
 class MainPage(BaseHandler):
   def get(self):
-    if self.ui().user:      
+    if users.get_current_user():      
       bmq = ndb.gql("""SELECT * FROM Bookmarks 
         WHERE user = :1 AND archived = False AND trashed = False 
         ORDER BY data DESC""", self.ui().user)
@@ -81,7 +81,7 @@ class MainPage(BaseHandler):
         next_c = None
       self.generate('home.html', {'bms': bms, 'tags': tag_set(bmq), 'c': next_c })
     else:
-      self.generate('hero.html', {})
+      self.generate('git.html', {})
 
 
 class ArchivedPage(BaseHandler):
@@ -200,11 +200,13 @@ class SubsPage(BaseHandler):
       self.generate('subs.html', {'feeds': feeds})
 
 class GetComment(RequestHandler):
+  @login_required
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     self.response.write(bm.comment)
 
 class GetTags(RequestHandler):
+  @login_required
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     template = jinja_environment.get_template('tags.html')   
@@ -213,6 +215,7 @@ class GetTags(RequestHandler):
     self.response.write(html_page)
 
 class GetEdit(RequestHandler):
+  @login_required
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     template = jinja_environment.get_template('edit.html')   

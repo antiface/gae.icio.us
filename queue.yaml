@@ -6,10 +6,6 @@ queue:
   rate: 2/s
   bucket_size: 10
 
-- name: emails
-  rate: 5/s
-  bucket_size: 20
-
 - name: admin
   rate: 5/s
   bucket_size: 20
@@ -17,3 +13,15 @@ queue:
 - name: fast
   rate: 20/s
   bucket_size: 40
+
+- name: parser
+  rate: 5/s
+  bucket_size: 20
+
+- name: bookmarks
+  rate: 5/s
+  bucket_size: 20
+
+- name: emails
+  rate: 5/s
+  bucket_size: 20

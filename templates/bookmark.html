@@ -1,3 +1,12 @@
+<div class="modal fade" id="{{ bm.key.id() }}">
+  <div class="modal-header">
+    <h4>Are you sure?</h4>
+  </div>
+  <div class="modal-footer">
+    <a class="btn btn-danger" href="/delete?bm={{ bm.key.id() }}">Yes</a>
+    <a class="btn" href="#" data-dismiss="modal">No</a>
+  </div>
+</div>
 
   <dt> <i class="icon-bookmark"></i> <a href="{{ bm.url }}" target="_blank">{{ bm.title }}</a> </dt>
 
@@ -21,20 +30,11 @@
       <a class="btn btn-mini" id="trash-{{ bm.key.id() }}">
       {% if bm.trashed %}<i class="icon-inbox"></i> restore</a>
       {% else %}<i class="icon-trash"></i> trash</a> {% endif %}
-        <div class="modal fade" id="{{ bm.key.id() }}">
-          <div class="modal-header">
-            <h4>Are you sure?</h4>
-          </div>
-          <div class="modal-footer">
-            <a class="btn btn-danger" href="/delete?bm={{ bm.key.id() }}">Yes</a>
-            <a class="btn" href="#" data-dismiss="modal">No</a>
-          </div>
-        </div>
       <a data-toggle="modal" data-target="#{{ bm.key.id() }}" class="btn btn-mini" ><i class="icon-remove"></i></a>
     </div>
 
     <div class="btn-group">
-      <button class="btn disabled btn-mini"><i class="icon-calendar"></i> {{ bm.data|dtf }}</button>
+      <button class="btn disabled btn-mini"><i class="icon-time"></i> {{ bm.data|dtf }}</button>
     </div> 
   </div>
   </dt>

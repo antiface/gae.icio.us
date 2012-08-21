@@ -12,7 +12,7 @@ How to post
   - Drag and drop the bookmarklet in your bookmarks bar
   - Selected text and click on bookmarklet
 - Post via email
-  - From:  the email used in app-id
+  - From:  the email used in gaeicious
   - To:      post@app-id.appspotmail.com
   - Subject: the title of the post
   - Body:    the link of the post
