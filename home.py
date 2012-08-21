@@ -235,7 +235,6 @@ app = webapp2.WSGIApplication([
   ('/archived',   ArchivedPage),
   ('/starred',    StarredPage),
   ('/trashed',    TrashedPage),
-  ('/checkfeeds', CheckFeeds),
   ('/submit',     AddBM),
   ('/delete',     DelBM),
   ('/edit',       EditBM),
@@ -252,6 +251,8 @@ app = webapp2.WSGIApplication([
   ('/getcomment', GetComment),
   ('/getedit',    GetEdit),
   ('/_ah/mail/post@.*',ReceiveMail),
+  ('/adm/check',  CheckFeeds),
+  ('/adm/script', script),
   ], debug=debug)
 
 def main():

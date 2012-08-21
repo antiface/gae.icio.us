@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-from google.appengine.api import users, mail, app_identity
+from google.appengine.api import users, mail, app_identity, urlfetch
 from google.appengine.ext import deferred
 from models import *
 
@@ -54,7 +54,11 @@ def parsebm(bm):
     bm.comment = '''<iframe width="640" height="480" 
     src="http://www.youtube.com/embed/%s" frameborder="0" 
     allowfullscreen></iframe>''' % bm.preview()
-  bm.url = bm.original.split('?utm_')[0].split('&feature')[0]
+  u = urlfetch.fetch(url=bm.original, follow_redirects=True)
+  if u.final_url:
+    bm.url = u.final_url.split('?utm_')[0].split('&feature')[0]
+  else:
+    bm.url = bm.original.split('?utm_')[0].split('&feature')[0]
   bm.put()  
   if bm.ha_mys():
     deferred.defer(sendbm, bm, _queue="emails")

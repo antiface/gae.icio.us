@@ -1,4 +1,4 @@
 cron:
 - description: check new posts
-  url: /checkfeeds
+  url: /adm/check
   schedule: every 90 minutes

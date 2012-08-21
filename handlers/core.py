@@ -9,6 +9,18 @@ from handlers.feedparser import parse
 from handlers.myutils import *
 from handlers.models import *
 
+
+class script(RequestHandler):
+  def get(self):
+    for bm in Bookmarks.query():
+      deferred.defer(repair, bm, _target="worker", _queue="admin")    
+
+def repair(bm):
+  if not bm.original:
+    bm.original = bm.url
+    bm.put
+  deferred.defer(parsebm, bm, _target="worker", _queue="parser")    
+
 class CheckFeeds(RequestHandler):
   def get(self):
     for feed in Feeds.query():
@@ -45,7 +57,7 @@ class AddFeed(RequestHandler):
           feed.comment = d.description
           feed.put()
         ndb.transaction(txn)
-        deferred.defer(new_bm, feed, _queue="fast")
+        deferred.defer(new_bm, feed, _target="worker", _queue="admin")
       else:
         pass
       self.redirect(self.request.referer)
@@ -86,7 +98,7 @@ class AddBM(RequestHandler):
       bm.user = users.User(str(self.request.get('user')))
       bm.put()
     ndb.transaction(txn)
-    deferred.defer(parsebm, bm, _queue="fast")
+    deferred.defer(parsebm, bm, _queue="parser")
     self.redirect('/')
 
 class EditBM(RequestHandler):
@@ -120,7 +132,7 @@ class DelBM(RequestHandler):
       bm.key.delete()
       self.redirect(self.request.referer)
       for tag in bm.tags:
-        deferred.defer(decr_tags, tag, _queue="fast")
+        deferred.defer(decr_tags, tag, _queue="admin")
 
 class ArchiveBM(RequestHandler):
   def get(self):

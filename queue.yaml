@@ -7,10 +7,6 @@ queue:
   bucket_size: 10
 
 - name: admin
-  rate: 5/s
-  bucket_size: 20
-
-- name: fast
   rate: 20/s
   bucket_size: 40
 

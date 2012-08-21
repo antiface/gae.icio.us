@@ -30,7 +30,7 @@ handlers:
   script: home.app
   login: admin
 
-- url: /checkfeeds
+- url: /adm/.*
   script: home.app
   login: admin
 
