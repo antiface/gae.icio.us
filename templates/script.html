@@ -70,10 +70,11 @@ $("#star-{{ bm.key.id() }}").click(function() {
       url: "/star",
       data: { bm: "{{ bm.key.id() }}" },
       success: function(html) {
-        $("#stars-{{ bm.key.id() }}").html(html);
+        $("#star-{{ bm.key.id() }}").html(html);
       }
     });
-})
+  }
+)
 
 $("#arch-{{ bm.key.id() }}").click(function() {
   $.ajax({

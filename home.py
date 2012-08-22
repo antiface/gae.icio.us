@@ -251,13 +251,12 @@ class StarBM(RequestHandler):
     if users.get_current_user() == bm.user:
       if bm.starred == False:
         bm.starred = True
+        html = '<i class="icon-star">'
       else:
         bm.starred = False
+        html = '<i class="icon-star-empty">'
       bm.put()
-    template = jinja_environment.get_template('star.html')   
-    values = {'bm': bm} 
-    html_page = template.render(values)
-    self.response.write(html_page)
+    self.response.write(html)
 
 class AssignTag(RequestHandler):
   def get(self):
