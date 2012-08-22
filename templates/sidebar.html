@@ -20,14 +20,8 @@
       {% if tag_obj is none %}<!-- refine -->
       {% elif not tag_obj %}<!-- home pages -->
       {% for tag in tags %}
-      <li>          
-        {% if tag.count == 0 %}
-        <a href="/deltag?tag={{ tag.id() }}"> ({{ tag.get().count }})  {{ tag.get().name }}
-        <button class="close">&times;</button>
-        {% else %}
-        <a href="/filter?tag={{ tag.get().name }}"> ({{ tag.get().count }})  {{ tag.get().name }}
-        {% endif %}
-        </a> 
+      <li>  
+        <a href="/filter?tag={{ tag.get().name }}"> ({{ tag.get().count }})  {{ tag.get().name }} </a>
       </li>
       {% endfor %}        
       {% else %}<!-- filter page -->

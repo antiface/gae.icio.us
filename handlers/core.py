@@ -13,10 +13,13 @@ from handlers.models import *
 class script(RequestHandler):
   def get(self):
     for bm in Bookmarks.query():
-      deferred.defer(repair, bm, _target="worker", _queue="admin")    
+      deferred.defer(repair, bm, _target="worker", _queue="admin")   
 
 def repair(bm):
-  if not bm.original:
+  if bm.original == None:
+    bm.original = bm.url
+    bm.put
+  if bm.original.split('ttp')[0] is not 'h':
     bm.original = bm.url
     bm.put
   deferred.defer(parsebm, bm, _target="worker", _queue="parser")    
@@ -25,6 +28,17 @@ class CheckFeeds(RequestHandler):
   def get(self):
     for feed in Feeds.query():
       deferred.defer(pop_feed, feed, _target="worker", _queue="admin")    
+
+
+class Empty_Trash(RequestHandler):
+  @login_required
+  def get(self):
+    bmq = ndb.gql("""SELECT __key__ FROM Bookmarks
+      WHERE user = :1 AND trashed = True 
+      ORDER BY data DESC""", users.get_current_user())
+    for bm in bmq:
+      deferred.defer(del_bm, bm, _queue="admin")
+    self.redirect('/')
 
 class SetMys(RequestHandler):
   def get(self):
@@ -124,15 +138,6 @@ class TrashBM(RequestHandler):
         bm.trashed = False
       bm.put()
     self.redirect(self.request.referer)
-
-class DelBM(RequestHandler):
-  def get(self):
-    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    if users.get_current_user() == bm.user:      
-      bm.key.delete()
-      self.redirect(self.request.referer)
-      for tag in bm.tags:
-        deferred.defer(decr_tags, tag, _queue="admin")
 
 class ArchiveBM(RequestHandler):
   def get(self):

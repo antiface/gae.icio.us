@@ -9,10 +9,17 @@
 <div class="span9">
 
   <dl class="well well-small hide" id="cloud">     
-    <dt> <div class="btn-toolbar">
-      {% for tag in ui.tag_list %}
+    <dt> <div class="btn-toolbar"> 
+    {% for tag in ui.tag_list %}
+      {% if tag.count == 0 %}
+      <div class="btn-group">  
       <a class="btn btn-mini" href="/filter?tag={{ tag.name }}"> <i class="icon-tag"></i> {{ tag.name }} ({{ tag.count }})</a>
-      {% endfor %}
+      <a class="btn btn-mini" href="/deltag?tag={{ tag.key.id() }}"><i class="icon-remove"></i></a>
+      </div>
+      {% else %}      
+      <a class="btn btn-mini" href="/filter?tag={{ tag.name }}"> <i class="icon-tag"></i> {{ tag.name }} ({{ tag.count }})</a>
+      {% endif %}
+    {% endfor %}
     </div> </dt>
     <script type="text/javascript">
     $("#tagcloud").toggle(function() {
@@ -22,6 +29,18 @@
       });
     </script>
   </dl>
+  {% if p == 'trash' %}
+  <div class="modal fade" id="empty_trash">
+    <div class="modal-header">
+      <h4>Are you sure?</h4>
+    </div>
+    <div class="modal-footer">
+      <a class="btn btn-danger" href="/empty_trash">Yes</a>
+      <a class="btn" href="#" data-dismiss="modal">No</a>
+    </div>
+  </div>
+  <a class="btn btn-large btn-block" data-toggle="modal" data-target="#empty_trash" type="button">empty trash</a>
+  {% endif %}
 
   {% for bm in bms %}
   <dl class="well well-small" id="row-{{ bm.key.id() }}"> 

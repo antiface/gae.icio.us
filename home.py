@@ -67,7 +67,7 @@ def tag_set(bmq):
         tagset.append(tag)
   return tagset
 
-class MainPage(BaseHandler):
+class InboxPage(BaseHandler):
   def get(self):
     if users.get_current_user():      
       bmq = ndb.gql("""SELECT * FROM Bookmarks 
@@ -79,7 +79,10 @@ class MainPage(BaseHandler):
         next_c = next_curs.urlsafe()
       else:
         next_c = None
-      self.generate('home.html', {'bms': bms, 'tags': tag_set(bmq), 'c': next_c })
+      self.generate('home.html', {'bms': bms, 
+                                  'tags': tag_set(bmq), 
+                                  'p': 'inbox', 
+                                  'c': next_c })
     else:
       self.generate('git.html', {})
 
@@ -96,7 +99,10 @@ class ArchivedPage(BaseHandler):
       next_c = next_curs.urlsafe()
     else:
       next_c = None
-    self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
+    self.generate('home.html', {'bms' : bms,
+                                'tags': tag_set(bmq),
+                                'p': 'archive',
+                                'c': next_c })
 
 class TrashedPage(BaseHandler):
   @login_required
@@ -110,7 +116,10 @@ class TrashedPage(BaseHandler):
       next_c = next_curs.urlsafe()
     else:
       next_c = None
-    self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
+    self.generate('home.html', {'bms' : bms, 
+                                'tags': tag_set(bmq), 
+                                'p': 'trash', 
+                                'c': next_c })
 
 class StarredPage(BaseHandler):
   @login_required
@@ -124,7 +133,10 @@ class StarredPage(BaseHandler):
       next_c = next_curs.urlsafe()
     else:
       next_c = None
-    self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
+    self.generate('home.html', {'bms' : bms, 
+                                'tags': tag_set(bmq), 
+                                'p': 'starred', 
+                                'c': next_c })
 
 
 class NotagPage(BaseHandler):
@@ -139,7 +151,10 @@ class NotagPage(BaseHandler):
       next_c = next_curs.urlsafe()
     else:
       next_c = None
-    self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
+    self.generate('home.html', {'bms' : bms, 
+                                'tags': tag_set(bmq), 
+                                'p': 'notag', 
+                                'c': next_c })
 
 
 class PreviewPage(BaseHandler):
@@ -154,7 +169,10 @@ class PreviewPage(BaseHandler):
       next_c = next_curs.urlsafe()
     else:
       next_c = None
-    self.generate('home.html', {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
+    self.generate('home.html', {'bms' : bms, 
+                                'tags': tag_set(bmq), 
+                                'p': 'preview', 
+                                'c': next_c })
 
 
 class FilterPage(BaseHandler):
@@ -168,6 +186,7 @@ class FilterPage(BaseHandler):
     tagset.remove(tag_obj.key)
     self.generate('home.html', {'tag_obj': tag_obj,
                                 'bms': tag_obj.bm_set,
+                                'p': 'filter',
                                 'tags': tagset,
                                 })        
 
@@ -190,7 +209,10 @@ class RefinePage(BaseHandler):
       next_c = next_curs.urlsafe()
     else:
       next_c = None
-    self.generate('home.html', {'bms' : bms, 'tag_obj': None, 'c': next_c })
+    self.generate('home.html', {'bms' : bms,
+                                'tag_obj': None, 
+                                'p': 'refine', 
+                                'c': next_c })
 
 
 class SubsPage(BaseHandler):
@@ -226,7 +248,7 @@ class GetEdit(RequestHandler):
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
-  ('/',           MainPage),
+  ('/',           InboxPage),
   ('/subs',       SubsPage),
   ('/filter',     FilterPage),
   ('/refine',     RefinePage),
@@ -236,7 +258,6 @@ app = webapp2.WSGIApplication([
   ('/starred',    StarredPage),
   ('/trashed',    TrashedPage),
   ('/submit',     AddBM),
-  ('/delete',     DelBM),
   ('/edit',       EditBM),
   ('/archive',    ArchiveBM),
   ('/star',       StarBM),
@@ -245,6 +266,7 @@ app = webapp2.WSGIApplication([
   ('/deltag',     DeleteTag),
   ('/removetag',  RemoveTag),
   ('/asstag',     AssignTag),
+  ('/empty_trash',Empty_Trash),
   ('/feed',       AddFeed),
   ('/setmys',     SetMys),
   ('/gettags',    GetTags),

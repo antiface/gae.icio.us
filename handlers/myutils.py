@@ -15,6 +15,11 @@ def login_required(handler_method):
       handler_method(self)
   return check_login
 
+def del_bm(bmk):
+  for tag in bmk.get().tags:
+    deferred.defer(decr_tags, tag, _queue="admin")    
+  bmk.delete()
+
 def decr_tags(tag):
   def txn():
     t = tag.get()

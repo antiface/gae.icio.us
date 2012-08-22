@@ -1,51 +1,42 @@
-<div class="modal fade" id="{{ bm.key.id() }}">
-  <div class="modal-header">
-    <h4>Are you sure?</h4>
+<dt> <i class="icon-bookmark"></i> <a href="{{ bm.url }}" target="_blank">{{ bm.title }}</a> </dt>
+
+<dt>      
+<div class="btn-toolbar">
+
+  <div class="btn-group">
+    <a class="btn btn-mini" href="/star?bm={{ bm.key.id() }}">
+    {% if bm.starred %} <i class="icon-star"></i></a> {% else %} <i class="icon-star-empty"></i></a> {% endif %}        
+    
   </div>
-  <div class="modal-footer">
-    <a class="btn btn-danger" href="/delete?bm={{ bm.key.id() }}">Yes</a>
-    <a class="btn" href="#" data-dismiss="modal">No</a>
+  <div class="btn-group">
+    <a class="btn btn-mini" data-toggle="button" id="prev-{{ bm.key.id() }}"><i class="icon-eye-open"></i> view</a>
+    <a class="btn btn-mini" data-toggle="button" id="tags-{{ bm.key.id() }}"><i class="icon-tags"></i> tags</a>
+    <a class="btn btn-mini" data-toggle="button" id="edit-{{ bm.key.id() }}"><i class="icon-edit"></i> edit</a>
   </div>
+  <div class="btn-group">
+    <a class="btn btn-mini" id="arch-{{ bm.key.id() }}">
+    {% if bm.archived %}<i class="icon-inbox"></i> inbox</a>
+    {% else %}<i class="icon-folder-close"></i> archive</a>
+    {% endif %}
+    <a class="btn btn-mini" id="trash-{{ bm.key.id() }}">
+    {% if bm.trashed %}<i class="icon-inbox"></i> restore</a>
+    {% else %}<i class="icon-trash"></i> trash</a> {% endif %}
+  </div>
+
+  <div class="btn-group">
+    <button class="btn disabled btn-mini"><i class="icon-time"></i> {{ bm.data|dtf }}</button>
+  </div> 
 </div>
+</dt>
 
-  <dt> <i class="icon-bookmark"></i> <a href="{{ bm.url }}" target="_blank">{{ bm.title }}</a> </dt>
-
-  <dt>      
+<dd>
   <div class="btn-toolbar">
-
-    <div class="btn-group">
-      <a class="btn btn-mini" href="/star?bm={{ bm.key.id() }}">
-      {% if bm.starred %} <i class="icon-star"></i></a> {% else %} <i class="icon-star-empty"></i></a> {% endif %}        
-      <a class="btn btn-mini" id="arch-{{ bm.key.id() }}">
-      {% if bm.archived %}<i class="icon-inbox"></i> inbox</a>
-      {% else %}<i class="icon-folder-close"></i> archive</a>
-      {% endif %}
+  {% for tag in bm.tags %}
+    <div class="btn-group"> 
+      <a class="btn btn-mini" href="/filter?tag={{ tag.get().name }}"><i class="icon-tag"></i> {{ tag.get().name }}</a>
+      <a class="btn btn-mini" href="/removetag?bm={{ bm.key.id() }}&tag={{ tag.id() }}"><i class="icon-remove"></i></a>
     </div>
-    <div class="btn-group">
-      <a class="btn btn-mini" data-toggle="button" id="prev-{{ bm.key.id() }}"><i class="icon-eye-open"></i> view</a>
-      <a class="btn btn-mini" data-toggle="button" id="tags-{{ bm.key.id() }}"><i class="icon-tags"></i> tags</a>
-      <a class="btn btn-mini" data-toggle="button" id="edit-{{ bm.key.id() }}"><i class="icon-edit"></i> edit</a>
-    </div>
-    <div class="btn-group">
-      <a class="btn btn-mini" id="trash-{{ bm.key.id() }}">
-      {% if bm.trashed %}<i class="icon-inbox"></i> restore</a>
-      {% else %}<i class="icon-trash"></i> trash</a> {% endif %}
-      <a data-toggle="modal" data-target="#{{ bm.key.id() }}" class="btn btn-mini" ><i class="icon-remove"></i></a>
-    </div>
-
-    <div class="btn-group">
-      <button class="btn disabled btn-mini"><i class="icon-time"></i> {{ bm.data|dtf }}</button>
-    </div> 
+    {% endfor %}
   </div>
-  </dt>
-  <dd>
-    <div class="btn-toolbar">
-    {% for tag in bm.tags %}
-      <div class="btn-group"> 
-        <a class="btn btn-mini" href="/filter?tag={{ tag.get().name }}"><i class="icon-tag"></i> {{ tag.get().name }}</a>
-        <a class="btn btn-mini" href="/removetag?bm={{ bm.key.id() }}&tag={{ tag.id() }}"><i class="icon-remove"></i></a>
-      </div>
-      {% endfor %}
-    </div>
-  </dd>
-  <dd id="comment-{{ bm.key.id() }}"></dd>
+</dd>
+<dd id="comment-{{ bm.key.id() }}"></dd>
