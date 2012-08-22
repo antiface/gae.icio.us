@@ -8,19 +8,18 @@
 
 <div class="span9">
   <!-- tagcloud -->
-  <dl class="well well-small hide" id="cloud">     
-    <dt> <div class="btn-toolbar"> 
+  <div class="well well-small " id="cloud">     
+    <div class="btn-toolbar"> 
     {% for tag in ui.tag_list %}
-      {% if tag.count == 0 %}
-      <div class="btn-group">  
-      <a class="btn btn-mini" href="/filter?tag={{ tag.name }}"> <i class="icon-tag"></i> {{ tag.name }} ({{ tag.count }})</a>
-      <a class="btn btn-mini" href="/deltag?tag={{ tag.key.id() }}"><i class="icon-remove"></i></a>
-      </div>
-      {% else %}      
-      <a class="btn btn-mini" href="/filter?tag={{ tag.name }}"> <i class="icon-tag"></i> {{ tag.name }} ({{ tag.count }})</a>
+      {% if tag.count != 0 %}
+      <a class="btn btn-mini btn-link " href="/filter?tag={{ tag.name }}"> 
+        <i class="icon-tag"></i> {{ tag.name }} [{{ tag.count }}] <i class="icon-filter"></i> </a>
+      {% else %}
+      <a class="btn btn-mini btn-link " href="/deltag?tag={{ tag.key.id() }}">
+        <i class="icon-tag"></i> {{ tag.name }} [{{ tag.count }}] <i class="icon-remove"></i></a>
       {% endif %}
     {% endfor %}
-    </div> </dt>
+    </div>
     <script type="text/javascript">
     $("#tagcloud").toggle(function() {
       $("#cloud").removeClass('hide');
@@ -28,7 +27,7 @@
       $("#cloud").addClass('hide');
       });
     </script>
-  </dl>
+  </div>
   <!-- empty trash -->
   {% if p == 'trash' %}
   <div class="modal fade" id="empty_trash">
@@ -44,10 +43,10 @@
   {% endif %}
   <!-- bookmarks -->
   {% for bm in bms %}
-  <dl class="well well-small" id="row-{{ bm.key.id() }}"> 
-    {% include "bookmark.html" %}
-  </dl>
+  <div class="well well-small" id="row-{{ bm.key.id() }}"> 
+    {% include "bookmark.html" %}  
     {% include "script.html" %}
+  </div>
   {% endfor %}
 
 {% if c %}

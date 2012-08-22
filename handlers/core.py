@@ -157,7 +157,10 @@ class RemoveTag(RequestHandler):
       bm.put()
       tag.count -= 1
       tag.put()
-    self.redirect(self.request.referer)
+    if tag.count == 0:
+      self.redirect('/')
+    else:
+      self.redirect(self.request.referer)
 
 class AddTag(RequestHandler):
   def get(self):
