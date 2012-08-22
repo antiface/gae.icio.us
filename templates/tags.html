@@ -1,5 +1,15 @@
-<hr>
-<button class="btn btn-mini"><i class="icon-tags"></i></button>
 {% for tag in bm.other_tags %}   
-  <a class="btn btn-mini" href="/asstag?tag={{ tag.id() }}&bm={{ bm.key.id() }}">{{ tag.get().name }}</a>
+  <a class="btn btn-mini" id="assigntag-{{ tag.id() }}">{{ tag.get().name }}</a>
+  <script>
+  $("#assigntag-{{ tag.id() }}").click(function() {
+    $.ajax({
+      url: "/assigntag",
+      data: { bm: "{{ bm.key.id() }}",
+              tag: "{{ tag.id() }}" },
+      success: function(html) {
+        $("#tags_for-{{ bm.key.id() }}").html(html);
+      }
+    });
+  })
+  </script>
 {% endfor %}

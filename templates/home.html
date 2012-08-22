@@ -7,7 +7,7 @@
 
 
 <div class="span9">
-
+  <!-- tagcloud -->
   <dl class="well well-small hide" id="cloud">     
     <dt> <div class="btn-toolbar"> 
     {% for tag in ui.tag_list %}
@@ -29,6 +29,7 @@
       });
     </script>
   </dl>
+  <!-- empty trash -->
   {% if p == 'trash' %}
   <div class="modal fade" id="empty_trash">
     <div class="modal-header">
@@ -41,7 +42,7 @@
   </div>
   <a class="btn btn-large btn-block" data-toggle="modal" data-target="#empty_trash" type="button">empty trash</a>
   {% endif %}
-
+  <!-- bookmarks -->
   {% for bm in bms %}
   <dl class="well well-small" id="row-{{ bm.key.id() }}"> 
     {% include "bookmark.html" %}

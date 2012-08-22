@@ -27,13 +27,8 @@
 </dt>
 
 <dd>
-  <div class="btn-toolbar">
-  {% for tag in bm.tags %}
-    <div class="btn-group"> 
-      <a class="btn btn-mini" href="/filter?tag={{ tag.get().name }}"><i class="icon-tag"></i> {{ tag.get().name }}</a>
-      <a class="btn btn-mini" href="/removetag?bm={{ bm.key.id() }}&tag={{ tag.id() }}"><i class="icon-remove"></i></a>
-    </div>
-    {% endfor %}
+  <div class="btn-toolbar" id="tags_for-{{ bm.key.id() }}">
+  {% include "tags_for.html" %}
   </div>
 </dd>
 <dd id="comment-{{ bm.key.id() }}"></dd>

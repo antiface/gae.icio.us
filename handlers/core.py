@@ -148,17 +148,6 @@ class ArchiveBM(RequestHandler):
         bm.archived = False
       bm.put()
 
-class AssignTag(RequestHandler):
-  def get(self):
-    bm  = Bookmarks.get_by_id(int(self.request.get('bm')))
-    tag = Tags.get_by_id(int(self.request.get('tag')))
-    if users.get_current_user() == bm.user:
-      bm.tags.append(tag.key)
-      bm.put()
-      tag.count += 1
-      tag.put()
-    self.redirect(self.request.referer)
-
 class RemoveTag(RequestHandler):
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))

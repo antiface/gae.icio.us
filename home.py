@@ -259,6 +259,20 @@ class StarBM(RequestHandler):
     html_page = template.render(values)
     self.response.write(html_page)
 
+class AssignTag(RequestHandler):
+  def get(self):
+    bm  = Bookmarks.get_by_id(int(self.request.get('bm')))
+    tag = Tags.get_by_id(int(self.request.get('tag')))
+    if users.get_current_user() == bm.user:
+      bm.tags.append(tag.key)
+      bm.put()
+      tag.count += 1
+      tag.put()
+    template = jinja_environment.get_template('tags_for.html')   
+    values = {'bm': bm} 
+    html_page = template.render(values)
+    self.response.write(html_page)
+
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
@@ -279,7 +293,7 @@ app = webapp2.WSGIApplication([
   ('/addtag',     AddTag),
   ('/deltag',     DeleteTag),
   ('/removetag',  RemoveTag),
-  ('/asstag',     AssignTag),
+  ('/assigntag',  AssignTag),
   ('/empty_trash',Empty_Trash),
   ('/feed',       AddFeed),
   ('/setmys',     SetMys),
