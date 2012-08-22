@@ -2,11 +2,8 @@
 
 <dt>      
 <div class="btn-toolbar">
-
-  <div class="btn-group">
-    <a class="btn btn-mini" href="/star?bm={{ bm.key.id() }}">
-    {% if bm.starred %} <i class="icon-star"></i></a> {% else %} <i class="icon-star-empty"></i></a> {% endif %}        
-    
+  <div class="btn-group" id='stars-{{ bm.key.id() }}'>
+  {% include "star.html" %}
   </div>
   <div class="btn-group">
     <a class="btn btn-mini" data-toggle="button" id="prev-{{ bm.key.id() }}"><i class="icon-eye-open"></i> view</a>

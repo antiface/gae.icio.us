@@ -65,6 +65,16 @@ $("#prev-{{ bm.key.id() }}").toggle(
   }
 )
 
+$("#star-{{ bm.key.id() }}").click(function() {
+    $.ajax({
+      url: "/star",
+      data: { bm: "{{ bm.key.id() }}" },
+      success: function(html) {
+        $("#stars-{{ bm.key.id() }}").html(html);
+      }
+    });
+})
+
 $("#arch-{{ bm.key.id() }}").click(function() {
   $.ajax({
     url: "/archive",

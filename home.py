@@ -245,6 +245,20 @@ class GetEdit(RequestHandler):
     html_page = template.render(values)
     self.response.write(html_page)
 
+class StarBM(RequestHandler):
+  def get(self):
+    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+    if users.get_current_user() == bm.user:
+      if bm.starred == False:
+        bm.starred = True
+      else:
+        bm.starred = False
+      bm.put()
+    template = jinja_environment.get_template('star.html')   
+    values = {'bm': bm} 
+    html_page = template.render(values)
+    self.response.write(html_page)
+
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
