@@ -29,7 +29,6 @@
     </script>
   </div>
   <!-- empty trash -->
-  {% if p == 'trash' %}
   <div class="modal fade" id="empty_trash">
     <div class="modal-header">
       <h4>Are you sure?</h4>
@@ -39,8 +38,7 @@
       <a class="btn" href="#" data-dismiss="modal">No</a>
     </div>
   </div>
-  <a class="btn btn-large btn-block" data-toggle="modal" data-target="#empty_trash" type="button">empty trash</a>
-  {% endif %}
+  <a id="empty_button" class="hide btn btn-large btn-block" data-toggle="modal" data-target="#empty_trash" type="button">empty trash</a>
   <!-- bookmarks -->
   {% for bm in bms %}
   <div class="well well-small" id="row-{{ bm.key.id() }}"> 
@@ -58,5 +56,13 @@
 
 </div>
 </div>
-
+<script>
+$(document).ready(function() {
+  var tab = $.cookie('active-tab')
+  $('#'+tab).addClass('active');
+  if (tab == 'trash') {
+    $('#empty_button').removeClass('hide');
+  }
+});
+</script>
 {% endblock %}

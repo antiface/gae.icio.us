@@ -59,10 +59,10 @@ def parsebm(bm):
     bm.comment = '''<iframe width="640" height="480" 
     src="http://www.youtube.com/embed/%s" frameborder="0" 
     allowfullscreen></iframe>''' % bm.preview()
-  u = urlfetch.fetch(url=bm.original, follow_redirects=True)
-  if u.final_url:
+  try:
+    urlfetch.fetch(url=bm.original, follow_redirects=True)
     bm.url = u.final_url.split('?utm_')[0].split('&feature')[0]
-  else:
+  except:
     bm.url = bm.original.split('?utm_')[0].split('&feature')[0]
   bm.put()  
   if bm.ha_mys():

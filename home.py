@@ -79,9 +79,9 @@ class InboxPage(BaseHandler):
         next_c = next_curs.urlsafe()
       else:
         next_c = None
+      self.response.set_cookie('active-tab', 'inbox')
       self.generate('home.html', {'bms': bms, 
                                   'tags': tag_set(bmq), 
-                                  'p': 'inbox', 
                                   'c': next_c })
     else:
       self.generate('git.html', {})
@@ -99,26 +99,9 @@ class ArchivedPage(BaseHandler):
       next_c = next_curs.urlsafe()
     else:
       next_c = None
+    self.response.set_cookie('active-tab', 'archive')
     self.generate('home.html', {'bms' : bms,
                                 'tags': tag_set(bmq),
-                                'p': 'archive',
-                                'c': next_c })
-
-class TrashedPage(BaseHandler):
-  @login_required
-  def get(self):
-    bmq = ndb.gql("""SELECT * FROM Bookmarks
-      WHERE user = :1 AND trashed = True 
-      ORDER BY data DESC""", self.ui().user)
-    c = ndb.Cursor(urlsafe=self.request.get('c'))
-    bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-    if more:
-      next_c = next_curs.urlsafe()
-    else:
-      next_c = None
-    self.generate('home.html', {'bms' : bms, 
-                                'tags': tag_set(bmq), 
-                                'p': 'trash', 
                                 'c': next_c })
 
 class StarredPage(BaseHandler):
@@ -133,9 +116,26 @@ class StarredPage(BaseHandler):
       next_c = next_curs.urlsafe()
     else:
       next_c = None
+    self.response.set_cookie('active-tab', 'starred')
     self.generate('home.html', {'bms' : bms, 
-                                'tags': tag_set(bmq), 
-                                'p': 'starred', 
+                                'tags': tag_set(bmq),
+                                'c': next_c })
+
+class TrashedPage(BaseHandler):
+  @login_required
+  def get(self):
+    bmq = ndb.gql("""SELECT * FROM Bookmarks
+      WHERE user = :1 AND trashed = True 
+      ORDER BY data DESC""", self.ui().user)
+    c = ndb.Cursor(urlsafe=self.request.get('c'))
+    bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+    if more:
+      next_c = next_curs.urlsafe()
+    else:
+      next_c = None
+    self.response.set_cookie('active-tab', 'trash')
+    self.generate('home.html', {'bms' : bms, 
+                                'tags': tag_set(bmq),
                                 'c': next_c })
 
 
@@ -151,9 +151,9 @@ class NotagPage(BaseHandler):
       next_c = next_curs.urlsafe()
     else:
       next_c = None
+    self.response.set_cookie('active-tab', 'untagged')
     self.generate('home.html', {'bms' : bms, 
                                 'tags': tag_set(bmq), 
-                                'p': 'notag', 
                                 'c': next_c })
 
 
@@ -169,9 +169,9 @@ class PreviewPage(BaseHandler):
       next_c = next_curs.urlsafe()
     else:
       next_c = None
+    self.response.set_cookie('active-tab', 'previews')
     self.generate('home.html', {'bms' : bms, 
                                 'tags': tag_set(bmq), 
-                                'p': 'preview', 
                                 'c': next_c })
 
 
@@ -186,7 +186,6 @@ class FilterPage(BaseHandler):
     tagset.remove(tag_obj.key)
     self.generate('home.html', {'tag_obj': tag_obj,
                                 'bms': tag_obj.bm_set,
-                                'p': 'filter',
                                 'tags': tagset,
                                 })        
 
@@ -210,8 +209,7 @@ class RefinePage(BaseHandler):
     else:
       next_c = None
     self.generate('home.html', {'bms' : bms,
-                                'tag_obj': None, 
-                                'p': 'refine', 
+                                'tag_obj': None,
                                 'c': next_c })
 
 
