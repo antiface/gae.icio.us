@@ -71,7 +71,7 @@ class AddFeed(RequestHandler):
           feed.comment = d.description
           feed.put()
         ndb.transaction(txn)
-        deferred.defer(new_bm, feed, _target="worker", _queue="admin")
+        deferred.defer(new_bm, d, user, _target="worker", _queue="admin")
       else:
         pass
       self.redirect(self.request.referer)

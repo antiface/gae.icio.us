@@ -15,6 +15,14 @@ def login_required(handler_method):
       handler_method(self)
   return check_login
 
+def tag_set(bmq):
+  tagset = []
+  for bm in bmq:
+    for tag in bm.tags:
+      if not tag in tagset:
+        tagset.append(tag)
+  return tagset
+
 def del_bm(bmk):
   for tag in bmk.get().tags:
     deferred.defer(decr_tags, tag, _queue="admin")    
@@ -32,27 +40,28 @@ def pop_feed(feed):
   p = parse(feed.feed)
   e = 0
   d = p.entries[e]
-  q = Bookmarks.query(Bookmarks.original == d.link)
-  while q.get() is None and e < 5:
-    feed.url = d.link
-    feed.title = d.title.encode('utf-8')
-    feed.comment = d.description.encode('utf-8')
-    feed.put()
-    e = e + 1
-    d = p.entries[e]
-    q = Bookmarks.query(Bookmarks.original == d.link)
-    deferred.defer(new_bm, feed, _target="worker", _queue="parser")
+  while feed.url != d.link:
+    deferred.defer(new_bm, d, feed.user, _target="worker", _queue="bookmarks")
+    e += 1
+    d = p.entries[e]  
+  d = p.entries[0]
+  feed.url = d.link
+  feed.title = d.title.encode('utf-8')
+  feed.comment = d.description.encode('utf-8')
+  feed.put()
+
     
-def new_bm(feed):
+def new_bm(d, user):
   bm = Bookmarks()
   def txn():    
-    bm.original = feed.url
-    bm.title = feed.title
-    bm.comment = feed.comment
-    bm.user = feed.user
+    bm.original = d.link
+    bm.title = d.title.encode('utf-8')
+    bm.comment = d.description.encode('utf-8')
+    bm.user = user
     bm.put()
   ndb.transaction(txn)
-  deferred.defer(parsebm, bm, _target="worker", _queue="bookmarks")
+  deferred.defer(parsebm, bm, _target="worker", _queue="parser")
+  
 
 def parsebm(bm):  
   if bm.preview():
@@ -60,11 +69,12 @@ def parsebm(bm):
     src="http://www.youtube.com/embed/%s" frameborder="0" 
     allowfullscreen></iframe>''' % bm.preview()
   try:
-    urlfetch.fetch(url=bm.original, follow_redirects=True)
+    u = urlfetch.fetch(url=bm.original, follow_redirects=True)
     bm.url = u.final_url.split('?utm_')[0].split('&feature')[0]
+    bm.put()
   except:
     bm.url = bm.original.split('?utm_')[0].split('&feature')[0]
-  bm.put()  
+    bm.put()  
   if bm.ha_mys():
     deferred.defer(sendbm, bm, _queue="emails")
 

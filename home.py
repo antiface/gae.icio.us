@@ -5,7 +5,7 @@ import webapp2, jinja2, os
 from google.appengine.api import users, mail, app_identity
 from google.appengine.ext import ndb
 from handlers.feedparser import parse
-from handlers.myutils import login_required
+from handlers.myutils import *
 from handlers.models import *
 from handlers.core import *
 
@@ -59,13 +59,6 @@ javascript:location.href=
     template = jinja_environment.get_template(template_name)
     self.response.out.write(template.render(values))
 
-def tag_set(bmq):
-  tagset = []
-  for bm in bmq:
-    for tag in bm.tags:
-      if not tag in tagset:
-        tagset.append(tag)
-  return tagset
 
 class InboxPage(BaseHandler):
   def get(self):
@@ -80,9 +73,8 @@ class InboxPage(BaseHandler):
       else:
         next_c = None
       self.response.set_cookie('active-tab', 'inbox')
-      self.generate('home.html', {'bms': bms, 
-                                  'tags': tag_set(bmq), 
-                                  'c': next_c })
+      self.generate('home.html', 
+        {'bms': bms, 'tags': tag_set(bmq), 'c': next_c })
     else:
       self.generate('git.html', {})
 
@@ -100,9 +92,8 @@ class ArchivedPage(BaseHandler):
     else:
       next_c = None
     self.response.set_cookie('active-tab', 'archive')
-    self.generate('home.html', {'bms' : bms,
-                                'tags': tag_set(bmq),
-                                'c': next_c })
+    self.generate('home.html', 
+      {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
 
 class StarredPage(BaseHandler):
   @login_required
@@ -117,9 +108,8 @@ class StarredPage(BaseHandler):
     else:
       next_c = None
     self.response.set_cookie('active-tab', 'starred')
-    self.generate('home.html', {'bms' : bms, 
-                                'tags': tag_set(bmq),
-                                'c': next_c })
+    self.generate('home.html', 
+      {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
 
 class TrashedPage(BaseHandler):
   @login_required
@@ -134,9 +124,8 @@ class TrashedPage(BaseHandler):
     else:
       next_c = None
     self.response.set_cookie('active-tab', 'trash')
-    self.generate('home.html', {'bms' : bms, 
-                                'tags': tag_set(bmq),
-                                'c': next_c })
+    self.generate('home.html', 
+      {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
 
 
 class NotagPage(BaseHandler):
@@ -152,9 +141,8 @@ class NotagPage(BaseHandler):
     else:
       next_c = None
     self.response.set_cookie('active-tab', 'untagged')
-    self.generate('home.html', {'bms' : bms, 
-                                'tags': tag_set(bmq), 
-                                'c': next_c })
+    self.generate('home.html', 
+      {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
 
 
 class PreviewPage(BaseHandler):
@@ -170,9 +158,8 @@ class PreviewPage(BaseHandler):
     else:
       next_c = None
     self.response.set_cookie('active-tab', 'previews')
-    self.generate('home.html', {'bms' : bms, 
-                                'tags': tag_set(bmq), 
-                                'c': next_c })
+    self.generate('home.html', 
+      {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
 
 
 class FilterPage(BaseHandler):
@@ -180,14 +167,11 @@ class FilterPage(BaseHandler):
   def get(self):
     tag_name = self.request.get('tag')
     tag_obj = ndb.gql("""SELECT * FROM Tags 
-      WHERE user = :1 AND name = :2 
-      ORDER BY data DESC""", self.ui().user, tag_name).get()
+      WHERE user = :1 AND name = :2""", self.ui().user, tag_name).get()
     tagset = tag_set(tag_obj.bm_set)
     tagset.remove(tag_obj.key)
-    self.generate('home.html', {'tag_obj': tag_obj,
-                                'bms': tag_obj.bm_set,
-                                'tags': tagset,
-                                })        
+    self.generate('home.html', 
+      {'tag_obj': tag_obj, 'bms': tag_obj.bm_set, 'tags': tagset })
 
 
 class RefinePage(BaseHandler):
@@ -208,9 +192,8 @@ class RefinePage(BaseHandler):
       next_c = next_curs.urlsafe()
     else:
       next_c = None
-    self.generate('home.html', {'bms' : bms,
-                                'tag_obj': None,
-                                'c': next_c })
+    self.generate('home.html', 
+      {'bms' : bms, 'tag_obj': None, 'c': next_c })
 
 
 class SubsPage(BaseHandler):
