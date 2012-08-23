@@ -118,7 +118,7 @@ class AddBM(RequestHandler):
 class EditBM(RequestHandler):
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    if self.ui().user == bm.user:
+    if users.get_current_user() == bm.user:
       def txn():
         bm.url = self.request.get('url').encode('utf8')
         bm.title = self.request.get('title').encode('utf8')
