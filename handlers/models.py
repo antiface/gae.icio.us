@@ -14,18 +14,6 @@ class UserInfo(ndb.Model):
       WHERE user = :1 ORDER BY count DESC""", self.user)
 
 
-class Feeds(ndb.Model):
-  user = ndb.UserProperty() 
-  data = ndb.DateTimeProperty(auto_now=True)
-  feed = ndb.StringProperty()#url
-  blog = ndb.StringProperty()#feed.title
-  root = ndb.StringProperty()#feed.link
-
-  url = ndb.StringProperty()#link
-  title = ndb.StringProperty()#title
-  comment = ndb.TextProperty()#description
-
-
 class Tags(ndb.Model):
   data  = ndb.DateTimeProperty(auto_now=True)
   user  = ndb.UserProperty(required=True)
@@ -44,6 +32,26 @@ class Tags(ndb.Model):
           other.append(tag)
     other.remove(self.key)
     return other
+
+class Feeds(ndb.Model):
+  user = ndb.UserProperty() 
+  data = ndb.DateTimeProperty(auto_now=True)
+  tags = ndb.KeyProperty(kind=Tags,repeated=True)
+  feed = ndb.StringProperty()#url
+  blog = ndb.StringProperty()#feed.title
+  root = ndb.StringProperty()#feed.link
+
+  url = ndb.StringProperty()#link
+  title = ndb.StringProperty()#title
+  comment = ndb.TextProperty()#description
+  @property
+  def other_tags(self):
+    q = ndb.gql("SELECT name FROM Tags WHERE user = :1", self.user)
+    all_user_tags = [tagk.key for tagk in q]
+    for tagk in self.tags:
+      all_user_tags.remove(tagk)
+    return all_user_tags
+
 
 class Bookmarks(ndb.Model):
   data = ndb.DateTimeProperty(auto_now=True)

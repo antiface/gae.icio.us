@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+<div class="row">
+{% include "sidebar.html" %}
+
+<div class="span9">
+  {% for tag in ui.tag_list %}
+    {% if tag.count == 0 %}
+    <a class="btn btn-link " href="/deltag?tag={{ tag.key.id() }}">
+      {{ tag.name }} [{{ tag.count }}] <i class="icon-remove"></i></a>
+    {% elif tag.count > 0 and tag.count <= 5 %}
+    <a class="btn btn-link " href="/filter?tag={{ tag.name }}"> 
+      <h5>{{ tag.name }} [{{ tag.count }}]</h5></a>
+    {% elif tag.count > 5 and tag.count <= 10 %}
+    <a class="btn btn-link " href="/filter?tag={{ tag.name }}"> 
+      <h4>{{ tag.name }} [{{ tag.count }}]</h4></a>
+    {% elif tag.count > 10 and tag.count <= 20 %}
+    <a class="btn btn-link " href="/filter?tag={{ tag.name }}"> 
+      <h3>{{ tag.name }} [{{ tag.count }}]</h3></a>
+    {% elif tag.count > 20 and tag.count <= 50 %}
+    <a class="btn btn-link " href="/filter?tag={{ tag.name }}"> 
+      <h2>{{ tag.name }} [{{ tag.count }}]</h2></a>
+    {% else %}
+    <a class="btn btn-link " href="/filter?tag={{ tag.name }}"> 
+      <h1>{{ tag.name }} [{{ tag.count }}]</h1></a>      
+    {% endif %}
+  {% endfor %}
+</div>
+
+</div>
+</div>
+{% endblock %}

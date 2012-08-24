@@ -22,5 +22,16 @@
 <script src="static/js/jquery.cookie.js"></script>
 {% block content %}
 {% endblock %}
+
+<script>
+$(document).ready(function() {
+  var tab = $.cookie('active-tab')
+  $('#'+tab).addClass('active');
+  if (tab == 'trash') {
+    $('#empty_button').removeClass('hide');
+  }
+});
+</script>
+
 </body>
 </html>

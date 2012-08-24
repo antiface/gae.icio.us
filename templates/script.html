@@ -1,20 +1,8 @@
 <script type="text/javascript">
 
-// $('#save-{{ bm.key.id() }}').submit(function() { // catch the form's submit event
-//   // event.preventDefault(); 
-//   $.ajax({ // create an AJAX call...
-//     // type: $(this).attr('method'), // GET or POST
-//     url: "/edit", // the file to call
-//     data: $(this).serialize(), // get the form data
-//     success: function(html) { // on success..
-//       $('#row-{{ bm.key.id() }}').html(html); // update the DIV
-//     }
-//   });
-// })
-
 $("#tags-{{ bm.key.id() }}").toggle(
   function() {
-    $().button('toggle');
+    $(this).button('toggle');
     $.ajax({
       url: "/gettags",
       data: { bm: "{{ bm.key.id() }}" },
@@ -22,11 +10,11 @@ $("#tags-{{ bm.key.id() }}").toggle(
         $("#comment-{{ bm.key.id() }}").html(html);
       }
     });
-    $.button('toggle');
+    $(this).button('toggle');
   },
   function() {
     $("#comment-{{ bm.key.id() }}").html('');
-    $.button('toggle');
+    $(this).button('toggle');
   }
 )
 
@@ -39,17 +27,17 @@ $("#edit-{{ bm.key.id() }}").toggle(
         $("#comment-{{ bm.key.id() }}").html(html);
       }
     });
-    $.button('toggle');
+    $(this).button('toggle');
   },
   function() {
     $("#comment-{{ bm.key.id() }}").html('');
-    $.button('toggle');
+    $(this).button('toggle');
   }
 )
 
 $("#prev-{{ bm.key.id() }}").toggle(  
   function() {
-    $().button('toggle');
+    $(this).button('toggle');
     $.ajax({
       url: "/getcomment",
       data: { bm: "{{ bm.key.id() }}" },
@@ -57,11 +45,11 @@ $("#prev-{{ bm.key.id() }}").toggle(
         $("#comment-{{ bm.key.id() }}").html(html);
       }
     });
-    $.button('toggle');
+    $(this).button('toggle');
   },
   function() {
     $("#comment-{{ bm.key.id() }}").html('');
-    $.button('toggle');
+    $(this).button('toggle');
   }
 )
 

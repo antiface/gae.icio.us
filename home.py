@@ -4,7 +4,6 @@
 import webapp2, jinja2, os
 from google.appengine.api import users, mail, app_identity
 from google.appengine.ext import ndb
-from handlers.feedparser import parse
 from handlers.myutils import *
 from handlers.models import *
 from handlers.core import *
@@ -170,6 +169,7 @@ class FilterPage(BaseHandler):
       WHERE user = :1 AND name = :2""", self.ui().user, tag_name).get()
     tagset = tag_set(tag_obj.bm_set)
     tagset.remove(tag_obj.key)
+    self.response.set_cookie('active-tab', '')
     self.generate('home.html', 
       {'tag_obj': tag_obj, 'bms': tag_obj.bm_set, 'tags': tagset })
 
@@ -195,13 +195,21 @@ class RefinePage(BaseHandler):
     self.generate('home.html', 
       {'bms' : bms, 'tag_obj': None, 'c': next_c })
 
-
-class SubsPage(BaseHandler):
+class FeedsPage(BaseHandler):
   @login_required
-  def get(self):
-      feeds = Feeds.query(Feeds.user == self.ui().user)
-      self.generate('subs.html', {'feeds': feeds})
+  def get(self):    
+    feeds = ndb.gql("""SELECT * FROM Feeds 
+      WHERE user = :1 ORDER BY data DESC""", self.ui().user)
+    self.response.set_cookie('active-tab', 'feeds')
+    self.generate('feeds.html', {'feeds': feeds})
 
+class TagCloudPage(BaseHandler):
+  @login_required
+  def get(self):   
+    self.response.set_cookie('active-tab', 'tagcloud')
+    self.generate('tagcloud.html', {})
+
+### AJAX ###
 class GetComment(RequestHandler):
   @login_required
   def get(self):
@@ -253,11 +261,17 @@ class AssignTag(RequestHandler):
     html_page = template.render(values)
     self.response.write(html_page)
 
+class CheckFeed(RequestHandler):
+  def get(self):
+    feed = Feeds.get_by_id(int(self.request.get('feed')))
+    deferred.defer(pop_feed, feed, _target="worker", _queue="admin") 
+
+
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
   ('/',           InboxPage),
-  ('/subs',       SubsPage),
+  ('/feeds',      FeedsPage),
   ('/filter',     FilterPage),
   ('/refine',     RefinePage),
   ('/notag',      NotagPage),
@@ -265,6 +279,7 @@ app = webapp2.WSGIApplication([
   ('/archived',   ArchivedPage),
   ('/starred',    StarredPage),
   ('/trashed',    TrashedPage),
+  ('/tagcloud',   TagCloudPage),
   ('/submit',     AddBM),
   ('/edit',       EditBM),
   ('/archive',    ArchiveBM),
@@ -280,9 +295,12 @@ app = webapp2.WSGIApplication([
   ('/gettags',    GetTags),
   ('/getcomment', GetComment),
   ('/getedit',    GetEdit),
+  ('/atf',        AssTagFeed),
+  ('/rtf',        RemoveTagFeed),
   ('/_ah/mail/post@.*',ReceiveMail),
   ('/adm/check',  CheckFeeds),
   ('/adm/script', script),
+  ('/checkfeed',  CheckFeed),
   ], debug=debug)
 
 def main():

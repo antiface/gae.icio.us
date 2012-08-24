@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+<div class="row">
+{% include "sidebar.html" %}
+<div class="span9">
+
+
+  <div class="row-fluid"> 
+    <div class="well well-small"> 
+      <form class="form-horizontal" action="/feed" method="post">
+        <div class="control-group">
+          <label class="control-label" for="inputEmail">Add Feed</label>
+          <div class="controls">
+            <input type="text" class="input span12" name="url" allowBlank="true">
+          </div>
+        </div>
+      </form> 
+    </div>
+  </div>
+
+  {% for feed in feeds %}
+  <div class="well well-small" >
+    <dt> 
+      <a class="btn disabled btn-mini"><i class="icon-time"></i> {{ feed.data|dtf }}</a>
+      <a href="{{ feed.root }}" ><strong> {{ feed.blog }}</strong></a>
+    </dt>
+    <dd>{{ feed.feed }}</dd>
+    <dd>
+      <div class="btn-toolbar">
+        <div class="btn-group">
+          <a class="btn btn-mini" href="/feed?id={{ feed.key.id() }}" >delete feed</a>
+          <a class="btn btn-mini" id="check-{{ feed.key.id() }}" >check feed</a>
+          <a class="btn btn-mini" id="feed-{{ feed.key.id() }}" >add tag</a>
+        </div>
+        {% for tag in feed.tags %}
+        <div class="btn-group">
+          <a class="btn btn-mini btn-link disabled"> {{ tag.get().name }} </a>
+          <a class="btn btn-mini btn-link disabled" href="/rtf?feed={{ feed.key.id() }}&tag={{ tag.id() }}">
+            <i class="icon-remove"></i></a>
+        </div>
+        {% endfor %}
+      </div>
+    </dd>
+    <dd id="other-{{ feed.key.id() }}" class="hide">
+      {% for tag in feed.other_tags %}
+      <a class='btn btn-mini btn-link' href='/atf?tag={{ tag.id() }}&feed={{ feed.key.id() }}'>{{ tag.get().name }}</a>
+      {% endfor %}
+    </dd>
+  </div>
+  <script type="text/javascript">
+
+  $("#feed-{{ feed.key.id() }}").toggle(
+    function() {
+      $("#other-{{ feed.key.id() }}").removeClass('hide');
+      },
+    function() {
+      $("#other-{{ feed.key.id() }}").addClass('hide');
+      });
+
+  $("#check-{{ feed.key.id() }}").click(function(){
+    $.ajax({
+      url: "/checkfeed",
+      data: { feed: "{{ feed.key.id() }}" }
+    })
+  });
+  </script>
+  {% endfor %}
+
+</div>
+</div>
+</div>
+{% endblock %}
+

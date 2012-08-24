@@ -5,29 +5,7 @@
 <div class="row">
 {% include "sidebar.html" %}
 
-
 <div class="span9">
-  <!-- tagcloud -->
-  <div class="well well-small hide" id="cloud">     
-    <div class="btn-toolbar"> 
-    {% for tag in ui.tag_list %}
-      {% if tag.count != 0 %}
-      <a class="btn btn-mini btn-link " href="/filter?tag={{ tag.name }}"> 
-        <i class="icon-tag"></i> {{ tag.name }} [{{ tag.count }}] <i class="icon-filter"></i> </a>
-      {% else %}
-      <a class="btn btn-mini btn-link " href="/deltag?tag={{ tag.key.id() }}">
-        <i class="icon-tag"></i> {{ tag.name }} [{{ tag.count }}] <i class="icon-remove"></i></a>
-      {% endif %}
-    {% endfor %}
-    </div>
-    <script type="text/javascript">
-    $("#tagcloud").toggle(function() {
-      $("#cloud").removeClass('hide');
-      }, function() {
-      $("#cloud").addClass('hide');
-      });
-    </script>
-  </div>
   <!-- empty trash -->
   <div class="modal fade" id="empty_trash">
     <div class="modal-header">
@@ -38,7 +16,9 @@
       <a class="btn" href="#" data-dismiss="modal">No</a>
     </div>
   </div>
-  <a id="empty_button" class="hide btn btn-large btn-block" data-toggle="modal" data-target="#empty_trash" type="button">empty trash</a>
+  <div class="hide well well-small" id="empty_button">
+    <a  class=" btn btn-block" data-toggle="modal" data-target="#empty_trash" type="button">empty trash</a>
+  </div> 
   <!-- bookmarks -->
   {% for bm in bms %}
   <div class="well well-small" id="row-{{ bm.key.id() }}"> 
@@ -56,13 +36,4 @@
 
 </div>
 </div>
-<script>
-$(document).ready(function() {
-  var tab = $.cookie('active-tab')
-  $('#'+tab).addClass('active');
-  if (tab == 'trash') {
-    $('#empty_button').removeClass('hide');
-  }
-});
-</script>
 {% endblock %}

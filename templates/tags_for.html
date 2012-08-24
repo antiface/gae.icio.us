@@ -1,6 +1,6 @@
 {% for tag in bm.tags %}
   <div class="btn-group"> 
-    <a class="btn btn-mini" href="/filter?tag={{ tag.get().name }}"><i class="icon-tag"></i> {{ tag.get().name }}</a>
-    <a class="btn btn-mini" href="/removetag?bm={{ bm.key.id() }}&tag={{ tag.id() }}"><i class="icon-remove"></i></a>
+    <a class="btn btn-mini btn-link disabled" href="/filter?tag={{ tag.get().name }}"><i class="icon-tag"></i> {{ tag.get().name }}</a>
+    <a class="btn btn-mini btn-link disabled" href="/removetag?bm={{ bm.key.id() }}&tag={{ tag.id() }}"><i class="icon-remove"></i></a>
   </div>
 {% endfor %}

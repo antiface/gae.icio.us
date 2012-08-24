@@ -5,7 +5,6 @@ from webapp2 import RequestHandler
 from email import header, utils
 from google.appengine.api import users, mail
 from google.appengine.ext import ndb, deferred
-from handlers.feedparser import parse
 from handlers.myutils import *
 from handlers.models import *
 
@@ -52,6 +51,7 @@ class SetMys(RequestHandler):
 
 class AddFeed(RequestHandler):
   def post(self):
+    from handlers.feedparser import parse
     user = users.get_current_user()
     url = self.request.get('url')
     p = parse(url)
@@ -71,7 +71,7 @@ class AddFeed(RequestHandler):
           feed.comment = d.description
           feed.put()
         ndb.transaction(txn)
-        deferred.defer(new_bm, d, user, _target="worker", _queue="admin")
+        deferred.defer(new_bm, d, feed, _target="worker", _queue="admin")
       else:
         pass
       self.redirect(self.request.referer)
@@ -184,3 +184,25 @@ class DeleteTag(RequestHandler):
     if users.get_current_user() == tag.user:
       tag.key.delete()
     self.redirect(self.request.referer)
+
+
+class AssTagFeed(RequestHandler):
+  def get(self):
+    feed = Feeds.get_by_id(int(self.request.get('feed')))
+    tag = Tags.get_by_id(int(self.request.get('tag')))
+    if users.get_current_user() == feed.user:
+      if tag in feed.tags:
+        pass
+      else:
+        feed.tags.append(tag.key)
+        feed.put()
+    self.redirect(self.request.referer)
+
+class RemoveTagFeed(RequestHandler):
+  def get(self):
+    feed = Feeds.get_by_id(int(self.request.get('feed')))
+    tag = Tags.get_by_id(int(self.request.get('tag')))
+    if users.get_current_user() == feed.user:
+      feed.tags.remove(tag.key)
+      feed.put()
+    self.redirect(self.request.referer)    

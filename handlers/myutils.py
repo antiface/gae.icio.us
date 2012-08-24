@@ -25,15 +25,18 @@ def tag_set(bmq):
 
 def del_bm(bmk):
   for tag in bmk.get().tags:
-    deferred.defer(decr_tags, tag, _queue="admin")    
+    deferred.defer(decr_tags, tag, _queue="tags")    
   bmk.delete()
 
+def incr_tags(tag):
+  t = tag.get()
+  t.count += 1
+  t.put()
+
 def decr_tags(tag):
-  def txn():
-    t = tag.get()
-    t.count -= 1
-    t.put() 
-  ndb.transaction(txn)
+  t = tag.get()
+  t.count -= 1
+  t.put()
 
 def pop_feed(feed):
   from feedparser import parse
@@ -41,7 +44,7 @@ def pop_feed(feed):
   e = 0
   d = p.entries[e]
   while feed.url != d.link:
-    deferred.defer(new_bm, d, feed.user, _target="worker", _queue="bookmarks")
+    deferred.defer(new_bm, d, feed, _target="worker", _queue="bookmarks")
     e += 1
     d = p.entries[e]  
   d = p.entries[0]
@@ -51,16 +54,19 @@ def pop_feed(feed):
   feed.put()
 
     
-def new_bm(d, user):
+def new_bm(d, feed):
   bm = Bookmarks()
   def txn():    
     bm.original = d.link
     bm.title = d.title.encode('utf-8')
     bm.comment = d.description.encode('utf-8')
-    bm.user = user
+    bm.user = feed.user
+    bm.tags = feed.tags
     bm.put()
   ndb.transaction(txn)
   deferred.defer(parsebm, bm, _target="worker", _queue="parser")
+  for tag in bm.tags:
+    deferred.defer(incr_tags, tag, _target="worker", _queue="tags")
   
 
 def parsebm(bm):  
@@ -70,10 +76,10 @@ def parsebm(bm):
     allowfullscreen></iframe>''' % bm.preview()
   try:
     u = urlfetch.fetch(url=bm.original, follow_redirects=True)
-    bm.url = u.final_url.split('?utm_')[0].split('&feature')[0]
+    bm.url = u.final_url.split('utm_')[0].split('&feature')[0]
     bm.put()
   except:
-    bm.url = bm.original.split('?utm_')[0].split('&feature')[0]
+    bm.url = bm.original.split('utm_')[0].split('&feature')[0]
     bm.put()  
   if bm.ha_mys():
     deferred.defer(sendbm, bm, _queue="emails")

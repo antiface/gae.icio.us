@@ -61,6 +61,12 @@ indexes:
   - name: data
     direction: desc
 
+- kind: Feeds
+  properties:
+  - name: user
+  - name: data
+    direction: desc
+
 - kind: Tags
   properties:
   - name: name
