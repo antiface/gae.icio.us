@@ -10,8 +10,7 @@ class UserInfo(ndb.Model):
   mys = ndb.BooleanProperty(default=False)
   @property
   def tag_list(self):
-    return ndb.gql("""SELECT * FROM Tags
-      WHERE user = :1 ORDER BY count DESC""", self.user)
+    return Tags.query(Tags.user == self.user)
 
 
 class Tags(ndb.Model):

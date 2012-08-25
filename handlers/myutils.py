@@ -73,23 +73,24 @@ def parsebm(bm):
     bm.url = bm.original.split('utm_')[0].split('&feature')[0]
   q = Bookmarks.query(ndb.OR(Bookmarks.original == bm.original, Bookmarks.url == bm.url))
   q = q.filter(Bookmarks.key != bm.key)
-  if q.count > 1:
+  if q.count >= 2:
     tag_list = []
     for old in q:
       for t in old.tags:
         if t not in tag_list:
           tag_list.append(t)
+          # tag_list.append(bm.tags)
+          bm.tags.extend(tag_list)
       if old.comment != bm.comment:
         comment = '<br> -- previous comment -- <br>' + old.comment
         bm.comment = bm.comment + comment
       old.trashed = True
-      old.put()
-    bm.tags = tag_list
+      old.put()    
   if bm.title == '':
     bm.title = bm.url
   bm.put()
-  if urlparse('%s' % bm.url).path.split('.')[1] == 'mp3':
-    deferred.defer(upload, bm.url)
+  # if urlparse('%s' % bm.url).path.split('.')[1] == 'mp3':
+    # deferred.defer(upload, bm.url)
 
   if bm.ha_mys():
     deferred.defer(sendbm, bm, _queue="emails")
