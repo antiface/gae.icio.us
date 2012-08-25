@@ -254,8 +254,6 @@ class AssignTag(RequestHandler):
     if users.get_current_user() == bm.user:
       bm.tags.append(tag.key)
       bm.put()
-      tag.count += 1
-      tag.put()
     template = jinja_environment.get_template('tags_for.html')   
     values = {'bm': bm} 
     html_page = template.render(values)

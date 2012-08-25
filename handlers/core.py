@@ -12,16 +12,7 @@ from handlers.models import *
 class script(RequestHandler):
   def get(self):
     for bm in Bookmarks.query():
-      deferred.defer(repair, bm, _target="worker", _queue="admin")   
-
-def repair(bm):
-  if bm.original == None:
-    bm.original = bm.url
-    bm.put
-  if bm.original.split('ttp')[0] is not 'h':
-    bm.original = bm.url
-    bm.put
-  deferred.defer(parsebm, bm, _target="worker", _queue="parser")    
+      deferred.defer(parsebm, bm, _target="worker", _queue="admin")  
 
 class CheckFeeds(RequestHandler):
   def get(self):
@@ -36,7 +27,7 @@ class Empty_Trash(RequestHandler):
       WHERE user = :1 AND trashed = True 
       ORDER BY data DESC""", users.get_current_user())
     for bm in bmq:
-      deferred.defer(del_bm, bm, _queue="admin")
+      deferred.defer(del_bm, bm, _target="worker", _queue="admin")
     self.redirect('/')
 
 class SetMys(RequestHandler):
@@ -51,7 +42,7 @@ class SetMys(RequestHandler):
 
 class AddFeed(RequestHandler):
   def post(self):
-    from handlers.feedparser import parse
+    from libs.feedparser import parse
     user = users.get_current_user()
     url = self.request.get('url')
     p = parse(url)
@@ -155,12 +146,7 @@ class RemoveTag(RequestHandler):
     if users.get_current_user() == bm.user:
       bm.tags.remove(tag.key)
       bm.put()
-      tag.count -= 1
-      tag.put()
-    if tag.count == 0:
-      self.redirect('/')
-    else:
-      self.redirect(self.request.referer)
+    self.redirect(self.request.referer)
 
 class AddTag(RequestHandler):
   def get(self):

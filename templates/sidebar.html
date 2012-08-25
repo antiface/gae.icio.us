@@ -22,7 +22,7 @@
       {% elif not tag_obj %}<!-- home pages -->
       {% for tag in tags %}
       <li>  
-        <a href="/filter?tag={{ tag.get().name }}"> [{{ tag.get().count }}]  {{ tag.get().name }} </a>
+        <a href="/filter?tag={{ tag.get().name }}"> [{{ tag.get().bm_set.count() }}]  {{ tag.get().name }} </a>
       </li>
       {% endfor %}        
       {% else %}<!-- filter page -->

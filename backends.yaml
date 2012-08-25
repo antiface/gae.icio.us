@@ -1,4 +1,3 @@
 backends:
 - name: worker
   class: B1
-  options: public, dynamic

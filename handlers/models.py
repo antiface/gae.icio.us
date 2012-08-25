@@ -18,7 +18,6 @@ class Tags(ndb.Model):
   data  = ndb.DateTimeProperty(auto_now=True)
   user  = ndb.UserProperty(required=True)
   name  = ndb.StringProperty()
-  count = ndb.IntegerProperty(default=0)
   @property
   def bm_set(self):
     return ndb.gql("""SELECT * FROM Bookmarks
