@@ -3,7 +3,8 @@
 
 import webapp2, jinja2, os
 from google.appengine.api import users, mail, app_identity
-from google.appengine.ext import ndb
+from google.appengine.ext import ndb, blobstore
+from google.appengine.ext.webapp import blobstore_handlers
 from handlers.myutils import *
 from handlers.models import *
 from handlers.core import *
@@ -265,6 +266,19 @@ class CheckFeed(RequestHandler):
     deferred.defer(pop_feed, feed, _target="worker", _queue="admin") 
 
 
+class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
+  def post(self):
+    upload_files = self.get_uploads('file')  # 'file' is file upload field in the form
+    blob_info = upload_files[0]
+    self.redirect('/serve/%s' % blob_info.key())
+
+class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
+  def get(self, resource):
+    # resource = str(urllib.unquote(resource))
+    blob_info = blobstore.BlobInfo.get(resource)
+    self.send_blob(blob_info)
+
+
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
@@ -299,6 +313,8 @@ app = webapp2.WSGIApplication([
   ('/adm/check',  CheckFeeds),
   ('/adm/script', script),
   ('/checkfeed',  CheckFeed),
+  ('/upload', UploadHandler),
+  ('/serve/([^/]+)?', ServeHandler),
   ], debug=debug)
 
 def main():

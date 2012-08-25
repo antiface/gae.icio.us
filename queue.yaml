@@ -14,10 +14,6 @@ queue:
   rate: 5/s
   bucket_size: 20
 
-- name: tags
-  rate: 5/s
-  bucket_size: 20
-
 - name: importer
   rate: 5/s
   bucket_size: 20

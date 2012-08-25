@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from google.appengine.api import users, mail, app_identity, urlfetch
-from google.appengine.ext import deferred
+from google.appengine.ext import deferred, blobstore
 from models import *
+from urlparse import urlparse
+import urllib
 
 
 def login_required(handler_method):
@@ -86,6 +88,9 @@ def parsebm(bm):
   if bm.title == '':
     bm.title = bm.url
   bm.put()
+  if urlparse('%s' % bm.url).path.split('.')[1] == 'mp3':
+    deferred.defer(upload, bm.url)
+
   if bm.ha_mys():
     deferred.defer(sendbm, bm, _queue="emails")
 
@@ -99,3 +104,6 @@ def sendbm(bm):
 """ % (bm.title, bm.data, bm.url, bm.comment)
   message.send()
 
+def upload(bmfile):
+  upload_url = blobstore.create_upload_url('/upload')
+  urlfetch.fetch(url=upload_url, payload=urllib.urlencode({"file": bmfile}), method=urlfetch.POST)
