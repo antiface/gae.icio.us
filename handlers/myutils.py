@@ -1,11 +1,23 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
-
-from google.appengine.api import users, mail, app_identity, urlfetch
+from webapp2 import RequestHandler
+from google.appengine.api import users, mail, app_identity, urlfetch, capabilities
 from google.appengine.ext import deferred, blobstore
 from models import *
 from urlparse import urlparse
 import urllib
+
+class script(RequestHandler):
+  def get(self):
+    for bm in Bookmarks.query():
+      if capabilities.CapabilitySet("datastore_v3", ["write"]).is_enabled():
+        deferred.defer(parsebm, bm, _target="worker", _queue="parser")
+
+class CheckFeeds(RequestHandler):
+  def get(self):
+    for feed in Feeds.query():
+      if capabilities.CapabilitySet("datastore_v3", ["write"]).is_enabled():
+        deferred.defer(pop_feed, feed, _target="worker", _queue="admin")    
 
 
 def login_required(handler_method):
@@ -93,7 +105,8 @@ def parsebm(bm):
     # deferred.defer(upload, bm.url)
 
   if bm.ha_mys():
-    deferred.defer(sendbm, bm, _queue="emails")
+    if capabilities.CapabilitySet("mail").is_enabled():
+      deferred.defer(sendbm, bm, _queue="emails")
 
 def sendbm(bm):
   message = mail.EmailMessage()

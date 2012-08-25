@@ -9,16 +9,6 @@ from handlers.myutils import *
 from handlers.models import *
 
 
-class script(RequestHandler):
-  def get(self):
-    for bm in Bookmarks.query():
-      deferred.defer(parsebm, bm, _target="worker", _queue="parser")  
-
-class CheckFeeds(RequestHandler):
-  def get(self):
-    for feed in Feeds.query():
-      if ndb.WRITE_CAPABILITY.isEnabled():
-        deferred.defer(pop_feed, feed, _target="worker", _queue="admin")    
 
 
 class Empty_Trash(RequestHandler):
