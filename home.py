@@ -5,9 +5,8 @@ import webapp2, jinja2, os
 from google.appengine.api import users, mail, app_identity
 from google.appengine.ext import ndb, blobstore
 from google.appengine.ext.webapp import blobstore_handlers
+from handlers import core, ajax, myutils
 from handlers.myutils import *
-from handlers.models import *
-from handlers.core import *
 
 def dtf(value, format='%d-%m-%Y %H:%M'):
   return value.strftime(format)
@@ -57,6 +56,7 @@ javascript:location.href=
       }
     values.update(template_values)
     template = jinja_environment.get_template(template_name)
+    self.response.set_cookie('mys', '%s' % self.ui().mys)
     self.response.out.write(template.render(values))
 
 
@@ -168,11 +168,14 @@ class FilterPage(BaseHandler):
     tag_name = self.request.get('tag')
     tag_obj = ndb.gql("""SELECT * FROM Tags 
       WHERE user = :1 AND name = :2""", self.ui().user, tag_name).get()
-    tagset = tag_set(tag_obj.bm_set)
-    tagset.remove(tag_obj.key)
-    self.response.set_cookie('active-tab', '')
-    self.generate('home.html', 
-      {'tag_obj': tag_obj, 'bms': tag_obj.bm_set, 'tags': tagset })
+    if tag_obj:
+      tagset = tag_set(tag_obj.bm_set)
+      tagset.remove(tag_obj.key)
+      self.response.set_cookie('active-tab', '')
+      self.generate('home.html', 
+        {'tag_obj': tag_obj, 'bms': tag_obj.bm_set, 'tags': tagset })
+    else:
+      self.redirect('/')
 
 
 class RefinePage(BaseHandler):
@@ -210,67 +213,6 @@ class TagCloudPage(BaseHandler):
     self.response.set_cookie('active-tab', 'tagcloud')
     self.generate('tagcloud.html', {})
 
-### AJAX ###
-class GetComment(RequestHandler):
-  @login_required
-  def get(self):
-    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    self.response.write(bm.comment)
-
-class GetTags(RequestHandler):
-  @login_required
-  def get(self):
-    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    template = jinja_environment.get_template('tags.html')   
-    values = {'bm': bm} 
-    html_page = template.render(values)
-    self.response.write(html_page)
-
-class GetEdit(RequestHandler):
-  @login_required
-  def get(self):
-    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    template = jinja_environment.get_template('edit.html')   
-    values = {'bm': bm} 
-    html_page = template.render(values)
-    self.response.write(html_page)
-
-class StarBM(RequestHandler):
-  def get(self):
-    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    if users.get_current_user() == bm.user:
-      if bm.starred == False:
-        bm.starred = True
-        html = '<i class="icon-star">'
-      else:
-        bm.starred = False
-        html = '<i class="icon-star-empty">'
-      bm.put()
-    self.response.write(html)
-
-class AssignTag(RequestHandler):
-  def get(self):
-    bm  = Bookmarks.get_by_id(int(self.request.get('bm')))
-    tag = Tags.get_by_id(int(self.request.get('tag')))
-    if users.get_current_user() == bm.user:
-      bm.tags.append(tag.key)
-      bm.put()
-    template = jinja_environment.get_template('tags_for.html')   
-    values = {'bm': bm} 
-    html_page = template.render(values)
-    self.response.write(html_page)
-    
-class RemoveTag(RequestHandler):
-  def get(self):
-    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    tag = Tags.get_by_id(int(self.request.get('tag')))
-    if users.get_current_user() == bm.user:
-      bm.tags.remove(tag.key)
-      bm.put()
-    template = jinja_environment.get_template('tags_for.html')   
-    values = {'bm': bm} 
-    html_page = template.render(values)
-    self.response.write(html_page)
 
 class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
   def post(self):
@@ -298,29 +240,29 @@ app = webapp2.WSGIApplication([
   ('/starred',    StarredPage),
   ('/trashed',    TrashedPage),
   ('/tagcloud',   TagCloudPage),
-  ('/submit',     AddBM),
-  ('/edit',       EditBM),
-  ('/archive',    ArchiveBM),
-  ('/star',       StarBM),
-  ('/trash',      TrashBM),
-  ('/addtag',     AddTag),
-  ('/deltag',     DeleteTag),
-  ('/removetag',  RemoveTag),
-  ('/assigntag',  AssignTag),
-  ('/empty_trash',Empty_Trash),
-  ('/feed',       AddFeed),
-  ('/setmys',     SetMys),
-  ('/gettags',    GetTags),
-  ('/getcomment', GetComment),
-  ('/getedit',    GetEdit),
-  ('/atf',        AssTagFeed),
-  ('/rtf',        RemoveTagFeed),
-  ('/_ah/mail/post@.*',ReceiveMail),
-  ('/adm/check',  CheckFeeds),
-  ('/adm/script', script),
-  ('/checkfeed',  CheckFeed),
-  ('/upload', UploadHandler),
+  ('/empty_trash',core.Empty_Trash),
+  ('/feed',       core.AddFeed),
+  ('/submit',     core.AddBM),
+  ('/edit',       core.EditBM),
+  ('/addtag',     core.AddTag),
+  ('/deltag',     core.DeleteTag),
+  ('/atf',        core.AssTagFeed),
+  ('/rtf',        core.RemoveTagFeed),
+  ('/setmys',     ajax.SetMys),
+  ('/archive',    ajax.ArchiveBM),
+  ('/trash',      ajax.TrashBM),
+  ('/star',       ajax.StarBM),
+  ('/removetag',  ajax.RemoveTag),
+  ('/assigntag',  ajax.AssignTag),
+  ('/gettags',    ajax.GetTags),
+  ('/getcomment', ajax.GetComment),
+  ('/getedit',    ajax.GetEdit),
+  ('/adm/script', myutils.Script),
+  ('/adm/check',  myutils.CheckFeeds),
+  ('/checkfeed',  myutils.CheckFeed),
+  ('/upload',     UploadHandler),
   ('/serve/([^/]+)?', ServeHandler),
+  ('/_ah/mail/post@.*',core.ReceiveMail),
   ], debug=debug)
 
 def main():

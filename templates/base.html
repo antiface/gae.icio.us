@@ -26,11 +26,28 @@
 <script>
 $(document).ready(function() {
   var tab = $.cookie('active-tab')
+  if ($.cookie('mys') == 'True') {
+    $("#setmys").button('toggle')
+  }
+  
   $('#'+tab).addClass('active');
   if (tab == 'trash') {
     $('#empty_button').removeClass('hide');
   }
 });
+
+$("#setmys").click(
+  function() {
+    $.ajax({
+      url: "/setmys",
+      success: function(html) {
+        $("#setmys").html(html);
+      }
+    });
+  }
+)
+$('#bookmarklet').tooltip()
+$('#setmys').tooltip()
 </script>
 
 </body>

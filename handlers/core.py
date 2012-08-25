@@ -9,8 +9,6 @@ from handlers.myutils import *
 from handlers.models import *
 
 
-
-
 class Empty_Trash(RequestHandler):
   @login_required
   def get(self):
@@ -21,15 +19,6 @@ class Empty_Trash(RequestHandler):
       deferred.defer(del_bm, bm, _target="worker", _queue="admin")
     self.redirect('/')
 
-class SetMys(RequestHandler):
-  def get(self):
-    ui = UserInfo.query(UserInfo.user == users.get_current_user()).get()
-    if ui.mys == False:
-      ui.mys = True
-    else:
-      ui.mys = False
-    ui.put()
-    self.redirect(self.request.referer)
 
 class AddFeed(RequestHandler):
   def post(self):
@@ -81,7 +70,7 @@ class ReceiveMail(RequestHandler):
       bm.user = users.User(utils.parseaddr(message.sender)[1])
       bm.put()
     ndb.transaction(txn)
-    deferred.defer(parsebm, bm, _queue="parser")
+    deferred.defer(parsebm, bm, _target="worker", _queue="parser")
 
 class AddBM(RequestHandler):
   @login_required
@@ -109,35 +98,6 @@ class EditBM(RequestHandler):
       ndb.transaction(txn)
     self.redirect('/')
 
-class TrashBM(RequestHandler):
-  def get(self):
-    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    if users.get_current_user() == bm.user:
-      if bm.trashed == False:
-        bm.trashed = True
-        bm.archived = False
-      else:
-        bm.trashed = False
-      bm.put()
-
-class ArchiveBM(RequestHandler):
-  def get(self):
-    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    if users.get_current_user() == bm.user:
-      if bm.archived == False:
-        bm.archived = True
-      else:
-        bm.archived = False
-      bm.put()
-
-# class RemoveTag(RequestHandler):
-#   def get(self):
-#     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-#     tag = Tags.get_by_id(int(self.request.get('tag')))
-#     if users.get_current_user() == bm.user:
-#       bm.tags.remove(tag.key)
-#       bm.put()
-#     self.redirect(self.request.referer)
 
 class AddTag(RequestHandler):
   def get(self):
@@ -161,7 +121,6 @@ class DeleteTag(RequestHandler):
     if users.get_current_user() == tag.user:
       tag.key.delete()
     self.redirect(self.request.referer)
-
 
 class AssTagFeed(RequestHandler):
   def get(self):

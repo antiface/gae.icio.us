@@ -1,5 +1,6 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
+
 from webapp2 import RequestHandler
 from google.appengine.api import users, mail, app_identity, urlfetch, capabilities
 from google.appengine.ext import deferred, blobstore
@@ -7,7 +8,7 @@ from models import *
 from urlparse import urlparse
 import urllib
 
-class script(RequestHandler):
+class Script(RequestHandler):
   def get(self):
     for bm in Bookmarks.query():
       if capabilities.CapabilitySet("datastore_v3", ["write"]).is_enabled():
