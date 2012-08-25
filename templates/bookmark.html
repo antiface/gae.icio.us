@@ -6,10 +6,10 @@
   <div class="btn-group">
     <button class="btn btn-mini" id="star-{{ bm.key.id() }}">{% if bm.starred %}<i class="icon-star">{% else %}<i class="icon-star-empty">{% endif %}</i></button>
   </div>
-  <div class="btn-group">
-    <button class="btn btn-mini" data-toggle="button" id="prev-{{ bm.key.id() }}"><i class="icon-eye-open"></i> view</button>
-    <button class="btn btn-mini" data-toggle="button" id="tags-{{ bm.key.id() }}"><i class="icon-tags"></i> tags</button>
-    <button class="btn btn-mini" data-toggle="button" id="edit-{{ bm.key.id() }}"><i class="icon-edit"></i> edit</button>
+  <div class="btn-group" data-toggle="buttons-radio">
+    <button class="btn btn-mini" id="prev-{{ bm.key.id() }}"><i class="icon-eye-open"></i> view</button>
+    <button class="btn btn-mini" id="tags-{{ bm.key.id() }}"><i class="icon-tags"></i> tags</button>
+    <button class="btn btn-mini" id="edit-{{ bm.key.id() }}"><i class="icon-edit"></i> edit</button>
   </div>
   <div class="btn-group">
     <button class="btn btn-mini" id="arch-{{ bm.key.id() }}">
@@ -26,9 +26,5 @@
 </div>
 </dt>
 
-<dd>
-  <div class="btn-toolbar" id="tags_for-{{ bm.key.id() }}">
-  {% include "tags_for.html" %}
-  </div>
-</dd>
+<dd> {% include "tags_for.html" %} </dd>
 <dd id="comment-{{ bm.key.id() }}"></dd>

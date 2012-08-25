@@ -1,13 +1,20 @@
 {% for tag in bm.other_tags %}   
-  <a class="btn btn-mini" id="assigntag-{{ tag.id() }}">{{ tag.get().name }}</a>
+  <a class="btn btn-mini btn-link " id="assigntag-{{ tag.id() }}-{{ bm.key.id() }}">{{ tag.get().name }}</a>
   <script>
-  $("#assigntag-{{ tag.id() }}").click(function() {
+  $("#assigntag-{{ tag.id() }}-{{ bm.key.id() }}").click(function() {
     $.ajax({
       url: "/assigntag",
       data: { bm: "{{ bm.key.id() }}",
               tag: "{{ tag.id() }}" },
       success: function(html) {
         $("#tags_for-{{ bm.key.id() }}").html(html);
+        $.ajax({
+          url: "/gettags", 
+          data: { bm: "{{ bm.key.id() }}" }, 
+          success: function(html) {
+            $("#comment-{{ bm.key.id() }}").html(html); 
+          } 
+        });
       }
     });
   })

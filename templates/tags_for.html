@@ -1,6 +1,24 @@
-{% for tag in bm.tags %}
-  <div class="btn-group"> 
-    <a class="btn btn-mini btn-link disabled" href="/filter?tag={{ tag.get().name }}"><i class="icon-tag"></i> {{ tag.get().name }}</a>
-    <a class="btn btn-mini btn-link disabled" href="/removetag?bm={{ bm.key.id() }}&tag={{ tag.id() }}"><i class="icon-remove"></i></a>
-  </div>
-{% endfor %}
+<div class="btn-toolbar" id="tags_for-{{ bm.key.id() }}">
+  {% for tag in bm.tags %}
+    <div class="btn-group">
+      <a class="btn btn-mini btn-link disabled" href="/filter?tag={{ tag.get().name }}">
+        <i class="icon-tag"></i> {{ tag.get().name }}</a>
+      <a class="btn btn-mini btn-link disabled" id="removetag-{{ bm.key.id() }}-{{ tag.id() }}">
+        <i class="icon-remove"></i></a>
+    </div>
+<script>
+$("#removetag-{{ bm.key.id() }}-{{ tag.id() }}").click(
+  function() {
+    $.ajax({
+      url: "/removetag",
+      data: { bm: "{{ bm.key.id() }}",
+              tag: "{{ tag.id() }}" },
+      success: function(html) {
+        $("#tags_for-{{ bm.key.id() }}").html(html);
+      }
+    });
+  }
+)
+</script>
+  {% endfor %}
+</div>

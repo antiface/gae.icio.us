@@ -1,42 +1,17 @@
 <script type="text/javascript">
 
-$("#tags-{{ bm.key.id() }}").toggle(
-  function() {
-    $(this).button('toggle');
-    $.ajax({
-      url: "/gettags",
-      data: { bm: "{{ bm.key.id() }}" },
-      success: function(html) {
-        $("#comment-{{ bm.key.id() }}").html(html);
-      }
-    });
-  },
-  function() {
-    $("#comment-{{ bm.key.id() }}").html('');
-    $(this).button('toggle');
-  }
-)
+$("#star-{{ bm.key.id() }}").click(function() {
+  $.ajax({
+    url: "/star",
+    data: { bm: "{{ bm.key.id() }}" },
+    success: function(html) {
+      $("#star-{{ bm.key.id() }}").html(html);
+    }
+  });
+})
 
-$("#edit-{{ bm.key.id() }}").toggle(
-  function() {    
-    $.ajax({
-      url: "/getedit",
-      data: { bm: "{{ bm.key.id() }}" },
-      success: function(html) {
-        $("#comment-{{ bm.key.id() }}").html(html);
-      }
-    });
-    $(this).button('toggle');
-  },
+$("#prev-{{ bm.key.id() }}").click(  
   function() {
-    $("#comment-{{ bm.key.id() }}").html('');
-    $(this).button('toggle');
-  }
-)
-
-$("#prev-{{ bm.key.id() }}").toggle(  
-  function() {
-    $(this).button('toggle');
     $.ajax({
       url: "/getcomment",
       data: { bm: "{{ bm.key.id() }}" },
@@ -44,20 +19,28 @@ $("#prev-{{ bm.key.id() }}").toggle(
         $("#comment-{{ bm.key.id() }}").html(html);
       }
     });
-    $(this).button('toggle');
-  },
-  function() {
-    $("#comment-{{ bm.key.id() }}").html('');
-    $(this).button('toggle');
   }
 )
 
-$("#star-{{ bm.key.id() }}").click(function() {
+$("#tags-{{ bm.key.id() }}").click(
+  function() {
     $.ajax({
-      url: "/star",
+      url: "/gettags",
       data: { bm: "{{ bm.key.id() }}" },
       success: function(html) {
-        $("#star-{{ bm.key.id() }}").html(html);
+        $("#comment-{{ bm.key.id() }}").html(html);
+      }
+    });
+  }
+)
+
+$("#edit-{{ bm.key.id() }}").click(
+  function() {
+    $.ajax({
+      url: "/getedit",
+      data: { bm: "{{ bm.key.id() }}" },
+      success: function(html) {
+        $("#comment-{{ bm.key.id() }}").html(html);
       }
     });
   }

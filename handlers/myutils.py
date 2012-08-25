@@ -19,6 +19,11 @@ class CheckFeeds(RequestHandler):
       if capabilities.CapabilitySet("datastore_v3", ["write"]).is_enabled():
         deferred.defer(pop_feed, feed, _target="worker", _queue="admin")    
 
+class CheckFeed(RequestHandler):
+  def get(self):
+    feed = Feeds.get_by_id(int(self.request.get('feed')))
+    deferred.defer(pop_feed, feed, _target="worker", _queue="admin") 
+
 
 def login_required(handler_method):
   def check_login(self):
@@ -84,15 +89,13 @@ def parsebm(bm):
   except:
     bm.url = bm.original.split('utm_')[0].split('&feature')[0]
   q = Bookmarks.query(ndb.OR(Bookmarks.original == bm.original, Bookmarks.url == bm.url))
-  q = q.filter(Bookmarks.key != bm.key)
   if q.count >= 2:
     tag_list = []
     for old in q:
       for t in old.tags:
         if t not in tag_list:
           tag_list.append(t)
-          # tag_list.append(bm.tags)
-          bm.tags.extend(tag_list)
+          bm.tags = tag_list
       if old.comment != bm.comment:
         comment = '<br> -- previous comment -- <br>' + old.comment
         bm.comment = bm.comment + comment
