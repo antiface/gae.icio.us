@@ -98,9 +98,9 @@ class SetMys(RequestHandler):
     ui = UserInfo.query(UserInfo.user == users.get_current_user()).get()
     if ui.mys == False:
       ui.mys = True
-      html = '<i class="icon-envelope"></i> MYS is ON'
+      html = '<i class="icon-envelope"></i> MYS ON'
     else:
       ui.mys = False
-      html = '<i class="icon-envelope"></i> MYS is OFF'
+      html = '<i class="icon-envelope"></i> MYS OFF'
     ui.put()
     self.response.write(html)

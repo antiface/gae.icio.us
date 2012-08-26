@@ -32,13 +32,14 @@ $(document).ready(function() {
   if (tab == 'feeds') {
     $("#dashboard").html('<a>Manage your feeds</a>');
   }
+  if (tab == 'setting') {
+    $("#dashboard").html('<a>Your setting</a>');
+  }
 
-  $("#setmys").click(
-    function() {
+  $("#setmys").click(function() {
       $.ajax({
         url: "/setmys",
-        success: function(html) {
-          $("#setmys").button('toggle');
+        success: function(html) {          
           $("#setmys").html(html);
         }
       })

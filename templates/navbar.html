@@ -14,7 +14,7 @@
         <li class="divider-vertical"></li>
         {% if ui.user %}        
         <li><button class="btn" data-toggle="button" id="setmys" rel="tooltip" data-placement="bottom" title="Mail Your Self. Enable this and receive new bookmarks in your inbox"><i class="icon-envelope"></i>
-          {% if ui.mys %}MYS is ON{% else %}MYS is OFF{% endif %}</button></li>
+          {% if ui.mys %}MYS ON{% else %}MYS OFF{% endif %}</button></li>
         <li><a id="bookmarklet" href="{{ bookmarklet }}" rel="tooltip" data-placement="bottom" title="This is a bookmarklet, drag and drop in your bookmarks bar"><i class="icon-bookmark"></i> {{ brand }} it!</a></li>        
         {% endif %}
         <li class="dropdown">

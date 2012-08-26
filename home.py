@@ -39,13 +39,15 @@ javascript:location.href=
 """ % (self.request.host_url, self.ui().user.email())
       url = users.create_logout_url("/")
       linktext = 'Logout'
-      nick = self.ui().user.email()
+      nick = self.ui().user.nickname()
       ui = self.ui()
+      mys = self.ui().mys
     else:
       bookmarklet = '%s' % self.request.host_url
       url = users.create_login_url(self.request.uri)
       linktext = 'Login'
       nick = 'Welcome'
+      mys = False
     values = {      
       'brand': app_identity.get_application_id(),
       'bookmarklet': bookmarklet,
@@ -55,9 +57,10 @@ javascript:location.href=
       'ui': self.ui(),
       }
     values.update(template_values)
-    template = jinja_environment.get_template(template_name)
-    self.response.set_cookie('mys', '%s' % self.ui().mys)
+    template = jinja_environment.get_template(template_name) 
+    self.response.set_cookie('mys', '%s' % mys)
     self.response.out.write(template.render(values))
+
 
 
 class InboxPage(BaseHandler):
@@ -168,12 +171,21 @@ class FilterPage(BaseHandler):
     tag_name = self.request.get('tag')
     tag_obj = ndb.gql("""SELECT * FROM Tags 
       WHERE user = :1 AND name = :2""", self.ui().user, tag_name).get()
+    bmq = ndb.gql("""SELECT * FROM Bookmarks 
+      WHERE user = :1 AND tags = :2
+      ORDER BY data DESC""", self.ui().user, tag_obj.key)
     if tag_obj:
-      tagset = tag_set(tag_obj.bm_set)
+      c = ndb.Cursor(urlsafe=self.request.get('c'))
+      bms, next_curs, more = bmq.fetch_page(10, start_cursor=c)
+      if more:
+        next_c = next_curs.urlsafe()
+      else:
+        next_c = None
+      tagset = tag_set(bmq)
       tagset.remove(tag_obj.key)
       self.response.set_cookie('active-tab', '')
       self.generate('home.html', 
-        {'tag_obj': tag_obj, 'bms': tag_obj.bm_set, 'tags': tagset })
+        {'tag_obj': tag_obj, 'bms': bms, 'tags': tagset, 'c': next_c })
     else:
       self.redirect('/')
 
@@ -213,6 +225,12 @@ class TagCloudPage(BaseHandler):
     self.response.set_cookie('active-tab', 'tagcloud')
     self.generate('tagcloud.html', {})
 
+class SettingPage(BaseHandler):
+  @login_required
+  def get(self):   
+    self.response.set_cookie('active-tab', 'setting')
+    self.generate('setting.html', {})
+
 
 class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
   def post(self):
@@ -240,6 +258,7 @@ app = webapp2.WSGIApplication([
   ('/starred',    StarredPage),
   ('/trashed',    TrashedPage),
   ('/tagcloud',   TagCloudPage),
+  ('/setting',    SettingPage),
   ('/empty_trash',core.Empty_Trash),
   ('/feed',       core.AddFeed),
   ('/submit',     core.AddBM),

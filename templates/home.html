@@ -27,11 +27,19 @@
   </div>
   {% endfor %}
 
-{% if c %}
-<div class="well well-small">
-  <a  class="btn btn-block" href="?c={{c}}" type="button">more..</a>
-</div> 
-{% endif %}
+  {% if not tag_obj %}<!-- home pages -->
+  {% if c %}
+  <div class="well well-small">
+    <a  class="btn btn-block" href="?c={{c}}" type="button">more..</a>
+  </div> 
+  {% endif %}      
+  {% else %}<!-- filter pages -->
+  {% if c %}
+  <div class="well well-small">
+    <a  class="btn btn-block" href="/filter?tag=stackoverflow&c={{c}}" type="button">more..</a>
+  </div> 
+  {% endif %}     
+  {% endif %}
 
 
   
