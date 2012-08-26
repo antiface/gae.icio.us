@@ -16,8 +16,8 @@ class Empty_Trash(RequestHandler):
       WHERE user = :1 AND trashed = True 
       ORDER BY data DESC""", users.get_current_user())
     for bm in bmq:
-      deferred.defer(del_bm, bm, _target="worker", _queue="admin")
-    self.redirect('/')
+      deferred.defer(del_bm, bm, _queue="admin")
+    self.redirect(self.request.referer)
 
 
 class AddFeed(RequestHandler):

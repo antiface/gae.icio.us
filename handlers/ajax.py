@@ -98,9 +98,33 @@ class SetMys(RequestHandler):
     ui = UserInfo.query(UserInfo.user == users.get_current_user()).get()
     if ui.mys == False:
       ui.mys = True
-      html = '<i class="icon-envelope"></i> MYS ON'
+      html = '<i class="icon-thumbs-up"></i> <strong>Enabled </strong>'
     else:
       ui.mys = False
-      html = '<i class="icon-envelope"></i> MYS OFF'
+      html = '<i class="icon-thumbs-down"></i> <strong>Disabled</strong>'
+    ui.put()
+    self.response.write(html)
+
+class SetDaily(RequestHandler):
+  def get(self):
+    ui = UserInfo.query(UserInfo.user == users.get_current_user()).get()
+    if ui.daily == False:
+      ui.daily = True
+      html = '<i class="icon-thumbs-up"></i> <strong>Enabled </strong>'
+    else:
+      ui.daily = False
+      html = '<i class="icon-thumbs-down"></i> <strong>Disabled</strong>'
+    ui.put()
+    self.response.write(html)
+
+class SetTwitt(RequestHandler):
+  def get(self):
+    ui = UserInfo.query(UserInfo.user == users.get_current_user()).get()
+    if ui.twitt == False:
+      ui.twitt = True
+      html = '<i class="icon-thumbs-up"></i> <strong>Enabled </strong>'
+    else:
+      ui.twitt = False
+      html = '<i class="icon-thumbs-down"></i> <strong>Disabled</strong>'
     ui.put()
     self.response.write(html)

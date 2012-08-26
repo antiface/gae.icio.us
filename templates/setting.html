@@ -6,11 +6,46 @@
 {% include "sidebar.html" %}
 <div class="span9">
 
-
-
+<legend>Setting</legend>
+<!-- Bookmarklet -->
+<form> 
+  <label><strong>Bookmarklet</strong></label>
+  <span class="help-block">Drag and drop in your bookmarks bar.</span>
+  <a class="btn btn-link disabled" id="bookmarklet" href="{{ bookmarklet }}" rel="tooltip" data-placement="bottom" title="This is a bookmarklet, drag and drop in your bookmarks bar"><i class="icon-bookmark"></i> {{ brand }} it!</a>  
+</form>
+<hr>
+<!-- mail yourself -->
+<form>  
+  <label><strong>Mail yourself</strong></label>
+  <span class="help-block">If enabled you will receive new bookmarks in your inbox.</span>
+  <label class="checkbox">    
+    <input type="checkbox" id="mys-check"><p id="mys-test"></p>
+  </label>
+</form>
+<hr>
+<!-- daily digest -->
+<form>  
+  <label><strong>Daily Digest</strong></label>
+  <span class="help-block">If enabled you will receive a daily digest of your activity.</span>
+  <label class="checkbox">
+    <input type="checkbox"id="daily-check"><p id="daily-test"></p>
+  </label>
+</form>
+<hr>
+<!-- Twitter buttons -->
+<form>  
+  <label><strong>Twitter buttons</strong></label>
+  <span class="help-block">If enabled you see a twitter share button for any bookmark.</span>
+  <label class="checkbox">    
+    <input type="checkbox"id="twitt-check"><p id="twitt-test"></p>
+  </label>
+</form>
+<hr>
 
 </div>
 </div>
 </div>
+
+<script src="static/js/setting.js"></script>
 {% endblock %}
 

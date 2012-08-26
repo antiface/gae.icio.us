@@ -1,9 +1,7 @@
 $(document).ready(function() {
 
   var tab = $.cookie('active-tab')
-  if ($.cookie('mys') == 'True') {
-    $("#setmys").button('toggle')
-  }
+  
 
   $('#'+tab).addClass('active');
   if (tab == 'trash') {
@@ -36,27 +34,6 @@ $(document).ready(function() {
     $("#dashboard").html('<a>Your setting</a>');
   }
 
-  $("#setmys").click(function() {
-      $.ajax({
-        url: "/setmys",
-        success: function(html) {          
-          $("#setmys").html(html);
-        }
-      })
-    }
-  )
-  
-
-  // $('#addtag').submit(function() {
-  //   var newtag = $("input:first")
-  //   $.ajax({
-  //     url: "/addtag",
-  //     data: {tag: newtag},
-  //     success: function() {
-  //       $("#dashboard").html('<a>OK. New tag created</a>');
-  //     }
-  //   })
-  // });
 
   $('#bookmarklet').tooltip()
   $('#setmys').tooltip()

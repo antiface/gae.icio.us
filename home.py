@@ -29,19 +29,10 @@ class BaseHandler(webapp2.RequestHandler):
         return ui
     
   def generate(self, template_name, template_values={}):
-    if users.get_current_user():
-      bookmarklet = """
-javascript:location.href=
-'%s/submit?url='+encodeURIComponent(location.href)+
-'&title='+encodeURIComponent(document.title)+
-'&user='+'%s'+
-'&comment='+document.getSelection().toString()
-""" % (self.request.host_url, self.ui().user.email())
+    if users.get_current_user():      
       url = users.create_logout_url("/")
       linktext = 'Logout'
-      nick = self.ui().user.nickname()
       ui = self.ui()
-      mys = self.ui().mys
     else:
       bookmarklet = '%s' % self.request.host_url
       url = users.create_login_url(self.request.uri)
@@ -50,15 +41,12 @@ javascript:location.href=
       mys = False
     values = {      
       'brand': app_identity.get_application_id(),
-      'bookmarklet': bookmarklet,
-      'nick': nick,
       'url': url,
       'linktext': linktext,
       'ui': self.ui(),
       }
     values.update(template_values)
-    template = jinja_environment.get_template(template_name) 
-    self.response.set_cookie('mys', '%s' % mys)
+    template = jinja_environment.get_template(template_name)
     self.response.out.write(template.render(values))
 
 
@@ -227,9 +215,21 @@ class TagCloudPage(BaseHandler):
 
 class SettingPage(BaseHandler):
   @login_required
-  def get(self):   
+  def get(self):
+    bookmarklet = """
+javascript:location.href=
+'%s/submit?url='+encodeURIComponent(location.href)+
+'&title='+encodeURIComponent(document.title)+
+'&user='+'%s'+
+'&comment='+document.getSelection().toString()
+""" % (self.request.host_url, self.ui().user.email())
+    mys = self.ui().mys    
+    self.response.set_cookie('mys', '%s' % self.ui().mys)
+    self.response.set_cookie('daily', '%s' % self.ui().daily)
+    self.response.set_cookie('twitt', '%s' % self.ui().twitt)
     self.response.set_cookie('active-tab', 'setting')
-    self.generate('setting.html', {})
+    self.generate('setting.html',
+      {'bookmarklet': bookmarklet,})
 
 
 class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
@@ -268,6 +268,8 @@ app = webapp2.WSGIApplication([
   ('/atf',        core.AssTagFeed),
   ('/rtf',        core.RemoveTagFeed),
   ('/setmys',     ajax.SetMys),
+  ('/setdaily',   ajax.SetDaily),
+  ('/settwitt',   ajax.SetTwitt),
   ('/archive',    ajax.ArchiveBM),
   ('/trash',      ajax.TrashBM),
   ('/star',       ajax.StarBM),

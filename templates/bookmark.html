@@ -22,10 +22,12 @@
   </div>
   <div class="btn-group" style="vertical-align:text-bottom">
     <button class="btn disabled btn-mini"><i class="icon-time"></i> {{ bm.data|dtf }}</button>
-  </div> 
+  </div>
+  {% if ui.twitt %}
   <div class="btn-group" style="vertical-align:text-middle" >
     {% include "tweet.html" %}
-  </div> 
+  </div>
+  {% endif %}
 </div>
 </dt>
   <dd id="tags-{{ bm.key.id() }}"> {% include "tags.html" %} </dd>

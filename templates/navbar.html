@@ -11,15 +11,9 @@
         <li id="dashboard"><a></a></li>
       </ul>
       <ul class="nav pull-right">
-        <li class="divider-vertical"></li>
-        {% if ui.user %}        
-        <li><button class="btn" data-toggle="button" id="setmys" rel="tooltip" data-placement="bottom" title="Mail Your Self. Enable this and receive new bookmarks in your inbox"><i class="icon-envelope"></i>
-          {% if ui.mys %}MYS ON{% else %}MYS OFF{% endif %}</button></li>
-        <li><a id="bookmarklet" href="{{ bookmarklet }}" rel="tooltip" data-placement="bottom" title="This is a bookmarklet, drag and drop in your bookmarks bar"><i class="icon-bookmark"></i> {{ brand }} it!</a></li>        
-        {% endif %}
         <li class="dropdown">
           <a href="" class="dropdown-toggle" data-toggle="dropdown">
-            <i class="icon-user"></i> {{ nick }} <b class="caret"></b>
+            <i class="icon-user"></i> {{ ui.user.email() }} <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
             <li><a href="https://github.com/presveva/gae.icio.us"><i class="icon-file"></i> Source code</a></li>
@@ -30,8 +24,5 @@
     </div>
   </div>
 
-<script type="text/javascript">
-
-</script>
 
 </div>
