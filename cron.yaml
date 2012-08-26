@@ -1,4 +1,8 @@
 cron:
 - description: check new posts
   url: /adm/check
-  schedule: every 150 minutes
+  schedule: every 2 hours from 9:00 to 17:00
+
+- description: check new posts
+  url: /adm/check
+  schedule: every day 07:15

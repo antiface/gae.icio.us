@@ -4,16 +4,14 @@
       <ul class="nav">
         <a class="brand" href="/">{{ brand }}</a>
         <li class="divider-vertical"></li>
-        <form class="navbar-form pull-left" action="/addtag" method="get">
-          <input type="text" class="span2" name="tag" placeholder="new tag" allowBlank="true">
-          <button type="submit" class="btn">create</button>
+        <form class="navbar-form pull-left" action="/addtag" method="get" id="addtag">
+          <input type="text" class="span2" name="tag" placeholder="new tag" allowBlank="true">          
         </form>
         <li class="divider-vertical"></li>
-        <form class="navbar-search pull-right hide" action="/search">
-          <input type="text" class="search-query input-medium" placeholder="Search a tag" name="tag">
-        </form>
+        <li id="dashboard"><a></a></li>
       </ul>
       <ul class="nav pull-right">
+        <li class="divider-vertical"></li>
         {% if ui.user %}        
         <li><button class="btn" data-toggle="button" id="setmys" rel="tooltip" data-placement="bottom" title="Mail Your Self. Enable this and receive new bookmarks in your inbox"><i class="icon-envelope"></i>
           {% if ui.mys %}MYS is ON{% else %}MYS is OFF{% endif %}</button></li>

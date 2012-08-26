@@ -21,7 +21,7 @@
   </div>
 
   {% for feed in feeds %}
-  <div class="well well-small" >
+  <div class="well well-small" id="row-{{ feed.key.id() }}" >
     <dt> 
       <a class="btn disabled btn-mini"><i class="icon-time"></i> {{ feed.data|dtf }}</a>
       <a href="{{ feed.root }}" ><strong> {{ feed.blog }}</strong></a>
@@ -30,9 +30,9 @@
     <dd>
       <div class="btn-toolbar">
         <div class="btn-group">
-          <a class="btn btn-mini" href="/feed?id={{ feed.key.id() }}" >delete feed</a>
-          <a class="btn btn-mini" id="check-{{ feed.key.id() }}" >check feed</a>
-          <a class="btn btn-mini" id="feed-{{ feed.key.id() }}" >add tag</a>
+          <a class="btn btn-mini" id="delete-{{ feed.key.id() }}" ><i class="icon-remove"></i> delete </a>
+          <a class="btn btn-mini" id="refresh-{{ feed.key.id() }}" ><i class="icon-refresh"></i> refresh </a>
+          <a class="btn btn-mini" id="tags-{{ feed.key.id() }}" ><i class="icon-tags"></i> tags </a>
         </div>
         {% for tag in feed.tags %}
         <div class="btn-group">
@@ -43,28 +43,42 @@
         {% endfor %}
       </div>
     </dd>
-    <dd id="other-{{ feed.key.id() }}" class="hide">
+    <dd id="comment-{{ feed.key.id() }}" class="hide">
       {% for tag in feed.other_tags %}
       <a class='btn btn-mini btn-link' href='/atf?tag={{ tag.id() }}&feed={{ feed.key.id() }}'>{{ tag.get().name }}</a>
       {% endfor %}
     </dd>
   </div>
-  <script type="text/javascript">
-
-  $("#feed-{{ feed.key.id() }}").toggle(
-    function() {
-      $("#other-{{ feed.key.id() }}").removeClass('hide');
-      },
-    function() {
-      $("#other-{{ feed.key.id() }}").addClass('hide');
-      });
-
-  $("#check-{{ feed.key.id() }}").click(function(){
+  <script>
+  $("#delete-{{ feed.key.id() }}").click(function(){
+    $("#dashboard").html('<a>Deleting the feed</a>');
+    $.ajax({
+      url: "/feed",
+      data: { id: "{{ feed.key.id() }}" },
+      success: function() {
+        $("#dashboard").html('<a>OK. Feed deleted</a>');
+        $("#row-{{ feed.key.id() }}").addClass('hide');
+      }
+    });
+  });
+  $("#refresh-{{ feed.key.id() }}").click(function(){
+    $("#dashboard").html('<a>Refresh the feed</a>');
     $.ajax({
       url: "/checkfeed",
-      data: { feed: "{{ feed.key.id() }}" }
-    })
+      data: { feed: "{{ feed.key.id() }}" },
+      success: function() {
+        $("#dashboard").html('<a>OK check started </a>');
+      }
+    });
   });
+  $("#tags-{{ feed.key.id() }}").toggle(
+    function() {
+      $("#comment-{{ feed.key.id() }}").removeClass('hide');
+      $("#dashboard").html('<a>Add this tag for each new item</a>');
+      },
+    function() {
+      $("#comment-{{ feed.key.id() }}").addClass('hide');
+      });
   </script>
   {% endfor %}
 

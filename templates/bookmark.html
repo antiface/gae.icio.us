@@ -3,15 +3,15 @@
 
 <dt>      
 <div class="btn-toolbar">
-  <div class="btn-group">
+  <div class="btn-group" style="vertical-align:text-bottom">
     <button class="btn btn-mini" id="star-{{ bm.key.id() }}">{% if bm.starred %}<i class="icon-star">{% else %}<i class="icon-star-empty">{% endif %}</i></button>
   </div>
-  <div class="btn-group" data-toggle="buttons-radio">
+  <div class="btn-group" data-toggle="button" style="vertical-align:text-bottom">
     <button class="btn btn-mini" id="prev-{{ bm.key.id() }}"><i class="icon-eye-open"></i> view</button>
-    <button class="btn btn-mini" id="tags-{{ bm.key.id() }}"><i class="icon-tags"></i> tags</button>
+    <button class="btn btn-mini" id="tags-butt-{{ bm.key.id() }}"><i class="icon-tags"></i> tags</button>
     <button class="btn btn-mini" id="edit-{{ bm.key.id() }}"><i class="icon-edit"></i> edit</button>
   </div>
-  <div class="btn-group">
+  <div class="btn-group" style="vertical-align:text-bottom">
     <button class="btn btn-mini" id="arch-{{ bm.key.id() }}">
     {% if bm.archived %}<i class="icon-inbox"></i> inbox</button>
     {% else %}<i class="icon-folder-close"></i> archive</button>
@@ -20,11 +20,17 @@
     {% if bm.trashed %}<i class="icon-inbox"></i> restore</button>
     {% else %}<i class="icon-trash"></i> trash</button> {% endif %}
   </div>
-  <div class="btn-group">
+  <div class="btn-group" style="vertical-align:text-bottom">
     <button class="btn disabled btn-mini"><i class="icon-time"></i> {{ bm.data|dtf }}</button>
+  </div> 
+  <div class="btn-group" style="vertical-align:text-middle" >
+    {% include "tweet.html" %}
   </div> 
 </div>
 </dt>
-
-<dd> {% include "tags_for.html" %} </dd>
-<dd id="comment-{{ bm.key.id() }}"></dd>
+  <dd id="tags-{{ bm.key.id() }}"> {% include "tags.html" %} </dd>
+  {% if bm.tags == [] %} 
+  <dd id="comment-{{ bm.key.id() }}">{% include "other_tags.html" %}</dd>
+  {% else %}
+  <dd id="comment-{{ bm.key.id() }}"></dd>
+  {% endif %}

@@ -20,35 +20,11 @@
 <script src="static/js/jquery-1.8.0.min.js"></script>
 <script src="static/js/bootstrap.min.js"></script>
 <script src="static/js/jquery.cookie.js"></script>
+<script>{% include "base.js" %}</script>
+
 {% block content %}
 {% endblock %}
 
-<script>
-$(document).ready(function() {
-  var tab = $.cookie('active-tab')
-  if ($.cookie('mys') == 'True') {
-    $("#setmys").button('toggle')
-  }
-  
-  $('#'+tab).addClass('active');
-  if (tab == 'trash') {
-    $('#empty_button').removeClass('hide');
-  }
-});
-
-$("#setmys").click(
-  function() {
-    $.ajax({
-      url: "/setmys",
-      success: function(html) {
-        $("#setmys").html(html);
-      }
-    });
-  }
-)
-$('#bookmarklet').tooltip()
-$('#setmys').tooltip()
-</script>
 
 </body>
 </html>

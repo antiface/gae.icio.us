@@ -23,13 +23,9 @@
   {% for bm in bms %}
   <div class="well well-small" id="row-{{ bm.key.id() }}"> 
     {% include "bookmark.html" %}  
-    {% include "script.html" %}
+    <script>{% include "home.js" %}</script>
   </div>
   {% endfor %}
-
-<!-- {% if c %}
-<a class="btn btn-large btn-block" href="?c={{c}}" type="button">more..</a>
-{% endif %} -->
 
 {% if c %}
 <div class="well well-small">

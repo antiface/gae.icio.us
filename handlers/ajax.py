@@ -41,10 +41,10 @@ class GetTags(RequestHandler):
   @login_required
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-    template = jinja_environment.get_template('tags.html')   
+    template = jinja_environment.get_template('other_tags.html')   
     values = {'bm': bm} 
-    html_page = template.render(values)
-    self.response.write(html_page)
+    other_tags = template.render(values)
+    self.response.write(other_tags)
 
 class GetEdit(RequestHandler):
   @login_required
@@ -75,10 +75,10 @@ class AssignTag(RequestHandler):
     if users.get_current_user() == bm.user:
       bm.tags.append(tag.key)
       bm.put()
-    template = jinja_environment.get_template('tags_for.html')   
+    template = jinja_environment.get_template('tags.html')   
     values = {'bm': bm} 
-    html_page = template.render(values)
-    self.response.write(html_page)
+    tags = template.render(values)
+    self.response.write(tags)
     
 class RemoveTag(RequestHandler):
   def get(self):
@@ -87,10 +87,10 @@ class RemoveTag(RequestHandler):
     if users.get_current_user() == bm.user:
       bm.tags.remove(tag.key)
       bm.put()
-    template = jinja_environment.get_template('tags_for.html')   
+    template = jinja_environment.get_template('tags.html')   
     values = {'bm': bm} 
-    html_page = template.render(values)
-    self.response.write(html_page)
+    tags = template.render(values)
+    self.response.write(tags)
 
 
 class SetMys(RequestHandler):

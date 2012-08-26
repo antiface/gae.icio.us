@@ -11,13 +11,13 @@ import urllib
 class Script(RequestHandler):
   def get(self):
     for bm in Bookmarks.query():
-      if capabilities.CapabilitySet("datastore_v3", ["write"]).is_enabled():
+      if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():
         deferred.defer(parsebm, bm, _target="worker", _queue="parser")
 
 class CheckFeeds(RequestHandler):
   def get(self):
-    for feed in Feeds.query():
-      if capabilities.CapabilitySet("datastore_v3", ["write"]).is_enabled():
+    if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():
+      for feed in Feeds.query():      
         deferred.defer(pop_feed, feed, _target="worker", _queue="admin")    
 
 class CheckFeed(RequestHandler):
@@ -90,6 +90,7 @@ def parsebm(bm):
   except:
     bm.url = bm.original.split('utm_')[0].split('&feature')[0]
   q = Bookmarks.query(ndb.OR(Bookmarks.original == bm.original, Bookmarks.url == bm.url))
+  #q.filter(Bookmark.trashed == True)
   if q.count >= 2:
     tag_list = []
     for old in q:

@@ -42,7 +42,7 @@ class AddFeed(RequestHandler):
           feed.comment = d.description
           feed.put()
         ndb.transaction(txn)
-        deferred.defer(new_bm, d, feed, _target="worker", _queue="admin")
+        deferred.defer(new_bm, d, feed, _queue="admin")
       else:
         pass
       self.redirect(self.request.referer)
@@ -51,7 +51,6 @@ class AddFeed(RequestHandler):
   def get(self):
     feed = Feeds.get_by_id(int(self.request.get('id')))
     feed.key.delete()
-    self.redirect(self.request.referer)
 
 
 class ReceiveMail(RequestHandler):
@@ -70,7 +69,7 @@ class ReceiveMail(RequestHandler):
       bm.user = users.User(utils.parseaddr(message.sender)[1])
       bm.put()
     ndb.transaction(txn)
-    deferred.defer(parsebm, bm, _target="worker", _queue="parser")
+    deferred.defer(parsebm, bm, _queue="parser")
 
 class AddBM(RequestHandler):
   @login_required
