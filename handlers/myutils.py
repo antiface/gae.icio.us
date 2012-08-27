@@ -17,23 +17,25 @@ class Script(RequestHandler):
         bm.put()
         # deferred.defer(parsebm, bm, _queue="parser")
 
+class CheckFeed(RequestHandler):
+  def get(self):
+    feed = Feeds.get_by_id(int(self.request.get('feed')))
+    deferred.defer(pop_feed, feed, _target="worker", _queue="admin")
+
+    
 class CheckFeeds(RequestHandler):
   def get(self):
     if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():
       for feed in Feeds.query():      
         deferred.defer(pop_feed, feed, _target="worker", _queue="admin")    
 
-class CheckFeed(RequestHandler):
-  def get(self):
-    feed = Feeds.get_by_id(int(self.request.get('feed')))
-    deferred.defer(pop_feed, feed, _target="worker", _queue="admin")
 
 class Digest(RequestHandler):
   def get(self):
     if capabilities.CapabilitySet('mail').is_enabled():
       for ui in UserInfo.query():
         if ui.daily:
-          deferred.defer(generate_digest, ui.user, _queue="admin")
+          deferred.defer(generate_digest, ui.user, _target="worker", _queue="admin")
 
 def generate_digest(user):
   timestamp = time.time() - 86400
@@ -48,7 +50,7 @@ def generate_digest(user):
   values = {'new_bmq': new_bmq, 'edit_bmq': edit_bmq, 'user': user} 
   html = template.render(values)
   if new_bmq.get() or edit_bmq.get():
-    deferred.defer(send_digest, user.email(), html, _queue="emails")
+    deferred.defer(send_digest, user.email(), html, _target="worker", _queue="emails")
 
 
 def send_digest(email, html):

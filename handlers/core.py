@@ -25,7 +25,7 @@ class AddFeed(RequestHandler):
     from libs.feedparser import parse
     user = users.get_current_user()
     url = self.request.get('url')
-    p = parse(url)
+    p = parse(str(url))
     d = p.entries[0]
     if user:
       q = ndb.gql("""SELECT * FROM Feeds

@@ -231,7 +231,7 @@ javascript:location.href=
     self.generate('setting.html',
       {'bookmarklet': bookmarklet,})
 
-
+## under costruction
 class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
   def post(self):
     upload_files = self.get_uploads('file')  # 'file' is file upload field in the form
