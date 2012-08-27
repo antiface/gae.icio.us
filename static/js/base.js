@@ -34,7 +34,5 @@ $(document).ready(function() {
     $("#dashboard").html('<a>Your setting</a>');
   }
 
-
-  $('#bookmarklet').tooltip()
-  $('#setmys').tooltip()
+$('#bookmarklet').tooltip()
 });

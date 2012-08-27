@@ -4,8 +4,9 @@
 import urlparse
 from google.appengine.ext import ndb
 
-class UserInfo(ndb.Expando):
+class UserInfo(ndb.Model):
   user = ndb.UserProperty() 
+  email = ndb.ComputedProperty(lambda self: self.user.email())
   data = ndb.DateTimeProperty(auto_now=True)
   mys = ndb.BooleanProperty(default=False)
   daily = ndb.BooleanProperty(default=False)
@@ -53,7 +54,7 @@ class Feeds(ndb.Model):
     return all_user_tags
 
 
-class Bookmarks(ndb.Expando):
+class Bookmarks(ndb.Model):
   data = ndb.DateTimeProperty(auto_now=True)
   create = ndb.DateTimeProperty(auto_now_add=True)
   user = ndb.UserProperty(required=True)

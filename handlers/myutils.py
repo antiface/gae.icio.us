@@ -1,18 +1,21 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
+import urllib, datetime, urlparse, jinja2, time
 from webapp2 import RequestHandler
 from google.appengine.api import users, mail, app_identity, urlfetch, capabilities
 from google.appengine.ext import deferred, blobstore
 from models import *
-from urlparse import urlparse
-import urllib
+
+jinja_environment = jinja2.Environment(
+  loader=jinja2.FileSystemLoader('templates'))
 
 class Script(RequestHandler):
   def get(self):
-    for bm in Bookmarks.query():
+    for bm in UserInfo.query():
       if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():
-        deferred.defer(parsebm, bm, _target="worker", _queue="parser")
+        bm.put()
+        # deferred.defer(parsebm, bm, _queue="parser")
 
 class CheckFeeds(RequestHandler):
   def get(self):
@@ -23,7 +26,38 @@ class CheckFeeds(RequestHandler):
 class CheckFeed(RequestHandler):
   def get(self):
     feed = Feeds.get_by_id(int(self.request.get('feed')))
-    deferred.defer(pop_feed, feed, _target="worker", _queue="admin") 
+    deferred.defer(pop_feed, feed, _target="worker", _queue="admin")
+
+class Digest(RequestHandler):
+  def get(self):
+    if capabilities.CapabilitySet('mail').is_enabled():
+      for ui in UserInfo.query():
+        if ui.daily:
+          deferred.defer(generate_digest, user.email(), _queue="admin")
+
+def generate_digest(user):
+  timestamp = time.time() - 86400
+  period = datetime.datetime.fromtimestamp(timestamp)
+  new_bmq = ndb.gql("""SELECT * FROM Bookmarks 
+      WHERE user = :1 AND create > :2 AND trashed = False
+      ORDER BY create DESC""", user, period)
+  edit_bmq = ndb.gql("""SELECT * FROM Bookmarks 
+      WHERE user = :1 AND data > :2 AND trashed = False
+      ORDER BY data DESC""", user, period)
+  template = jinja_environment.get_template('digest.html')   
+  values = {'new_bmq': new_bmq, 'edit_bmq': edit_bmq, 'user': user} 
+  html = template.render(values)
+  if new_bmq.get() or edit_bmq.get():
+    deferred.defer(send_digest, user.email(), html, _queue="emails")
+
+
+def send_digest(email, html):
+  message = mail.EmailMessage()
+  message.sender = 'action@' + "%s" % app_identity.get_application_id() + '.appspotmail.com'
+  message.to = email
+  message.subject =  "(%s) %s" % (app_identity.get_application_id(), 'Daily digest')
+  message.html = html
+  message.send()
 
 
 def login_required(handler_method):
@@ -106,7 +140,7 @@ def parsebm(bm):
   if bm.title == '':
     bm.title = bm.url
   bm.put()
-  # if urlparse('%s' % bm.url).path.split('.')[1] == 'mp3':
+  # if urlparse.urlparse('%s' % bm.url).path.split('.')[1] == 'mp3':
     # deferred.defer(upload, bm.url)
 
   if bm.ha_mys():

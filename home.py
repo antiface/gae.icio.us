@@ -278,6 +278,7 @@ app = webapp2.WSGIApplication([
   ('/gettags',    ajax.GetTags),
   ('/getcomment', ajax.GetComment),
   ('/getedit',    ajax.GetEdit),
+  ('/adm/digest', myutils.Digest),
   ('/adm/script', myutils.Script),
   ('/adm/check',  myutils.CheckFeeds),
   ('/checkfeed',  myutils.CheckFeed),

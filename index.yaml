@@ -63,6 +63,13 @@ indexes:
   properties:
   - name: trashed
   - name: user
+  - name: create
+    direction: desc
+
+- kind: Bookmarks
+  properties:
+  - name: trashed
+  - name: user
   - name: data
     direction: desc
 

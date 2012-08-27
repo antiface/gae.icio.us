@@ -6,3 +6,7 @@ cron:
 - description: check new posts
   url: /adm/check
   schedule: every day 07:15
+
+- description: send digest
+  url: /adm/digest
+  schedule: every day 17:15
