@@ -33,7 +33,7 @@ class Digest(RequestHandler):
     if capabilities.CapabilitySet('mail').is_enabled():
       for ui in UserInfo.query():
         if ui.daily:
-          deferred.defer(generate_digest, user.email(), _queue="admin")
+          deferred.defer(generate_digest, ui.user, _queue="admin")
 
 def generate_digest(user):
   timestamp = time.time() - 86400
