@@ -115,11 +115,7 @@ def new_bm(d, feed):
   deferred.defer(parsebm, bm, _target="worker", _queue="parser")
   
 
-def parsebm(bm):  
-  if bm.preview():
-    bm.comment = '''<iframe width="640" height="480" 
-    src="http://www.youtube.com/embed/%s" frameborder="0" 
-    allowfullscreen></iframe>''' % bm.preview()
+def parsebm(bm):
   try:
     u = urlfetch.fetch(url=bm.original, follow_redirects=True)
     bm.url = u.final_url.split('utm_')[0].split('&feature')[0]
@@ -127,7 +123,7 @@ def parsebm(bm):
     bm.url = bm.original.split('utm_')[0].split('&feature')[0]
   q = Bookmarks.query(ndb.OR(Bookmarks.original == bm.original, Bookmarks.url == bm.url))
   #q.filter(Bookmark.trashed == True)
-  if q.count >= 2:
+  if q.count >= 2:  #bug
     tag_list = []
     for old in q:
       for t in old.tags:
@@ -139,12 +135,15 @@ def parsebm(bm):
         bm.comment = bm.comment + comment
       old.trashed = True
       old.put()    
+  if bm.preview():
+    bm.comment = '''<iframe width="640" height="480" 
+    src="http://www.youtube.com/embed/%s" frameborder="0" 
+    allowfullscreen></iframe>''' % bm.preview()
   if bm.title == '':
     bm.title = bm.url
   bm.put()
   # if urlparse.urlparse('%s' % bm.url).path.split('.')[1] == 'mp3':
     # deferred.defer(upload, bm.url)
-
   if bm.ha_mys():
     if capabilities.CapabilitySet("mail").is_enabled():
       deferred.defer(sendbm, bm, _queue="emails")
