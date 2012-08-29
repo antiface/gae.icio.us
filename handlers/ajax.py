@@ -11,6 +11,7 @@ jinja_environment = jinja2.Environment(
   loader=jinja2.FileSystemLoader('templates'))
 
 class TrashBM(RequestHandler):
+  @login_required
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     if users.get_current_user() == bm.user:
@@ -22,6 +23,7 @@ class TrashBM(RequestHandler):
       bm.put()
 
 class ArchiveBM(RequestHandler):
+  @login_required
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     if users.get_current_user() == bm.user:
@@ -56,6 +58,7 @@ class GetEdit(RequestHandler):
     self.response.write(html_page)
 
 class StarBM(RequestHandler):
+  @login_required
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     if users.get_current_user() == bm.user:
@@ -68,7 +71,24 @@ class StarBM(RequestHandler):
       bm.put()
     self.response.write(html)
 
+class AddTag(RequestHandler):
+  @login_required
+  def get(self):
+    user = users.get_current_user()
+    tag_str = self.request.get('tag')
+    if user:
+      tag = ndb.gql("""SELECT * FROM Tags
+      WHERE user = :1 AND name = :2""", user, tag_str).get()
+      if tag is None:
+        newtag = Tags()
+        newtag.name = tag_str
+        newtag.user = user        
+      else:
+        newtag = tag
+      newtag.put()
+
 class AssignTag(RequestHandler):
+  @login_required
   def get(self):
     bm  = Bookmarks.get_by_id(int(self.request.get('bm')))
     tag = Tags.get_by_id(int(self.request.get('tag')))
@@ -81,6 +101,7 @@ class AssignTag(RequestHandler):
     self.response.write(tags)
     
 class RemoveTag(RequestHandler):
+  @login_required
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     tag = Tags.get_by_id(int(self.request.get('tag')))
@@ -94,6 +115,7 @@ class RemoveTag(RequestHandler):
 
 
 class SetMys(RequestHandler):
+  @login_required
   def get(self):
     ui = UserInfo.query(UserInfo.user == users.get_current_user()).get()
     if ui.mys == False:
@@ -106,6 +128,7 @@ class SetMys(RequestHandler):
     self.response.write(html)
 
 class SetDaily(RequestHandler):
+  @login_required
   def get(self):
     ui = UserInfo.query(UserInfo.user == users.get_current_user()).get()
     if ui.daily == False:
@@ -118,6 +141,7 @@ class SetDaily(RequestHandler):
     self.response.write(html)
 
 class SetTwitt(RequestHandler):
+  @login_required
   def get(self):
     ui = UserInfo.query(UserInfo.user == users.get_current_user()).get()
     if ui.twitt == False:

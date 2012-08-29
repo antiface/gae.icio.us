@@ -11,12 +11,8 @@ $(document).ready(function() {
   if (tab == 'tagcloud') {
     $("#dashboard").html('<a>Filter by tag</a>');
   }
-
   if (tab == 'untagged') {
     $("#dashboard").html('<a>Tagging is important!</a>');
-  }
-  if (tab == 'previews') {
-    $("#dashboard").html('<a>Just youtube for now..</a>');
   }
   if (tab == 'inbox') {
     $("#dashboard").html('<a>Welcome to your Inbox</a>');
@@ -33,6 +29,18 @@ $(document).ready(function() {
   if (tab == 'setting') {
     $("#dashboard").html('<a>Your setting</a>');
   }
+
+  $('#addtag').submit(function() {
+    var querystring = $(this).serialize();
+    event.preventDefault();
+    $.ajax({
+      url: '/addtag',
+      data: querystring,
+      success: function() {
+        $("#dashboard").html('<a>New tag created</a>');
+        }
+      })
+    })
 
 $('#bookmarklet').tooltip()
 });

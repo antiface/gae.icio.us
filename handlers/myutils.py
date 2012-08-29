@@ -12,10 +12,12 @@ jinja_environment = jinja2.Environment(
 
 class Script(RequestHandler):
   def get(self):
-    for bm in UserInfo.query():
+    for bm in Bookmarks.query():      
       if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():
-        bm.put()
-        # deferred.defer(parsebm, bm, _queue="parser")
+        # netloc = urlparse.urlparse(bm.original).netloc
+        # if netloc == 'www.youtube.com' or netloc == 'vimeo.com':
+          deferred.defer(parse_bm, bm, _target="worker", _queue="admin")
+          
 
 class CheckFeed(RequestHandler):
   def get(self):
@@ -112,18 +114,19 @@ def new_bm(d, feed):
     bm.tags = feed.tags
     bm.put()
   ndb.transaction(txn)
-  deferred.defer(parsebm, bm, _target="worker", _queue="parser")
+  deferred.defer(parse_bm, bm, _target="worker", _queue="parser")
   
 
-def parsebm(bm):
+def parse_bm(bm):
+  ## url
   try:
     u = urlfetch.fetch(url=bm.original, follow_redirects=True)
-    bm.url = u.final_url.split('utm_')[0].split('&feature')[0]
+    bm.url = u.final_url.split('?')[0]
   except:
-    bm.url = bm.original.split('utm_')[0].split('&feature')[0]
+    bm.url = bm.original.split('?')[0]
+  #merge tags and comments
   q = Bookmarks.query(ndb.OR(Bookmarks.original == bm.original, Bookmarks.url == bm.url))
-  #q.filter(Bookmark.trashed == True)
-  if q.count >= 2:  #bug
+  if q.count > 1:
     tag_list = []
     for old in q:
       for t in old.tags:
@@ -131,22 +134,28 @@ def parsebm(bm):
           tag_list.append(t)
           bm.tags = tag_list
       if old.comment != bm.comment:
-        comment = '<br> -- previous comment -- <br>' + old.comment
-        bm.comment = bm.comment + comment
+        bm.comment = bm.comment + '<br> -- previous comment -- <br>' + old.comment
       old.trashed = True
-      old.put()    
-  if bm.preview():
-    bm.comment = '''<iframe width="640" height="480" 
+      old.put()  
+  ## video previews
+  url_parsed = urlparse.urlparse(bm.original)
+  query = urlparse.parse_qs(url_parsed.query)
+  if url_parsed.netloc == 'www.youtube.com':    
+    video = query["v"][0]
+    bm.url = 'http://www.youtube.com/watch?v=%s' % video
+    bm.comment = '''<iframe width="640" height="360" 
     src="http://www.youtube.com/embed/%s" frameborder="0" 
-    allowfullscreen></iframe>''' % bm.preview()
-  if bm.title == '':
-    bm.title = bm.url
+    allowfullscreen></iframe>''' % video
+  if url_parsed.netloc == 'vimeo.com': 
+    video = url_parsed.path.split('/')[1]
+    bm.url = 'http://vimeo.com/%s' % video
+    bm.comment = '''<iframe src="http://player.vimeo.com/video/%s?color=ffffff" 
+    width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen 
+    allowFullScreen></iframe>''' % video
   bm.put()
-  # if urlparse.urlparse('%s' % bm.url).path.split('.')[1] == 'mp3':
-    # deferred.defer(upload, bm.url)
-  if bm.ha_mys():
-    if capabilities.CapabilitySet("mail").is_enabled():
+  if bm.ha_mys() and capabilities.CapabilitySet("mail").is_enabled():
       deferred.defer(sendbm, bm, _queue="emails")
+
 
 def sendbm(bm):
   message = mail.EmailMessage()
@@ -158,6 +167,11 @@ def sendbm(bm):
 """ % (bm.title, bm.data, bm.url, bm.comment)
   message.send()
 
+
+## under costruction
 def upload(bmfile):
   upload_url = blobstore.create_upload_url('/upload')
   urlfetch.fetch(url=upload_url, payload=urllib.urlencode({"file": bmfile}), method=urlfetch.POST)
+
+# if urlparse.urlparse('%s' % bm.url).path.split('.')[1] == 'mp3':
+#   deferred.defer(upload, bm.url)

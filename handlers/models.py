@@ -45,6 +45,7 @@ class Feeds(ndb.Model):
   url = ndb.StringProperty()#link
   title = ndb.StringProperty()#title
   comment = ndb.TextProperty()#description
+
   @property
   def other_tags(self):
     q = ndb.gql("SELECT name FROM Tags WHERE user = :1", self.user)
@@ -67,7 +68,6 @@ class Bookmarks(ndb.Model):
   starred = ndb.BooleanProperty(default=False)
   trashed = ndb.BooleanProperty(default=False)
   have_tags = ndb.ComputedProperty(lambda self: bool(self.tags))
-  have_prev = ndb.ComputedProperty(lambda self: bool(self.preview()))
 
   @property
   def other_tags(self):
@@ -76,15 +76,6 @@ class Bookmarks(ndb.Model):
     for tagk in self.tags:
       all_user_tags.remove(tagk)
     return all_user_tags
-
-  def preview(self):
-    url_data = urlparse.urlparse(self.original)
-    query = urlparse.parse_qs(url_data.query)
-    try:
-      video = query["v"][0]
-      return video
-    except:
-      return False
 
   def ha_mys(self):
     return UserInfo.query(UserInfo.user == self.user).get().mys

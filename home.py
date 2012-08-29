@@ -38,7 +38,6 @@ class BaseHandler(webapp2.RequestHandler):
       url = users.create_login_url(self.request.uri)
       linktext = 'Login'
       nick = 'Welcome'
-      mys = False
     values = {      
       'brand': app_identity.get_application_id(),
       'url': url,
@@ -132,23 +131,6 @@ class NotagPage(BaseHandler):
     else:
       next_c = None
     self.response.set_cookie('active-tab', 'untagged')
-    self.generate('home.html', 
-      {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
-
-
-class PreviewPage(BaseHandler):
-  @login_required
-  def get(self):
-    bmq = ndb.gql("""SELECT * FROM Bookmarks
-      WHERE user = :1 AND have_prev = True
-      ORDER BY data DESC""", self.ui().user)
-    c = ndb.Cursor(urlsafe=self.request.get('c'))
-    bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-    if more:
-      next_c = next_curs.urlsafe()
-    else:
-      next_c = None
-    self.response.set_cookie('active-tab', 'previews')
     self.generate('home.html', 
       {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
 
@@ -253,7 +235,6 @@ app = webapp2.WSGIApplication([
   ('/filter',     FilterPage),
   ('/refine',     RefinePage),
   ('/notag',      NotagPage),
-  ('/previews',   PreviewPage),
   ('/archived',   ArchivedPage),
   ('/starred',    StarredPage),
   ('/trashed',    TrashedPage),
@@ -263,7 +244,6 @@ app = webapp2.WSGIApplication([
   ('/feed',       core.AddFeed),
   ('/submit',     core.AddBM),
   ('/edit',       core.EditBM),
-  ('/addtag',     core.AddTag),
   ('/deltag',     core.DeleteTag),
   ('/atf',        core.AssTagFeed),
   ('/rtf',        core.RemoveTagFeed),
@@ -273,6 +253,7 @@ app = webapp2.WSGIApplication([
   ('/archive',    ajax.ArchiveBM),
   ('/trash',      ajax.TrashBM),
   ('/star',       ajax.StarBM),
+  ('/addtag',     ajax.AddTag),
   ('/removetag',  ajax.RemoveTag),
   ('/assigntag',  ajax.AssignTag),
   ('/gettags',    ajax.GetTags),

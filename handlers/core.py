@@ -69,7 +69,7 @@ class ReceiveMail(RequestHandler):
       bm.user = users.User(utils.parseaddr(message.sender)[1])
       bm.put()
     ndb.transaction(txn)
-    deferred.defer(parsebm, bm, _queue="parser")
+    deferred.defer(parse_bm, bm, _queue="parser")
 
 class AddBM(RequestHandler):
   @login_required
@@ -82,7 +82,7 @@ class AddBM(RequestHandler):
       bm.user = users.User(str(self.request.get('user')))
       bm.put()
     ndb.transaction(txn)
-    deferred.defer(parsebm, bm, _queue="parser")
+    deferred.defer(parse_bm, bm, _queue="parser")
     self.redirect('/')
 
 class EditBM(RequestHandler):
@@ -98,22 +98,6 @@ class EditBM(RequestHandler):
     self.redirect('/')
 
 
-class AddTag(RequestHandler):
-  def get(self):
-    user = users.get_current_user()
-    tag_str = self.request.get('tag')
-    if user:
-      tag = ndb.gql("""SELECT * FROM Tags
-      WHERE user = :1 AND name = :2""", user, tag_str).get()
-      if tag is None:
-        newtag = Tags()
-        newtag.name = tag_str
-        newtag.user = user        
-      else:
-        newtag = tag
-      newtag.put()
-    self.redirect(self.request.referer)
-    
 class DeleteTag(RequestHandler):
   def get(self):
     tag = Tags.get_by_id(int(self.request.get('tag')))

@@ -20,13 +20,6 @@ indexes:
 
 - kind: Bookmarks
   properties:
-  - name: have_prev
-  - name: user
-  - name: data
-    direction: desc
-
-- kind: Bookmarks
-  properties:
   - name: have_tags
   - name: trashed
   - name: user
