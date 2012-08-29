@@ -124,7 +124,7 @@ def parse_bm(bm):
     bm.url = u.final_url.split('?')[0]
   except:
     bm.url = bm.original.split('?')[0]
-  #merge tags and comments
+  #merge tags
   q = Bookmarks.query(ndb.OR(Bookmarks.original == bm.original, Bookmarks.url == bm.url))
   if q.count > 1:
     tag_list = []
@@ -133,8 +133,6 @@ def parse_bm(bm):
         if t not in tag_list:
           tag_list.append(t)
           bm.tags = tag_list
-      if old.comment != bm.comment:
-        bm.comment = bm.comment + '<br> -- previous comment -- <br>' + old.comment
       old.trashed = True
       old.put()  
   ## video previews

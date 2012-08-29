@@ -1,7 +1,7 @@
 cron:
 - description: check new posts
   url: /adm/check
-  schedule: every 2 hours from 07:15 to 23:15
+  schedule: every 2 hours synchronized
 
 - description: send digest
   url: /adm/digest
