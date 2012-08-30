@@ -145,7 +145,7 @@ def parse_bm(bm):
     src="http://www.youtube.com/embed/%s" frameborder="0" 
     allowfullscreen></iframe>''' % video
   if url_parsed.netloc == 'vimeo.com': 
-    video = url_parsed.path.split('/')[1]
+    video = url_parsed.path.split('/')[-1]
     bm.url = 'http://vimeo.com/%s' % video
     bm.comment = '''<iframe src="http://player.vimeo.com/video/%s?color=ffffff" 
     width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen 
