@@ -3,6 +3,10 @@ cron:
   url: /adm/check
   schedule: every 2 hours synchronized
 
-- description: send digest
+- description: check new digests
   url: /adm/digest
+  schedule: every 8 hours synchronized
+
+- description: send daily digest
+  url: /adm/daily
   schedule: every day 16:00

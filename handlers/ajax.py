@@ -18,19 +18,22 @@ class TrashBM(RequestHandler):
       if bm.trashed == False:
         bm.trashed = True
         bm.archived = False
+        bm.put()
       else:
-        bm.trashed = False
-      bm.put()
+        bm.key.delete()
 
 class ArchiveBM(RequestHandler):
   @login_required
   def get(self):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     if users.get_current_user() == bm.user:
-      if bm.archived == False:
-        bm.archived = True
-      else:
+      if bm.trashed:
         bm.archived = False
+        bm.trashed = False
+      elif bm.archived:
+        bm.archived = False
+      else:
+        bm.archived = True
       bm.put()
 
 class GetComment(RequestHandler):
@@ -152,3 +155,17 @@ class SetTwitt(RequestHandler):
       html = '<i class="icon-thumbs-down"></i> <strong>Disabled</strong>'
     ui.put()
     self.response.write(html)
+
+
+class SetDigest(RequestHandler):
+  @login_required
+  def get(self):
+    feed = Feeds.get_by_id(int(self.request.get('feed')))
+    if feed.digest == False:
+      feed.digest = True
+      html = '<strong>Digest</strong>'
+    else:
+      feed.digest = False
+      html = '<strong>MYS</strong>'
+    feed.put()
+    self.response.write(html)    

@@ -45,6 +45,12 @@
           <a class="btn btn-mini" id="refresh-{{ feed.key.id() }}" ><i class="icon-refresh"></i> refresh </a>
           <a class="btn btn-mini" id="tags-{{ feed.key.id() }}" ><i class="icon-tags"></i> tags </a>
         </div>
+        <div class="btn-group">
+          <a class="btn btn-mini" id="digest-{{ feed.key.id() }}" rel="tooltip" data-placement="bottom" title="Digest send you an 8 hours email digest and don't archive the bookmarks while MYS is the default option and work normally, based on your personal setting">
+            {% if feed.digest == true %} <strong>Digest</strong> {% else %} <strong>MYS</strong> {% endif %}
+
+          </a>
+        </div>
         {% for tag in feed.tags %}
         <div class="btn-group">
           <a class="btn btn-mini btn-link disabled"> {{ tag.get().name }} </a>
@@ -61,6 +67,18 @@
     </dd>
   </div>
   <script>
+
+  $("#digest-{{ feed.key.id() }}").click(function() {
+    $.ajax({
+      url: "/setdigest",
+      data: {feed: '{{ feed.key.id() }}'},
+      success: function(html) {          
+      $("#digest-{{ feed.key.id() }}").html(html);
+      }
+    })
+  })
+
+
   if ($.cookie('tips-feed') == 'hide') {
     $("#tips-feed").addClass('hide');
   }
@@ -98,6 +116,8 @@
     function() {
       $("#comment-{{ feed.key.id() }}").addClass('hide');
       });
+
+  $('#digest-{{ feed.key.id() }}').tooltip()
   </script>
   {% endfor %}
 

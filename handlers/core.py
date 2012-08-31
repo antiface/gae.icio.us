@@ -15,8 +15,7 @@ class Empty_Trash(RequestHandler):
     bmq = ndb.gql("""SELECT __key__ FROM Bookmarks
       WHERE user = :1 AND trashed = True 
       ORDER BY data DESC""", users.get_current_user())
-    for bm in bmq:
-      deferred.defer(del_bm, bm, _queue="admin")
+    ndb.delete_multi(bmq.fetch())
     self.redirect(self.request.referer)
 
 

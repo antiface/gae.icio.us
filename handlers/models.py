@@ -41,6 +41,7 @@ class Feeds(ndb.Model):
   feed = ndb.StringProperty()#url
   blog = ndb.StringProperty()#feed.title
   root = ndb.StringProperty()#feed.link
+  digest = ndb.BooleanProperty(default=False)
 
   url = ndb.StringProperty()#link
   title = ndb.StringProperty()#title
@@ -63,6 +64,7 @@ class Bookmarks(ndb.Model):
   url = ndb.StringProperty()
   title = ndb.StringProperty()
   comment = ndb.TextProperty()
+  feed = ndb.KeyProperty(kind=Feeds)
   tags = ndb.KeyProperty(kind=Tags,repeated=True)
   archived = ndb.BooleanProperty(default=False)
   starred = ndb.BooleanProperty(default=False)

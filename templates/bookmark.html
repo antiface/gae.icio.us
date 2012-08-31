@@ -1,5 +1,5 @@
 
-<dt> <i class="icon-bookmark"></i> <a href="{{ bm.url }}" target="_blank">{{ bm.title }}</a> </dt>
+<dt> <i class="icon-bookmark"></i> <a href="{{ bm.url }}" target="_blank">{{ bm.title|e }}</a> </dt>
 
 <dt>      
 <div class="btn-toolbar">
@@ -13,11 +13,11 @@
   </div>
   <div class="btn-group" style="vertical-align:text-bottom">
     <button class="btn btn-mini" id="arch-{{ bm.key.id() }}">
-    {% if bm.archived %}<i class="icon-inbox"></i> inbox</button>
+    {% if bm.archived or bm.trashed %}<i class="icon-inbox"></i> inbox</button>
     {% else %}<i class="icon-folder-close"></i> archive</button>
     {% endif %}
     <button class="btn btn-mini" id="trash-{{ bm.key.id() }}">
-    {% if bm.trashed %}<i class="icon-inbox"></i> restore</button>
+    {% if bm.trashed %}<i class="icon-remove"></i> delete</button>
     {% else %}<i class="icon-trash"></i> trash</button> {% endif %}
   </div>
   <div class="btn-group" style="vertical-align:text-bottom">

@@ -5,23 +5,13 @@
 <head>
 <table>
   <thead>
-    <tr> <th>New Bookmarks</th> </tr>
+    <tr> <th>{{ title }}</th> </tr>
   </thead>
   <tbody>
-    {% for bm in new_bmq %}
-    <tr> <td>{{ bm.title}}</td> </tr>
-    <tr> <td>{{ bm.url}}</td> </tr>
-    {% endfor %}
-  </tbody>
-</table>
-<table>
-  <thead>
-    <tr> <th>Edited Bookmarks</th> </tr>
-  </thead>
-  <tbody>
-    {% for bm in edit_bmq %}
+    {% for bm in bmq %}
     <tr> <td>{{ bm.title }}</td> </tr>
     <tr> <td>{{ bm.url }}</td> </tr>
+    <tr><hr /></tr>
     {% endfor %}
   </tbody>
 </table>

@@ -12,84 +12,42 @@ jinja_environment = jinja2.Environment(
 
 class Script(RequestHandler):
   def get(self):
-    for bm in Bookmarks.query():      
-      if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():
-        # netloc = urlparse.urlparse(bm.original).netloc
-        # if netloc == 'www.youtube.com' or netloc == 'vimeo.com':
-          deferred.defer(parse_bm, bm, _target="worker", _queue="admin")
-          
+    if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():
+      for feed in Feeds.query(): 
+        feed.digest = False
+        feed.put()
 
 class CheckFeed(RequestHandler):
   def get(self):
     feed = Feeds.get_by_id(int(self.request.get('feed')))
     deferred.defer(pop_feed, feed, _target="worker", _queue="admin")
 
-    
 class CheckFeeds(RequestHandler):
   def get(self):
     if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():
-      for feed in Feeds.query():      
-        deferred.defer(pop_feed, feed, _target="worker", _queue="admin")    
+      for feed in Feeds.query():   
+        deferred.defer(pop_feed, feed, _target="worker", _queue="admin")
 
+class SendDigest(RequestHandler):
+  def get(self):
+    if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():        
+      for feed in Feeds.query(Feeds.digest == True):
+        deferred.defer(feed_digest, feed, _target="worker", _queue="admin")
 
-class Digest(RequestHandler):
+class SendDaily(RequestHandler):
   def get(self):
     if capabilities.CapabilitySet('mail').is_enabled():
       for ui in UserInfo.query():
         if ui.daily:
-          deferred.defer(generate_digest, ui.user, _target="worker", _queue="admin")
+          deferred.defer(daily_digest, ui.user, _target="worker", _queue="admin")
 
-def generate_digest(user):
-  timestamp = time.time() - 86400
-  period = datetime.datetime.fromtimestamp(timestamp)
-  new_bmq = ndb.gql("""SELECT * FROM Bookmarks 
-      WHERE user = :1 AND create > :2 AND trashed = False
-      ORDER BY create DESC""", user, period)
-  edit_bmq = ndb.gql("""SELECT * FROM Bookmarks 
-      WHERE user = :1 AND data > :2 AND trashed = False
-      ORDER BY data DESC""", user, period)
-  template = jinja_environment.get_template('digest.html')   
-  values = {'new_bmq': new_bmq, 'edit_bmq': edit_bmq, 'user': user} 
-  html = template.render(values)
-  if new_bmq.get() or edit_bmq.get():
-    deferred.defer(send_digest, user.email(), html, _target="worker", _queue="emails")
-
-
-def send_digest(email, html):
-  message = mail.EmailMessage()
-  message.sender = 'action@' + "%s" % app_identity.get_application_id() + '.appspotmail.com'
-  message.to = email
-  message.subject =  "(%s) %s" % (app_identity.get_application_id(), 'Daily digest')
-  message.html = html
-  message.send()
-
-
-def login_required(handler_method):
-  def check_login(self):
-    user = users.get_current_user()
-    if not user:
-      return self.redirect(users.create_login_url(self.request.url))
-    else:
-      handler_method(self)
-  return check_login
-
-def tag_set(bmq):
-  tagset = []
-  for bm in bmq:
-    for tag in bm.tags:
-      if not tag in tagset:
-        tagset.append(tag)
-  return tagset
-
-def del_bm(bmk): 
-  bmk.delete()
 
 def pop_feed(feed):
   from libs.feedparser import parse
   p = parse(feed.feed)
   e = 0
   d = p.entries[e]
-  while feed.url != d.link and e < 100:
+  while feed.url != d.link and e < 50:
     deferred.defer(new_bm, d, feed, _target="worker", _queue="importer")
     e += 1
     try:
@@ -102,20 +60,20 @@ def pop_feed(feed):
   feed.comment = d.description.encode('utf-8')
   feed.put()
 
-    
 def new_bm(d, feed):
   bm = Bookmarks()
+  bm.feed = feed.key
+  bm.user = feed.user
+  bm.put()
   def txn():    
     bm.original = d.link
     bm.url = d.link
     bm.title = d.title.encode('utf-8')
     bm.comment = d.description.encode('utf-8')
-    bm.user = feed.user
     bm.tags = feed.tags
     bm.put()
   ndb.transaction(txn)
   deferred.defer(parse_bm, bm, _target="worker", _queue="parser")
-  
 
 def parse_bm(bm):
   ## url
@@ -126,7 +84,7 @@ def parse_bm(bm):
     bm.url = bm.original.split('?')[0]
   #merge tags
   q = Bookmarks.query(ndb.OR(Bookmarks.original == bm.original, Bookmarks.url == bm.url))
-  if q.count > 1:
+  if q.count >= 2:
     tag_list = []
     for old in q:
       for t in old.tags:
@@ -151,8 +109,37 @@ def parse_bm(bm):
     width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen 
     allowFullScreen></iframe>''' % video
   bm.put()
-  if bm.ha_mys() and capabilities.CapabilitySet("mail").is_enabled():
+  if bm.ha_mys() and capabilities.CapabilitySet("mail").is_enabled() and bm.feed.get().digest == False:
       deferred.defer(sendbm, bm, _queue="emails")
+
+
+def daily_digest(user):
+  timestamp = time.time() - 86400
+  period = datetime.datetime.fromtimestamp(timestamp)
+  bmq = ndb.gql("""SELECT * FROM Bookmarks 
+    WHERE user = :1 AND create > :2 AND trashed = False
+    ORDER BY create DESC""", user, period)
+  title = '(%s) Digest: %s' % (app_identity.get_application_id(), time.time())
+  template = jinja_environment.get_template('digest.html')  
+  values = {'bmq': bmq, 'title': title} 
+  html = template.render(values)
+  if bmq.get():
+    deferred.defer(send_digest, user.email(), html, title, _target="worker", _queue="emails")
+
+def feed_digest(feed):
+  bmq = ndb.gql("""SELECT * FROM Bookmarks 
+    WHERE user = :1 AND feed = :2
+    ORDER BY data DESC""", feed.user, feed.key)
+  title = '(%s) Digest: %s' % (app_identity.get_application_id(), feed.blog)
+  template = jinja_environment.get_template('digest.html') 
+  values = {'bmq': bmq, 'title': title} 
+  html = template.render(values)
+  if bmq.get():
+    deferred.defer(send_digest, feed.user.email(), html, title, _target="worker", _queue="emails")
+    for bm in bmq:
+      bm.trashed = True
+      bm.feed = None
+      bm.put()
 
 
 def sendbm(bm):
@@ -164,6 +151,31 @@ def sendbm(bm):
 %s (%s)<br>%s<br><br>%s
 """ % (bm.title, bm.data, bm.url, bm.comment)
   message.send()
+
+def send_digest(email, html, title):
+  message = mail.EmailMessage()
+  message.sender = 'action@' + "%s" % app_identity.get_application_id() + '.appspotmail.com'
+  message.to = email
+  message.subject =  title
+  message.html = html
+  message.send()
+
+def login_required(handler_method):
+  def check_login(self):
+    user = users.get_current_user()
+    if not user:
+      return self.redirect(users.create_login_url(self.request.url))
+    else:
+      handler_method(self)
+  return check_login
+
+def tag_set(bmq):
+  tagset = []
+  for bm in bmq:
+    for tag in bm.tags:
+      if not tag in tagset:
+        tagset.append(tag)
+  return tagset
 
 
 ## under costruction
