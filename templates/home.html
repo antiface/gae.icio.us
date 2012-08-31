@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-
 <div class="container">
 <div class="row">
 {% include "sidebar.html" %}
@@ -36,16 +35,11 @@
   {% else %}<!-- filter pages -->
   {% if c %}
   <div class="well well-small">
-    <a  class="btn btn-block" href="/filter?tag=stackoverflow&c={{c}}" type="button">more..</a>
+    <a  class="btn btn-block" href="/filter?tag={{tag_obj.name}}&c={{c}}" type="button">more..</a>
   </div> 
-  {% endif %}     
+  {% endif %} 
   {% endif %}
-
-
-  
-
 </div>
-
 
 </div>
 </div>
