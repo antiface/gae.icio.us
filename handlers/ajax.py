@@ -42,6 +42,15 @@ class GetComment(RequestHandler):
     bm = Bookmarks.get_by_id(int(self.request.get('bm')))
     self.response.write(bm.comment)
 
+class GetTagsFeed(RequestHandler):
+  @login_required
+  def get(self):
+    feed = Feeds.get_by_id(int(self.request.get('feed')))
+    template = jinja_environment.get_template('gettagsfeed.html')   
+    values = {'feed': feed} 
+    other_tags = template.render(values)
+    self.response.write(other_tags)
+
 class GetTags(RequestHandler):
   @login_required
   def get(self):

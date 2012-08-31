@@ -68,7 +68,7 @@ class ReceiveMail(RequestHandler):
       bm.user = users.User(utils.parseaddr(message.sender)[1])
       bm.put()
     ndb.transaction(txn)
-    deferred.defer(parse_bm, bm, _queue="parser")
+    deferred.defer(parse_bm, bm.key, _queue="parser")
 
 class AddBM(RequestHandler):
   @login_required
@@ -81,7 +81,7 @@ class AddBM(RequestHandler):
       bm.user = users.User(str(self.request.get('user')))
       bm.put()
     ndb.transaction(txn)
-    deferred.defer(parse_bm, bm, _queue="parser")
+    deferred.defer(parse_bm, bm.key, _queue="parser")
     self.redirect('/')
 
 class EditBM(RequestHandler):

@@ -1,0 +1,3 @@
+{% for tag in feed.other_tags %} 
+<a class='btn btn-mini btn-link' href='/atf?tag={{ tag.id() }}&feed={{ feed.id }}'>{{ tag.get().name }}</a> 
+{% endfor %}

@@ -20,19 +20,19 @@ class Script(RequestHandler):
 class CheckFeed(RequestHandler):
   def get(self):
     feed = Feeds.get_by_id(int(self.request.get('feed')))
-    deferred.defer(pop_feed, feed, _target="worker", _queue="admin")
+    deferred.defer(pop_feed, feed.key, _queue="admin")
 
 class CheckFeeds(RequestHandler):
   def get(self):
     if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():
       for feed in Feeds.query():   
-        deferred.defer(pop_feed, feed, _target="worker", _queue="admin")
+        deferred.defer(pop_feed, feed.key, _target="worker", _queue="admin")
 
 class SendDigest(RequestHandler):
   def get(self):
     if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():        
       for feed in Feeds.query(Feeds.digest == True):
-        deferred.defer(feed_digest, feed, _target="worker", _queue="admin")
+        deferred.defer(feed_digest, feed.key, _target="worker", _queue="admin")
 
 class SendDaily(RequestHandler):
   def get(self):
@@ -42,25 +42,24 @@ class SendDaily(RequestHandler):
           deferred.defer(daily_digest, ui.user, _target="worker", _queue="admin")
 
 
-def pop_feed(feed):
+def pop_feed(feedk):  
   from libs.feedparser import parse
-  p = parse(feed.feed)
-  e = 0
+  feed = feedk.get()
+  p = parse(str(feed.feed))
+  e = 0 
   d = p.entries[e]
   while feed.url != d.link and e < 50:
-    deferred.defer(new_bm, d, feed, _target="worker", _queue="importer")
-    e += 1
-    try:
-      d = p.entries[e]
-    except IndexError:
-      break
+    deferred.defer(new_bm, d, feed.key, _target="worker", _queue="importer")
+    e += 1 
+    d = p.entries[e]
   d = p.entries[0]
   feed.url = d.link
   feed.title = d.title.encode('utf-8')
   feed.comment = d.description.encode('utf-8')
   feed.put()
 
-def new_bm(d, feed):
+def new_bm(d, feedk):
+  feed = feedk.get()
   bm = Bookmarks()
   bm.feed = feed.key
   bm.user = feed.user
@@ -73,9 +72,10 @@ def new_bm(d, feed):
     bm.tags = feed.tags
     bm.put()
   ndb.transaction(txn)
-  deferred.defer(parse_bm, bm, _target="worker", _queue="parser")
+  deferred.defer(parse_bm, bm.key, _target="worker", _queue="parser")
 
-def parse_bm(bm):
+def parse_bm(bmk):
+  bm = bmk.get()
   ## url
   try:
     u = urlfetch.fetch(url=bm.original, follow_redirects=True)
@@ -83,16 +83,20 @@ def parse_bm(bm):
   except:
     bm.url = bm.original.split('?')[0]
   #merge tags
-  q = Bookmarks.query(ndb.OR(Bookmarks.original == bm.original, Bookmarks.url == bm.url))
-  if q.count >= 2:
+  q = ndb.gql("SELECT * FROM Bookmarks WHERE user = :1 AND original = :2", bm.user, bm.original).fetch()
+  w = ndb.gql("SELECT * FROM Bookmarks WHERE user = :1 AND url = :2", bm.user, bm.url).fetch()
+  q.extend(w)  
+  if q.count > 1:
     tag_list = []
     for old in q:
       for t in old.tags:
         if t not in tag_list:
           tag_list.append(t)
           bm.tags = tag_list
-      old.trashed = True
-      old.put()  
+  q.remove(bm)
+  for old in q:
+    old.trashed = True
+    old.put()  
   ## video previews
   url_parsed = urlparse.urlparse(bm.original)
   query = urlparse.parse_qs(url_parsed.query)
@@ -109,7 +113,11 @@ def parse_bm(bm):
     width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen 
     allowFullScreen></iframe>''' % video
   bm.put()
-  if bm.ha_mys() and capabilities.CapabilitySet("mail").is_enabled() and bm.feed.get().digest == False:
+  if bm.ha_mys() and capabilities.CapabilitySet("mail").is_enabled():
+    try:
+      bm.feed.get().digest == True
+      pass
+    except:
       deferred.defer(sendbm, bm, _queue="emails")
 
 
@@ -119,18 +127,19 @@ def daily_digest(user):
   bmq = ndb.gql("""SELECT * FROM Bookmarks 
     WHERE user = :1 AND create > :2 AND trashed = False
     ORDER BY create DESC""", user, period)
-  title = '(%s) Digest: %s' % (app_identity.get_application_id(), time.time())
+  title = '(%s) 8 Daily digest for your activity: %s' % (app_identity.get_application_id(), time.time())
   template = jinja_environment.get_template('digest.html')  
   values = {'bmq': bmq, 'title': title} 
   html = template.render(values)
   if bmq.get():
     deferred.defer(send_digest, user.email(), html, title, _target="worker", _queue="emails")
 
-def feed_digest(feed):
+def feed_digest(feedk):
+  feed = feedk.get()
   bmq = ndb.gql("""SELECT * FROM Bookmarks 
     WHERE user = :1 AND feed = :2
     ORDER BY data DESC""", feed.user, feed.key)
-  title = '(%s) Digest: %s' % (app_identity.get_application_id(), feed.blog)
+  title = '(%s) 8 hourly digest for %s' % (app_identity.get_application_id(), feed.blog)
   template = jinja_environment.get_template('digest.html') 
   values = {'bmq': bmq, 'title': title} 
   html = template.render(values)

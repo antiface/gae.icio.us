@@ -46,7 +46,7 @@
           <a class="btn btn-mini" id="tags-{{ feed.id }}" ><i class="icon-tags"></i> tags </a>
         </div>
         <div class="btn-group">
-          <a class="btn btn-mini" id="digest-{{ feed.id }}" rel="tooltip" data-placement="bottom" title="Digest send you an 8 hours email digest and don't archive the bookmarks while MYS is the default option and work normally, based on your personal setting">
+          <a class="btn btn-mini" id="digest-{{ feed.id }}" rel="tooltip" data-placement="bottom" title="Digest send you an 8 hourly email digest while MYS is the default option and work normally, based on your personal setting">
             {% if feed.digest == true %} <strong>Digest</strong> {% else %} <strong>MYS</strong> {% endif %}
 
           </a>
@@ -60,13 +60,27 @@
         {% endfor %}
       </div>
     </dd>
-    <dd id="comment-{{ feed.id }}" class="hide">
-      {% for tag in feed.other_tags %}
-      <a class='btn btn-mini btn-link' href='/atf?tag={{ tag.id() }}&feed={{ feed.id }}'>{{ tag.get().name }}</a>
-      {% endfor %}
+    <dd id="comment-{{ feed.id }}" class="">
+      
     </dd>
   </div>
   <script>
+  $("#tags-{{ feed.id }}").toggle(
+    function() {
+      $("#dashboard").html('<a>Associate a tag to the feed</a>');
+      $.ajax({
+        url: "/gettagsfeed", 
+        data: {feed: '{{ feed.id }}'}, 
+        success: function(html) {
+          $("#comment-{{ feed.id }}").html(html);
+        } 
+      })
+    },
+    function() {
+      $("#dashboard").html('<a>ok.</a>');
+      $("#comment-{{ feed.id }}").addClass('hide'); 
+    }
+  )
 
   $("#digest-{{ feed.id }}").click(function() {
     $.ajax({
@@ -77,7 +91,6 @@
       }
     })
   })
-
 
   if ($.cookie('tips-feed') == 'hide') {
     $("#tips-feed").addClass('hide');
@@ -108,15 +121,6 @@
       }
     });
   });
-  $("#tags-{{ feed.id }}").toggle(
-    function() {
-      $("#comment-{{ feed.id }}").removeClass('hide');
-      $("#dashboard").html('<a>Add this tag for each new item</a>');
-      },
-    function() {
-      $("#comment-{{ feed.id }}").addClass('hide');
-      });
-
   $('#digest-{{ feed.id }}').tooltip()
   </script>
   {% endfor %}

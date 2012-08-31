@@ -183,7 +183,7 @@ class RefinePage(BaseHandler):
 
 class FeedsPage(BaseHandler):
   @login_required
-  def get(self):    
+  def get(self):
     feeds = ndb.gql("""SELECT * FROM Feeds 
       WHERE user = :1 ORDER BY data DESC""", self.ui().user)
     self.response.set_cookie('active-tab', 'feeds')
@@ -258,6 +258,7 @@ app = webapp2.WSGIApplication([
   ('/removetag',  ajax.RemoveTag),
   ('/assigntag',  ajax.AssignTag),
   ('/gettags',    ajax.GetTags),
+  ('/gettagsfeed',ajax.GetTagsFeed),
   ('/getcomment', ajax.GetComment),
   ('/getedit',    ajax.GetEdit),
   ('/adm/script', myutils.Script),
