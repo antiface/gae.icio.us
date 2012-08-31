@@ -48,6 +48,10 @@ class Feeds(ndb.Model):
   comment = ndb.TextProperty()#description
 
   @property
+  def id(self):
+    return self.key.id()
+
+  @property
   def other_tags(self):
     q = ndb.gql("SELECT name FROM Tags WHERE user = :1", self.user)
     all_user_tags = [tagk.key for tagk in q]
@@ -71,6 +75,10 @@ class Bookmarks(ndb.Model):
   trashed = ndb.BooleanProperty(default=False)
   have_tags = ndb.ComputedProperty(lambda self: bool(self.tags))
 
+  @property
+  def id(self):
+    return self.key.id()
+    
   @property
   def other_tags(self):
     q = ndb.gql("SELECT name FROM Tags WHERE user = :1", self.user)

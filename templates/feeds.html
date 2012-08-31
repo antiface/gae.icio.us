@@ -32,7 +32,7 @@
   </div>
 
   {% for feed in feeds %}
-  <div class="well well-small" id="row-{{ feed.key.id() }}" >
+  <div class="well well-small" id="row-{{ feed.id }}" >
     <dt> 
       <a class="btn disabled btn-mini"><i class="icon-time"></i> {{ feed.data|dtf }}</a>
       <a href="{{ feed.root }}" ><strong> {{ feed.blog }}</strong></a>
@@ -41,12 +41,12 @@
     <dd>
       <div class="btn-toolbar">
         <div class="btn-group">
-          <a class="btn btn-mini" id="delete-{{ feed.key.id() }}" ><i class="icon-remove"></i> delete </a>
-          <a class="btn btn-mini" id="refresh-{{ feed.key.id() }}" ><i class="icon-refresh"></i> refresh </a>
-          <a class="btn btn-mini" id="tags-{{ feed.key.id() }}" ><i class="icon-tags"></i> tags </a>
+          <a class="btn btn-mini" id="delete-{{ feed.id }}" ><i class="icon-remove"></i> delete </a>
+          <a class="btn btn-mini" id="refresh-{{ feed.id }}" ><i class="icon-refresh"></i> refresh </a>
+          <a class="btn btn-mini" id="tags-{{ feed.id }}" ><i class="icon-tags"></i> tags </a>
         </div>
         <div class="btn-group">
-          <a class="btn btn-mini" id="digest-{{ feed.key.id() }}" rel="tooltip" data-placement="bottom" title="Digest send you an 8 hours email digest and don't archive the bookmarks while MYS is the default option and work normally, based on your personal setting">
+          <a class="btn btn-mini" id="digest-{{ feed.id }}" rel="tooltip" data-placement="bottom" title="Digest send you an 8 hours email digest and don't archive the bookmarks while MYS is the default option and work normally, based on your personal setting">
             {% if feed.digest == true %} <strong>Digest</strong> {% else %} <strong>MYS</strong> {% endif %}
 
           </a>
@@ -54,26 +54,26 @@
         {% for tag in feed.tags %}
         <div class="btn-group">
           <a class="btn btn-mini btn-link disabled"> {{ tag.get().name }} </a>
-          <a class="btn btn-mini btn-link disabled" href="/rtf?feed={{ feed.key.id() }}&tag={{ tag.id() }}">
+          <a class="btn btn-mini btn-link disabled" href="/rtf?feed={{ feed.id }}&tag={{ tag.id() }}">
             <i class="icon-remove"></i></a>
         </div>
         {% endfor %}
       </div>
     </dd>
-    <dd id="comment-{{ feed.key.id() }}" class="hide">
+    <dd id="comment-{{ feed.id }}" class="hide">
       {% for tag in feed.other_tags %}
-      <a class='btn btn-mini btn-link' href='/atf?tag={{ tag.id() }}&feed={{ feed.key.id() }}'>{{ tag.get().name }}</a>
+      <a class='btn btn-mini btn-link' href='/atf?tag={{ tag.id() }}&feed={{ feed.id }}'>{{ tag.get().name }}</a>
       {% endfor %}
     </dd>
   </div>
   <script>
 
-  $("#digest-{{ feed.key.id() }}").click(function() {
+  $("#digest-{{ feed.id }}").click(function() {
     $.ajax({
       url: "/setdigest",
-      data: {feed: '{{ feed.key.id() }}'},
+      data: {feed: '{{ feed.id }}'},
       success: function(html) {          
-      $("#digest-{{ feed.key.id() }}").html(html);
+      $("#digest-{{ feed.id }}").html(html);
       }
     })
   })
@@ -87,37 +87,37 @@
   })
 
 
-  $("#delete-{{ feed.key.id() }}").click(function(){
+  $("#delete-{{ feed.id }}").click(function(){
     $("#dashboard").html('<a>Deleting the feed</a>');
     $.ajax({
       url: "/feed",
-      data: { id: "{{ feed.key.id() }}" },
+      data: { id: "{{ feed.id }}" },
       success: function() {
         $("#dashboard").html('<a>OK. Feed deleted</a>');
-        $("#row-{{ feed.key.id() }}").addClass('hide');
+        $("#row-{{ feed.id }}").addClass('hide');
       }
     });
   });
-  $("#refresh-{{ feed.key.id() }}").click(function(){
+  $("#refresh-{{ feed.id }}").click(function(){
     $("#dashboard").html('<a>Refresh the feed</a>');
     $.ajax({
       url: "/checkfeed",
-      data: { feed: "{{ feed.key.id() }}" },
+      data: { feed: "{{ feed.id }}" },
       success: function() {
         $("#dashboard").html('<a>OK check started </a>');
       }
     });
   });
-  $("#tags-{{ feed.key.id() }}").toggle(
+  $("#tags-{{ feed.id }}").toggle(
     function() {
-      $("#comment-{{ feed.key.id() }}").removeClass('hide');
+      $("#comment-{{ feed.id }}").removeClass('hide');
       $("#dashboard").html('<a>Add this tag for each new item</a>');
       },
     function() {
-      $("#comment-{{ feed.key.id() }}").addClass('hide');
+      $("#comment-{{ feed.id }}").addClass('hide');
       });
 
-  $('#digest-{{ feed.key.id() }}').tooltip()
+  $('#digest-{{ feed.id }}').tooltip()
   </script>
   {% endfor %}
 

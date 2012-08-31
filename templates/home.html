@@ -21,7 +21,7 @@
   </div> 
   <!-- bookmarks -->
   {% for bm in bms %}
-  <div class="well well-small" id="row-{{ bm.key.id() }}"> 
+  <div class="well well-small" id="row-{{ bm.id }}"> 
     {% include "bookmark.html" %}  
     <script>{% include "home.js" %}</script>
   </div>

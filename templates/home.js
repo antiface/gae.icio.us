@@ -1,81 +1,81 @@
 $(document).ready(function() {
 
-  $("#star-{{ bm.key.id() }}").click(function() {
+  $("#star-{{ bm.id }}").click(function() {
     $.ajax({
       url: "/star",
-      data: { bm: "{{ bm.key.id() }}" },
+      data: { bm: "{{ bm.id }}" },
       success: function(html) {
         $("#dashboard").html('<a>Star status changed</a>');
-        $("#star-{{ bm.key.id() }}").html(html);
+        $("#star-{{ bm.id }}").html(html);
       }
     });
   })
 
-  $("#prev-{{ bm.key.id() }}").toggle(  
+  $("#prev-{{ bm.id }}").toggle(  
     function() {
       $.ajax({
         url: "/getcomment",
-        data: { bm: "{{ bm.key.id() }}" },
+        data: { bm: "{{ bm.id }}" },
         success: function(html) {
-          $("#comment-{{ bm.key.id() }}").html(html);
+          $("#comment-{{ bm.id }}").html(html);
         }
       });
     },
     function() {
-      $("#comment-{{ bm.key.id() }}").html('');
+      $("#comment-{{ bm.id }}").html('');
         }
   )
 
-  $("#tags-butt-{{ bm.key.id() }}").toggle(
+  $("#tags-butt-{{ bm.id }}").toggle(
     function() {
       $("#dashboard").html('<a>Select a new tag</a>');
       $.ajax({
         url: "/gettags",
-        data: { bm: "{{ bm.key.id() }}" },
+        data: { bm: "{{ bm.id }}" },
         success: function(html) {
-          $("#comment-{{ bm.key.id() }}").html(html);
+          $("#comment-{{ bm.id }}").html(html);
         }
       });
     },
     function() {
-      $("#comment-{{ bm.key.id() }}").html('');
+      $("#comment-{{ bm.id }}").html('');
         }
   )
 
-  $("#edit-{{ bm.key.id() }}").toggle(
+  $("#edit-{{ bm.id }}").toggle(
     function() {
       $.ajax({
         url: "/getedit",
-        data: { bm: "{{ bm.key.id() }}" },
+        data: { bm: "{{ bm.id }}" },
         success: function(html) {
           $("#dashboard").html('<a>Edit the item</a>');
-          $("#comment-{{ bm.key.id() }}").html(html);
+          $("#comment-{{ bm.id }}").html(html);
         }
       });
     },
     function() {
-      $("#comment-{{ bm.key.id() }}").html('');
+      $("#comment-{{ bm.id }}").html('');
         }
   )
 
-  $("#arch-{{ bm.key.id() }}").click(function() {
+  $("#arch-{{ bm.id }}").click(function() {
     $.ajax({
       url: "/archive",
-      data: { bm: "{{ bm.key.id() }}" },
+      data: { bm: "{{ bm.id }}" },
       success: function() {
         $("#dashboard").html('<a>Bookmark archived</a>');
-        $("#row-{{ bm.key.id() }}").addClass('hide');
+        $("#row-{{ bm.id }}").addClass('hide');
       },
     });
   })
 
-  $("#trash-{{ bm.key.id() }}").click(function() {
+  $("#trash-{{ bm.id }}").click(function() {
     $.ajax({
       url: "/trash",
-      data: { bm: "{{ bm.key.id() }}" },
+      data: { bm: "{{ bm.id }}" },
       success: function() {
         $("#dashboard").html('<a>Bookmark deleted</a>');
-        $("#row-{{ bm.key.id() }}").addClass('hide');
+        $("#row-{{ bm.id }}").addClass('hide');
       },
     });
   })

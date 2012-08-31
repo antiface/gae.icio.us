@@ -4,19 +4,19 @@
 <dt>      
 <div class="btn-toolbar">
   <div class="btn-group" style="vertical-align:text-bottom">
-    <button class="btn btn-mini" id="star-{{ bm.key.id() }}">{% if bm.starred %}<i class="icon-star">{% else %}<i class="icon-star-empty">{% endif %}</i></button>
+    <button class="btn btn-mini" id="star-{{ bm.id }}">{% if bm.starred %}<i class="icon-star">{% else %}<i class="icon-star-empty">{% endif %}</i></button>
   </div>
   <div class="btn-group" data-toggle="button" style="vertical-align:text-bottom">
-    <button class="btn btn-mini" id="prev-{{ bm.key.id() }}"><i class="icon-eye-open"></i> view</button>
-    <button class="btn btn-mini" id="tags-butt-{{ bm.key.id() }}"><i class="icon-tags"></i> tags</button>
-    <button class="btn btn-mini" id="edit-{{ bm.key.id() }}"><i class="icon-edit"></i> edit</button>
+    <button class="btn btn-mini" id="prev-{{ bm.id }}"><i class="icon-eye-open"></i> view</button>
+    <button class="btn btn-mini" id="tags-butt-{{ bm.id }}"><i class="icon-tags"></i> tags</button>
+    <button class="btn btn-mini" id="edit-{{ bm.id }}"><i class="icon-edit"></i> edit</button>
   </div>
   <div class="btn-group" style="vertical-align:text-bottom">
-    <button class="btn btn-mini" id="arch-{{ bm.key.id() }}">
+    <button class="btn btn-mini" id="arch-{{ bm.id }}">
     {% if bm.archived or bm.trashed %}<i class="icon-inbox"></i> inbox</button>
     {% else %}<i class="icon-folder-close"></i> archive</button>
     {% endif %}
-    <button class="btn btn-mini" id="trash-{{ bm.key.id() }}">
+    <button class="btn btn-mini" id="trash-{{ bm.id }}">
     {% if bm.trashed %}<i class="icon-remove"></i> delete</button>
     {% else %}<i class="icon-trash"></i> trash</button> {% endif %}
   </div>
@@ -30,9 +30,9 @@
   {% endif %}
 </div>
 </dt>
-  <dd id="tags-{{ bm.key.id() }}"> {% include "tags.html" %} </dd>
+  <dd id="tags-{{ bm.id }}"> {% include "tags.html" %} </dd>
   {% if bm.tags == [] %} 
-  <dd id="comment-{{ bm.key.id() }}">{% include "other_tags.html" %}</dd>
+  <dd id="comment-{{ bm.id }}">{% include "other_tags.html" %}</dd>
   {% else %}
-  <dd id="comment-{{ bm.key.id() }}"></dd>
+  <dd id="comment-{{ bm.id }}"></dd>
   {% endif %}
