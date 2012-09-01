@@ -79,9 +79,11 @@ def parse_bm(bmk):
   ## url
   try:
     u = urlfetch.fetch(url=bm.original, follow_redirects=True)
-    bm.url = u.final_url.split('?')[0]
+    bm.url = u.final_url.split('?utm_source')[0]
+    bm.url = u.final_url.split('&feature')[0]
   except:
-    bm.url = bm.original.split('?')[0]
+    bm.url = bm.original.split('?utm_source')[0]
+    bm.url = bm.original.split('&feature')[0]
   #merge tags
   q = ndb.gql("SELECT * FROM Bookmarks WHERE user = :1 AND original = :2", bm.user, bm.original).fetch()
   w = ndb.gql("SELECT * FROM Bookmarks WHERE user = :1 AND url = :2", bm.user, bm.url).fetch()

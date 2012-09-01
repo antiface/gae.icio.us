@@ -195,6 +195,12 @@ class TagCloudPage(BaseHandler):
     self.response.set_cookie('active-tab', 'tagcloud')
     self.generate('tagcloud.html', {})
 
+class Dropbox(BaseHandler):
+  @login_required
+  def get(self):   
+    # self.response.set_cookie('active-tab', 'tagcloud')
+    self.generate('dropbox.html', {})
+
 class SettingPage(BaseHandler):
   @login_required
   def get(self):
@@ -232,6 +238,7 @@ debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 app = webapp2.WSGIApplication([
   ('/',           InboxPage),
   ('/feeds',      FeedsPage),
+  ('/dropbox',    Dropbox),
   ('/filter',     FilterPage),
   ('/refine',     RefinePage),
   ('/notag',      NotagPage),
