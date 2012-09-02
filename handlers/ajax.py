@@ -4,7 +4,7 @@
 import jinja2
 from webapp2 import RequestHandler
 from google.appengine.api import users
-from handlers.myutils import login_required
+from handlers.utils import login_required
 from handlers.models import *
 
 jinja_environment = jinja2.Environment(

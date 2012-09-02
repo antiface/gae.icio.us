@@ -2,15 +2,26 @@
 # -*- coding: utf-8 -*-
 
 import webapp2, jinja2, os
-from google.appengine.api import users, mail, app_identity
-from google.appengine.ext import ndb, blobstore
-from google.appengine.ext.webapp import blobstore_handlers
-from handlers import core, ajax, myutils
-from handlers.myutils import *
+from google.appengine.api import users, mail, app_identity, urlfetch
+from google.appengine.ext import ndb, deferred
+from handlers import ajax, config
+from handlers.utils import *
+from handlers.models import *
+from handlers.parser import *
+from dropbox import client, session
 
+
+#Dropbox staff
+APP_KEY = config.APP_KEY # "DELETE 'config.APP_KEY' AND PUT HERE YOUR APP_KEY"
+APP_SECRET = config.APP_SECRET #"DELETE 'config.APP_SECRET' AND PUT HERE YOUR APP_SECRET"
+ACCESS_TYPE = 'app_folder'
+sess = session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)    
+request_token = sess.obtain_request_token()
+
+
+#Jinja2 staff
 def dtf(value, format='%d-%m-%Y %H:%M'):
   return value.strftime(format)
-
 jinja_environment = jinja2.Environment(
   loader=jinja2.FileSystemLoader('templates'))
 jinja_environment.filters['dtf'] = dtf
@@ -48,6 +59,31 @@ class BaseHandler(webapp2.RequestHandler):
     template = jinja_environment.get_template(template_name)
     self.response.out.write(template.render(values))
 
+
+class SettingPage(BaseHandler):
+  @login_required
+  def get(self):
+    if self.request.get('oauth_token'):
+      access_token = sess.obtain_access_token(request_token)
+    bookmarklet = """
+javascript:location.href=
+'%s/submit?url='+encodeURIComponent(location.href)+
+'&title='+encodeURIComponent(document.title)+
+'&user='+'%s'+
+'&comment='+document.getSelection().toString()
+""" % (self.request.host_url, self.ui().email)
+
+    callback = "%s/setting" % (self.request.host_url) 
+    dropbox_url = sess.build_authorize_url(request_token, oauth_callback=callback)
+
+    self.response.set_cookie('dropbox', '%s' % sess.is_linked())
+    self.response.set_cookie('mys', '%s' % self.ui().mys)
+    self.response.set_cookie('daily', '%s' % self.ui().daily)
+    self.response.set_cookie('twitt', '%s' % self.ui().twitt)
+    self.response.set_cookie('active-tab', 'setting')
+
+    self.generate('setting.html',
+      {'bookmarklet': bookmarklet, 'dropbox_url': dropbox_url})
 
 
 class InboxPage(BaseHandler):
@@ -117,7 +153,6 @@ class TrashedPage(BaseHandler):
     self.generate('home.html', 
       {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
 
-
 class NotagPage(BaseHandler):
   @login_required
   def get(self):
@@ -133,7 +168,6 @@ class NotagPage(BaseHandler):
     self.response.set_cookie('active-tab', 'untagged')
     self.generate('home.html', 
       {'bms' : bms, 'tags': tag_set(bmq), 'c': next_c })
-
 
 class FilterPage(BaseHandler):
   @login_required
@@ -158,7 +192,6 @@ class FilterPage(BaseHandler):
         {'tag_obj': tag_obj, 'bms': bms, 'tags': tagset, 'c': next_c })
     else:
       self.redirect('/')
-
 
 class RefinePage(BaseHandler):
   @login_required
@@ -195,42 +228,121 @@ class TagCloudPage(BaseHandler):
     self.response.set_cookie('active-tab', 'tagcloud')
     self.generate('tagcloud.html', {})
 
-class Dropbox(BaseHandler):
-  @login_required
-  def get(self):   
-    # self.response.set_cookie('active-tab', 'tagcloud')
-    self.generate('dropbox.html', {})
+#########################################################
 
-class SettingPage(BaseHandler):
+class AddFeed(RequestHandler):
+  def post(self):
+    from libs.feedparser import parse
+    user = users.get_current_user()
+    url = self.request.get('url')
+    p = parse(str(url))
+    d = p.entries[0]
+    if user:
+      q = ndb.gql("""SELECT * FROM Feeds
+      WHERE user = :1 AND url = :2""", user, url)
+      if q.get() is None:
+        feed = Feeds()
+        def txn():
+          feed.blog = p.feed.title
+          feed.root = p.feed.link
+          feed.user = user
+          feed.feed = url
+          feed.url  = d.link
+          feed.title = d.title
+          feed.comment = d.description
+          feed.put()
+        ndb.transaction(txn)
+        deferred.defer(new_bm, d, feed, _queue="admin")
+      else:
+        pass
+      self.redirect(self.request.referer)
+    else:
+      self.redirect('/')
+  def get(self):
+    feed = Feeds.get_by_id(int(self.request.get('id')))
+    feed.key.delete()
+
+class AddBM(webapp2.RequestHandler):
   @login_required
   def get(self):
-    bookmarklet = """
-javascript:location.href=
-'%s/submit?url='+encodeURIComponent(location.href)+
-'&title='+encodeURIComponent(document.title)+
-'&user='+'%s'+
-'&comment='+document.getSelection().toString()
-""" % (self.request.host_url, self.ui().user.email())
-    mys = self.ui().mys    
-    self.response.set_cookie('mys', '%s' % self.ui().mys)
-    self.response.set_cookie('daily', '%s' % self.ui().daily)
-    self.response.set_cookie('twitt', '%s' % self.ui().twitt)
-    self.response.set_cookie('active-tab', 'setting')
-    self.generate('setting.html',
-      {'bookmarklet': bookmarklet,})
+    bm = Bookmarks()
+    def txn(): 
+      bm.original = self.request.get('url')
+      bm.title = self.request.get('title')
+      bm.comment = self.request.get('comment')
+      bm.user = users.User(str(self.request.get('user')))
+      bm.put()
+    ndb.transaction(txn) 
+    if sess.is_linked():
+      db_user = client.DropboxClient(sess) 
+    else:
+      db_user = None
+    deferred.defer(main_parser, bm.key, db_user, _queue="parser")
+    self.redirect('/')
 
-## under costruction
-class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
+class ReceiveMail(webapp2.RequestHandler):
   def post(self):
-    upload_files = self.get_uploads('file')  # 'file' is file upload field in the form
-    blob_info = upload_files[0]
-    self.redirect('/serve/%s' % blob_info.key())
+    from email import header, utils
+    message = mail.InboundEmailMessage(self.request.body)
+    texts = message.bodies('text/plain')
+    for text in texts:
+      txtmsg = ""
+      txtmsg = text[1].decode()
+    url = txtmsg.encode('utf8')
+    bm = Bookmarks()
+    def txn():
+      bm.original = url
+      bm.title = header.decode_header(message.subject)[0][0]
+      bm.comment = 'Sent via email'
+      bm.user = users.User(utils.parseaddr(message.sender)[1])
+      bm.put()
+    ndb.transaction(txn) 
+    if sess.is_linked():
+      db_user = client.DropboxClient(sess) 
+    else:
+      db_user = None
+    deferred.defer(main_parser, bm.key, db_user, _queue="parser")
 
-class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
-  def get(self, resource):
-    # resource = str(urllib.unquote(resource))
-    blob_info = blobstore.BlobInfo.get(resource)
-    self.send_blob(blob_info)
+
+class EditBM(webapp2.RequestHandler):
+  def get(self):
+    bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+    if users.get_current_user() == bm.user:
+      def txn():
+        bm.url = self.request.get('url').encode('utf8')
+        bm.title = self.request.get('title').encode('utf8')
+        bm.comment = self.request.get('comment').encode('utf8')
+        bm.put()
+      ndb.transaction(txn)
+    self.redirect('/')
+
+class DeleteTag(webapp2.RequestHandler):
+  def get(self):
+    tag = Tags.get_by_id(int(self.request.get('tag')))
+    if users.get_current_user() == tag.user:
+      tag.key.delete()
+    self.redirect(self.request.referer)
+
+class AssTagFeed(webapp2.RequestHandler):
+  def get(self):
+    feed = Feeds.get_by_id(int(self.request.get('feed')))
+    tag = Tags.get_by_id(int(self.request.get('tag')))
+    if users.get_current_user() == feed.user:
+      if tag in feed.tags:
+        pass
+      else:
+        feed.tags.append(tag.key)
+        feed.put()
+    self.redirect(self.request.referer)
+
+class RemoveTagFeed(webapp2.RequestHandler):
+  def get(self):
+    feed = Feeds.get_by_id(int(self.request.get('feed')))
+    tag = Tags.get_by_id(int(self.request.get('tag')))
+    if users.get_current_user() == feed.user:
+      feed.tags.remove(tag.key)
+      feed.put()
+    self.redirect(self.request.referer)    
 
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
@@ -238,7 +350,6 @@ debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 app = webapp2.WSGIApplication([
   ('/',           InboxPage),
   ('/feeds',      FeedsPage),
-  ('/dropbox',    Dropbox),
   ('/filter',     FilterPage),
   ('/refine',     RefinePage),
   ('/notag',      NotagPage),
@@ -247,13 +358,12 @@ app = webapp2.WSGIApplication([
   ('/trashed',    TrashedPage),
   ('/tagcloud',   TagCloudPage),
   ('/setting',    SettingPage),
-  ('/empty_trash',core.Empty_Trash),
-  ('/feed',       core.AddFeed),
-  ('/submit',     core.AddBM),
-  ('/edit',       core.EditBM),
-  ('/deltag',     core.DeleteTag),
-  ('/atf',        core.AssTagFeed),
-  ('/rtf',        core.RemoveTagFeed),
+  ('/feed',       AddFeed),
+  ('/submit',     AddBM),
+  ('/edit',       EditBM),
+  ('/deltag',     DeleteTag),
+  ('/atf',        AssTagFeed),
+  ('/rtf',        RemoveTagFeed),
   ('/setmys',     ajax.SetMys),
   ('/setdaily',   ajax.SetDaily),
   ('/setdigest',  ajax.SetDigest),
@@ -268,14 +378,13 @@ app = webapp2.WSGIApplication([
   ('/gettagsfeed',ajax.GetTagsFeed),
   ('/getcomment', ajax.GetComment),
   ('/getedit',    ajax.GetEdit),
-  ('/adm/script', myutils.Script),
-  ('/adm/digest', myutils.SendDigest),
-  ('/adm/daily',  myutils.SendDaily),
-  ('/adm/check',  myutils.CheckFeeds),
-  ('/checkfeed',  myutils.CheckFeed),
-  ('/upload',     UploadHandler),
-  ('/serve/([^/]+)?', ServeHandler),
-  ('/_ah/mail/post@.*',core.ReceiveMail),
+  ('/empty_trash',Empty_Trash),
+  ('/adm/script', Script),
+  ('/adm/digest', SendDigest),
+  ('/adm/daily',  SendDaily),
+  ('/adm/check',  CheckFeeds),
+  ('/checkfeed',  CheckFeed),
+  ('/_ah/mail/post@.*',ReceiveMail),
   ], debug=debug)
 
 def main():

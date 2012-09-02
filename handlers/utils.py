@@ -1,14 +1,24 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-import urllib, datetime, urlparse, jinja2, time
+import datetime, urlparse, jinja2, time
 from webapp2 import RequestHandler
-from google.appengine.api import users, mail, app_identity, urlfetch, capabilities
-from google.appengine.ext import deferred, blobstore
+from google.appengine.api import users, mail, app_identity, capabilities, urlfetch
+from google.appengine.ext import deferred
 from models import *
+from parser import *
 
 jinja_environment = jinja2.Environment(
   loader=jinja2.FileSystemLoader('templates'))
+
+def login_required(handler_method):
+  def check_login(self):
+    user = users.get_current_user()
+    if not user:
+      return self.redirect(users.create_login_url(self.request.url))
+    else:
+      handler_method(self)
+  return check_login
 
 class Script(RequestHandler):
   def get(self):
@@ -16,6 +26,16 @@ class Script(RequestHandler):
       for feed in Feeds.query(): 
         feed.digest = False
         feed.put()
+
+class Empty_Trash(RequestHandler):
+  @login_required
+  def get(self):
+    bmq = ndb.gql("""SELECT __key__ FROM Bookmarks
+      WHERE user = :1 AND trashed = True 
+      ORDER BY data DESC""", users.get_current_user())
+    ndb.delete_multi(bmq.fetch())
+    self.redirect(self.request.referer)
+
 
 class CheckFeed(RequestHandler):
   def get(self):
@@ -45,11 +65,12 @@ class SendDaily(RequestHandler):
 def pop_feed(feedk):  
   from libs.feedparser import parse
   feed = feedk.get()
-  p = parse(str(feed.feed))
+  f = urlfetch.fetch(url="%s" % feed.feed, deadline=60)
+  p = parse(f.content)
   e = 0 
   d = p.entries[e]
-  while feed.url != d.link and e < 50:
-    deferred.defer(new_bm, d, feed.key, _target="worker", _queue="importer")
+  while feed.url != d.link and e < 5:
+    deferred.defer(new_bm, d, feedk, _target="worker", _queue="importer")
     e += 1 
     d = p.entries[e]
   d = p.entries[0]
@@ -72,55 +93,8 @@ def new_bm(d, feedk):
     bm.tags = feed.tags
     bm.put()
   ndb.transaction(txn)
-  deferred.defer(parse_bm, bm.key, _target="worker", _queue="parser")
+  deferred.defer(main_parser, bm.key, None, _target="worker", _queue="parser")
 
-def parse_bm(bmk):
-  bm = bmk.get()
-  ## url
-  try:
-    u = urlfetch.fetch(url=bm.original, follow_redirects=True)
-    bm.url = u.final_url.split('?utm_source')[0]
-    bm.url = u.final_url.split('&feature')[0]
-  except:
-    bm.url = bm.original.split('?utm_source')[0]
-    bm.url = bm.original.split('&feature')[0]
-  #merge tags
-  q = ndb.gql("SELECT * FROM Bookmarks WHERE user = :1 AND original = :2", bm.user, bm.original).fetch()
-  w = ndb.gql("SELECT * FROM Bookmarks WHERE user = :1 AND url = :2", bm.user, bm.url).fetch()
-  q.extend(w)  
-  if q.count > 1:
-    tag_list = []
-    for old in q:
-      for t in old.tags:
-        if t not in tag_list:
-          tag_list.append(t)
-          bm.tags = tag_list
-  q.remove(bm)
-  for old in q:
-    old.trashed = True
-    old.put()  
-  ## video previews
-  url_parsed = urlparse.urlparse(bm.original)
-  query = urlparse.parse_qs(url_parsed.query)
-  if url_parsed.netloc == 'www.youtube.com':    
-    video = query["v"][0]
-    bm.url = 'http://www.youtube.com/watch?v=%s' % video
-    bm.comment = '''<iframe width="640" height="360" 
-    src="http://www.youtube.com/embed/%s" frameborder="0" 
-    allowfullscreen></iframe>''' % video
-  if url_parsed.netloc == 'vimeo.com': 
-    video = url_parsed.path.split('/')[-1]
-    bm.url = 'http://vimeo.com/%s' % video
-    bm.comment = '''<iframe src="http://player.vimeo.com/video/%s?color=ffffff" 
-    width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen 
-    allowFullScreen></iframe>''' % video
-  bm.put()
-  if bm.ha_mys() and capabilities.CapabilitySet("mail").is_enabled():
-    try:
-      bm.feed.get().digest == True
-      pass
-    except:
-      deferred.defer(sendbm, bm, _queue="emails")
 
 
 def daily_digest(user):
@@ -129,12 +103,15 @@ def daily_digest(user):
   bmq = ndb.gql("""SELECT * FROM Bookmarks 
     WHERE user = :1 AND create > :2 AND trashed = False
     ORDER BY create DESC""", user, period)
-  title = '(%s) 8 Daily digest for your activity: %s' % (app_identity.get_application_id(), time.time())
+  t=datetime.fromtimestamp(time.time()) 
+  t.strftime('%Y-%m-%d %H:%M:%S')
+  title = '(%s) 8 Daily digest for your activity: %s' % (app_identity.get_application_id(), t)
   template = jinja_environment.get_template('digest.html')  
   values = {'bmq': bmq, 'title': title} 
   html = template.render(values)
   if bmq.get():
     deferred.defer(send_digest, user.email(), html, title, _target="worker", _queue="emails")
+
 
 def feed_digest(feedk):
   feed = feedk.get()
@@ -153,16 +130,6 @@ def feed_digest(feedk):
       bm.put()
 
 
-def sendbm(bm):
-  message = mail.EmailMessage()
-  message.sender = 'action@' + "%s" % app_identity.get_application_id() + '.appspotmail.com'
-  message.to = bm.user.email()
-  message.subject =  "(%s) %s" % (app_identity.get_application_id(), bm.title)
-  message.html = """
-%s (%s)<br>%s<br><br>%s
-""" % (bm.title, bm.data, bm.url, bm.comment)
-  message.send()
-
 def send_digest(email, html, title):
   message = mail.EmailMessage()
   message.sender = 'action@' + "%s" % app_identity.get_application_id() + '.appspotmail.com'
@@ -171,14 +138,6 @@ def send_digest(email, html, title):
   message.html = html
   message.send()
 
-def login_required(handler_method):
-  def check_login(self):
-    user = users.get_current_user()
-    if not user:
-      return self.redirect(users.create_login_url(self.request.url))
-    else:
-      handler_method(self)
-  return check_login
 
 def tag_set(bmq):
   tagset = []
@@ -187,12 +146,3 @@ def tag_set(bmq):
       if not tag in tagset:
         tagset.append(tag)
   return tagset
-
-
-## under costruction
-def upload(bmfile):
-  upload_url = blobstore.create_upload_url('/upload')
-  urlfetch.fetch(url=upload_url, payload=urllib.urlencode({"file": bmfile}), method=urlfetch.POST)
-
-# if urlparse.urlparse('%s' % bm.url).path.split('.')[1] == 'mp3':
-#   deferred.defer(upload, bm.url)
