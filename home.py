@@ -38,24 +38,24 @@ class BaseHandler(webapp2.RequestHandler):
                 ui.user = users.get_current_user()
                 ui.put()
                 return ui
-        
+
     def generate(self, template_name, template_values={}):
         if users.get_current_user():      
-            url = users.create_logout_url("/")
+            url      = users.create_logout_url("/")
             linktext = 'Logout'
         else:
-            # bookmarklet = '%s' % self.request.host_url
-            url = users.create_login_url(self.request.uri)
+            url      = users.create_login_url(self.request.uri)
             linktext = 'Login'
         values = {      
-            'brand': app_identity.get_application_id(),
-            'url': url,
+            'brand'   : app_identity.get_application_id(),
+            'url'     : url,
             'linktext': linktext,
-            'ui': self.ui(),
+            'ui'      : self.ui(),
             }
         values.update(template_values)
         template = jinja_environment.get_template(template_name)
         self.response.write(template.render(values))
+
 
 class SettingPage(BaseHandler):
     @utils.login_required
@@ -70,17 +70,16 @@ javascript:location.href=
 '&comment='+document.getSelection().toString()
 """ % (self.request.host_url, self.ui().email)
 
-        callback = "%s/setting" % (self.request.host_url) 
+        callback    = "%s/setting" % (self.request.host_url) 
         dropbox_url = sess.build_authorize_url(request_token, oauth_callback=callback)
                 
-        self.response.set_cookie('dropbox', '%s' % sess.is_linked())
-        self.response.set_cookie('mys', '%s' % self.ui().mys)
-        self.response.set_cookie('daily', '%s' % self.ui().daily)
-        self.response.set_cookie('twitt', '%s' % self.ui().twitt)
+        self.response.set_cookie('dropbox'   , '%s' % sess.is_linked())
+        self.response.set_cookie('mys'       , '%s' % self.ui().mys)
+        self.response.set_cookie('daily'     , '%s' % self.ui().daily)
+        self.response.set_cookie('twitt'     , '%s' % self.ui().twitt)
         self.response.set_cookie('active-tab', 'setting')
 
-        self.generate('setting.html',
-            {'bookmarklet': bookmarklet, 'dropbox_url': dropbox_url})
+        self.generate('setting.html', {'bookmarklet': bookmarklet, 'dropbox_url': dropbox_url})
 
 
 class InboxPage(BaseHandler):
@@ -96,8 +95,7 @@ class InboxPage(BaseHandler):
             else:
                 next_c = None
             self.response.set_cookie('active-tab', 'inbox')
-            self.generate('home.html', 
-                {'bms': bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+            self.generate('home.html', {'bms': bms, 'tags': utils.tag_set(bmq), 'c': next_c })
         else:
             self.generate('git.html', {})
 
@@ -115,8 +113,7 @@ class ArchivedPage(BaseHandler):
         else:
             next_c = None
         self.response.set_cookie('active-tab', 'archive')
-        self.generate('home.html', 
-            {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+        self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
 
 class StarredPage(BaseHandler):
     @utils.login_required
@@ -131,8 +128,7 @@ class StarredPage(BaseHandler):
         else:
             next_c = None
         self.response.set_cookie('active-tab', 'starred')
-        self.generate('home.html', 
-            {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+        self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
 
 class TrashedPage(BaseHandler):
     @utils.login_required
@@ -147,8 +143,7 @@ class TrashedPage(BaseHandler):
         else:
             next_c = None
         self.response.set_cookie('active-tab', 'trash')
-        self.generate('home.html', 
-            {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+        self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
 
 class NotagPage(BaseHandler):
     @utils.login_required
@@ -163,8 +158,7 @@ class NotagPage(BaseHandler):
         else:
             next_c = None
         self.response.set_cookie('active-tab', 'untagged')
-        self.generate('home.html', 
-            {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+        self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
 
 class FilterPage(BaseHandler):
     @utils.login_required
@@ -185,8 +179,7 @@ class FilterPage(BaseHandler):
             tagset = utils.tag_set(bmq)
             tagset.remove(tag_obj.key)
             self.response.set_cookie('active-tab', '')
-            self.generate('home.html', 
-                {'tag_obj': tag_obj, 'bms': bms, 'tags': tagset, 'c': next_c })
+            self.generate('home.html', {'tag_obj': tag_obj, 'bms': bms, 'tags': tagset, 'c': next_c })
         else:
             self.redirect('/')
 
@@ -208,8 +201,7 @@ class RefinePage(BaseHandler):
             next_c = next_curs.urlsafe()
         else:
             next_c = None
-        self.generate('home.html', 
-            {'bms' : bms, 'tag_obj': None, 'c': next_c })
+        self.generate('home.html', {'bms' : bms, 'tag_obj': None, 'c': next_c })
 
 class FeedsPage(BaseHandler):
     @utils.login_required
