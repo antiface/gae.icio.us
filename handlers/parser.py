@@ -34,14 +34,14 @@ def main_parser(bmk, db_user):
     url_parsed = urlparse.urlparse(bm.original)
     query = urlparse.parse_qs(url_parsed.query)
     if url_parsed.netloc == 'www.youtube.com':    
-        video = query["v"][0]
-        bm.url = 'http://www.youtube.com/watch?v=%s' % video
+        video      = query["v"][0]
+        bm.url     = 'http://www.youtube.com/watch?v=%s' % video
         bm.comment = '''<iframe width="640" height="360" 
-        src="http://www.youtube.com/embed/%s" frameborder="0" 
+        src="http://www.youtube.com/embed/%s" frameborder="0"
         allowfullscreen></iframe>''' % video
     if url_parsed.netloc == 'vimeo.com': 
-        video = url_parsed.path.split('/')[-1]
-        bm.url = 'http://vimeo.com/%s' % video
+        video      = url_parsed.path.split('/')[-1]
+        bm.url     = 'http://vimeo.com/%s' % video
         bm.comment = '''<iframe src="http://player.vimeo.com/video/%s?color=ffffff" 
         width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen 
         allowFullScreen></iframe>''' % video
@@ -65,19 +65,19 @@ def main_parser(bmk, db_user):
 
 
 def db_put(bmk, db_user):
-    bm = bmk.get()
+    bm        = bmk.get()
     file_name = bm.url.split('/')[-1]        
-    f = urlfetch.fetch(url="%s" % bm.url, deadline=600)
+    f         = urlfetch.fetch(url="%s" % bm.url, deadline=600)
     db_user.put_file('/%s' % file_name, f.content )
 
 
 def send_bm(bmk):   
     bm = bmk.get()
-    message = mail.EmailMessage()
-    message.sender = 'action@' + "%s" % app_identity.get_application_id() + '.appspotmail.com'
-    message.to = bm.user.email()
+    message         = mail.EmailMessage()
+    message.sender  = 'action@' + "%s" % app_identity.get_application_id() + '.appspotmail.com'
+    message.to      = bm.user.email()
     message.subject =  "(%s) %s" % (app_identity.get_application_id(), bm.title)
-    message.html = """
+    message.html    = """
 %s (%s)<br>%s<br><br>%s
 """ % (bm.title, bm.data, bm.url, bm.comment)
     message.send()

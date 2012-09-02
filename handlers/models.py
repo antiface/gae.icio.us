@@ -34,16 +34,16 @@ class Tags(ndb.Model):
         return other
 
 class Feeds(ndb.Model):
-    user = ndb.UserProperty() 
-    data = ndb.DateTimeProperty(auto_now=True)
-    tags = ndb.KeyProperty(kind=Tags,repeated=True)
-    feed = ndb.StringProperty()#url
-    blog = ndb.StringProperty()#feed.title
-    root = ndb.StringProperty()#feed.link
-    digest = ndb.BooleanProperty(default=False)
+    user    = ndb.UserProperty() 
+    data    = ndb.DateTimeProperty(auto_now=True)
+    tags    = ndb.KeyProperty(kind=Tags,repeated=True)
+    feed    = ndb.StringProperty()#url
+    blog    = ndb.StringProperty()#feed.title
+    root    = ndb.StringProperty()#feed.link
+    digest  = ndb.BooleanProperty(default=False)
 
-    url = ndb.StringProperty()#link
-    title = ndb.StringProperty()#title
+    url     = ndb.StringProperty()#link
+    title   = ndb.StringProperty()#title
     comment = ndb.TextProperty()#description
 
     @property
@@ -60,18 +60,18 @@ class Feeds(ndb.Model):
 
 
 class Bookmarks(ndb.Model):
-    data = ndb.DateTimeProperty(auto_now=True)
-    create = ndb.DateTimeProperty(auto_now_add=True)
-    user = ndb.UserProperty(required=True)
-    original = ndb.StringProperty()
-    url = ndb.StringProperty()
-    title = ndb.StringProperty()
-    comment = ndb.TextProperty()
-    feed = ndb.KeyProperty(kind=Feeds)
-    tags = ndb.KeyProperty(kind=Tags,repeated=True)
-    archived = ndb.BooleanProperty(default=False)
-    starred = ndb.BooleanProperty(default=False)
-    trashed = ndb.BooleanProperty(default=False)
+    data      = ndb.DateTimeProperty(auto_now=True)
+    create    = ndb.DateTimeProperty(auto_now_add=True)
+    user      = ndb.UserProperty(required=True)
+    original  = ndb.StringProperty()
+    url       = ndb.StringProperty()
+    title     = ndb.StringProperty()
+    comment   = ndb.TextProperty()
+    feed      = ndb.KeyProperty(kind=Feeds)
+    tags      = ndb.KeyProperty(kind=Tags,repeated=True)
+    archived  = ndb.BooleanProperty(default=False)
+    starred   = ndb.BooleanProperty(default=False)
+    trashed   = ndb.BooleanProperty(default=False)
     have_tags = ndb.ComputedProperty(lambda self: bool(self.tags))
 
     @property

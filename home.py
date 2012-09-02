@@ -12,10 +12,10 @@ from dropbox import client, session
 
 
 #Dropbox staff
-APP_KEY = config.APP_KEY # "DELETE 'config.APP_KEY' AND PUT HERE YOUR APP_KEY"
-APP_SECRET = config.APP_SECRET #"DELETE 'config.APP_SECRET' AND PUT HERE YOUR APP_SECRET"
-ACCESS_TYPE = 'app_folder'
-sess = session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)    
+APP_KEY       = config.APP_KEY # "DELETE 'config.APP_KEY' AND PUT HERE YOUR APP_KEY"
+APP_SECRET    = config.APP_SECRET #"DELETE 'config.APP_SECRET' AND PUT HERE YOUR APP_SECRET"
+ACCESS_TYPE   = 'app_folder'
+sess          = session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)    
 request_token = sess.obtain_request_token()
 
 
@@ -34,7 +34,7 @@ class BaseHandler(webapp2.RequestHandler):
             if q.get():
                 return q.get()
             else:
-                ui = UserInfo()
+                ui      = UserInfo()
                 ui.user = users.get_current_user()
                 ui.put()
                 return ui
@@ -240,12 +240,12 @@ class AddFeed(webapp2.RequestHandler):
             if q.get() is None:
                 feed = Feeds()
                 def txn():
-                    feed.blog = p.feed.title
-                    feed.root = p.feed.link
-                    feed.user = user
-                    feed.feed = url
-                    feed.url  = d.link
-                    feed.title = d.title
+                    feed.blog    = p.feed.title
+                    feed.root    = p.feed.link
+                    feed.user    = user
+                    feed.feed    = url
+                    feed.url     = d.link
+                    feed.title   = d.title
                     feed.comment = d.description
                     feed.put()
                 ndb.transaction(txn)
@@ -265,9 +265,9 @@ class AddBM(webapp2.RequestHandler):
         bm = Bookmarks()
         def txn(): 
             bm.original = self.request.get('url')
-            bm.title = self.request.get('title')
-            bm.comment = self.request.get('comment')
-            bm.user = users.User(str(self.request.get('user')))
+            bm.title    = self.request.get('title')
+            bm.comment  = self.request.get('comment')
+            bm.user     = users.User(str(self.request.get('user')))
             bm.put()
         ndb.transaction(txn) 
         if sess.is_linked():
@@ -289,9 +289,9 @@ class ReceiveMail(webapp2.RequestHandler):
         bm = Bookmarks()
         def txn():
             bm.original = url
-            bm.title = header.decode_header(message.subject)[0][0]
-            bm.comment = 'Sent via email'
-            bm.user = users.User(utils.parseaddr(message.sender)[1])
+            bm.title    = header.decode_header(message.subject)[0][0]
+            bm.comment  = 'Sent via email'
+            bm.user     = users.User(utils.parseaddr(message.sender)[1])
             bm.put()
         ndb.transaction(txn) 
         if sess.is_linked():
@@ -306,8 +306,8 @@ class EditBM(webapp2.RequestHandler):
         bm = Bookmarks.get_by_id(int(self.request.get('bm')))
         if users.get_current_user() == bm.user:
             def txn():
-                bm.url = self.request.get('url').encode('utf8')
-                bm.title = self.request.get('title').encode('utf8')
+                bm.url     = self.request.get('url').encode('utf8')
+                bm.title   = self.request.get('title').encode('utf8')
                 bm.comment = self.request.get('comment').encode('utf8')
                 bm.put()
             ndb.transaction(txn)
