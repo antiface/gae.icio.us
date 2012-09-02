@@ -250,8 +250,6 @@ class AddFeed(webapp2.RequestHandler):
                     feed.put()
                 ndb.transaction(txn)
                 deferred.defer(utils.new_bm, d, feed, _queue="admin")
-            else:
-                pass
             self.redirect(self.request.referer)
         else:
             self.redirect('/')
@@ -323,7 +321,7 @@ class DeleteTag(webapp2.RequestHandler):
 class AssTagFeed(webapp2.RequestHandler):
     def get(self):
         feed = Feeds.get_by_id(int(self.request.get('feed')))
-        tag = Tags.get_by_id(int(self.request.get('tag')))
+        tag  = Tags.get_by_id(int(self.request.get('tag')))
         if users.get_current_user() == feed.user:
             if tag in feed.tags:
                 pass
@@ -335,7 +333,7 @@ class AssTagFeed(webapp2.RequestHandler):
 class RemoveTagFeed(webapp2.RequestHandler):
     def get(self):
         feed = Feeds.get_by_id(int(self.request.get('feed')))
-        tag = Tags.get_by_id(int(self.request.get('tag')))
+        tag  = Tags.get_by_id(int(self.request.get('tag')))
         if users.get_current_user() == feed.user:
             feed.tags.remove(tag.key)
             feed.put()
