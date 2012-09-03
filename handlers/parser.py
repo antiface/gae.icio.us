@@ -1,22 +1,23 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 from google.appengine.api import urlfetch, mail, app_identity
-from google.appengine.ext import ndb, deferred
-
+from google.appengine.ext import deferred
+from handlers.models import Bookmarks
 
 def main_parser(bmk, db_user):
     import urlparse
     bm = bmk.get()
-    # URLS
-    try:
-        u = urlfetch.fetch(url=bm.original, follow_redirects=True)
-        bm.url = u.final_url.split('?utm_source')[0]
-        bm.url = u.final_url.split('&feature')[0]
-    except:
-        bm.url = bm.original.split('?utm_source')[0]
-        bm.url = bm.original.split('&feature')[0]
+    # URLS 
+    result = urlfetch.fetch(url=bm.original, follow_redirects=True, allow_truncated=True) 
+    if result.status_code == 200 and result.final_url:
+        a = result.final_url 
+    else: 
+        a = bm.original 
+    b = a.split('?utm_source')[0]
+    c = b.split('&feature')[0]
+    bm.url = c
     # TAGS
-    q = ndb.gql("SELECT * FROM Bookmarks WHERE user = :1 AND original = :2", bm.user, bm.original).fetch()
+    q = Bookmarks.query(Bookmarks.user == bm.user, Bookmarks.original == bm.original).fetch()
     if q.count > 1:
         tag_list = []
         for e in q:

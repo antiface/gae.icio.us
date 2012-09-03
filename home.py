@@ -331,12 +331,6 @@ class RemoveTagFeed(webapp2.RequestHandler):
             feed.put()
         self.redirect(self.request.referer)    
 
-class Script(webapp2.RequestHandler):
-    def get(self): 
-        for feed in Feeds.query(): 
-            feed.digest = False 
-            feed.put()
-
 class Empty_Trash(webapp2.RequestHandler):
     @utils.login_required
     def get(self):
@@ -368,6 +362,13 @@ class SendDaily(webapp2.RequestHandler):
         for ui in UserInfo.query(): 
             if ui.daily: 
                 deferred.defer(utils.daily_digest, ui.user, _target="worker", _queue="admin")
+
+
+class Script(webapp2.RequestHandler):
+    def get(self):
+        db_user = None
+        for bm in Bookmarks.query(Bookmarks.archived == False, Bookmarks.trashed == False): 
+            deferred.defer(main_parser, bm.key, db_user, _queue="parser")
 
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')

@@ -83,10 +83,7 @@ def feed_digest(feedk):
     html     = template.render(values)
     if bmq.get():
         deferred.defer(send_digest, feed.user.email(), html, title, _target="worker", _queue="emails")
-        for bm in bmq:
-            bm.trashed = True
-            bm.feed    = None
-            bm.put()
+        ndb.delete_multi(bmq.fetch())
 
 
 def send_digest(email, html, title):

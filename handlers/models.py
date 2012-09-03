@@ -38,8 +38,8 @@ class Feeds(ndb.Model):
     data    = ndb.DateTimeProperty(auto_now=True)
     tags    = ndb.KeyProperty(kind=Tags,repeated=True)
     feed    = ndb.StringProperty()#url
-    blog    = ndb.StringProperty()#feed.title
-    root    = ndb.StringProperty()#feed.link
+    blog    = ndb.StringProperty(indexed=False)#feed.title
+    root    = ndb.StringProperty(indexed=False)#feed.link
     digest  = ndb.BooleanProperty(default=False)
 
     url     = ndb.StringProperty()#link
@@ -64,9 +64,9 @@ class Bookmarks(ndb.Model):
     create    = ndb.DateTimeProperty(auto_now_add=True)
     user      = ndb.UserProperty(required=True)
     original  = ndb.StringProperty()
-    url       = ndb.StringProperty()
-    title     = ndb.StringProperty()
-    comment   = ndb.TextProperty()
+    url       = ndb.StringProperty(indexed=False)
+    title     = ndb.StringProperty(indexed=False)
+    comment   = ndb.TextProperty(indexed=False)
     feed      = ndb.KeyProperty(kind=Feeds)
     tags      = ndb.KeyProperty(kind=Tags,repeated=True)
     archived  = ndb.BooleanProperty(default=False)
