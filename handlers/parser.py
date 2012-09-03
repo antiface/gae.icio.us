@@ -1,6 +1,6 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
-from google.appengine.api import urlfetch, mail, app_identity, capabilities
+from google.appengine.api import urlfetch, mail, app_identity
 from google.appengine.ext import ndb, deferred
 
 
@@ -52,7 +52,7 @@ def main_parser(bmk, db_user):
         bm.title = url_parsed.path
     bm.put()
     # EMAILS
-    if bm.ha_mys() and capabilities.CapabilitySet("mail").is_enabled():
+    if bm.ha_mys(): 
         try:
             bm.feed.get().digest == True
             pass

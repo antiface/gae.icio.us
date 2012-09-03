@@ -1,7 +1,7 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-import datetime, jinja2, time
+import jinja2
 from google.appengine.api import users, mail, app_identity, urlfetch
 from google.appengine.ext import deferred, ndb
 from models import Bookmarks
@@ -56,6 +56,7 @@ def new_bm(d, feedk):
 
 
 def daily_digest(user):
+    import datetime, time
     timestamp = time.time() - 86400
     period    = datetime.datetime.fromtimestamp(timestamp)
     bmq = ndb.gql("""SELECT * FROM Bookmarks 

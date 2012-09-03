@@ -3,7 +3,7 @@
 
 
 import jinja2, os, webapp2
-from google.appengine.api import users, mail, app_identity, capabilities
+from google.appengine.api import users, mail, app_identity
 from google.appengine.ext import ndb, deferred
 from handlers import ajax, config, utils
 from handlers.models import Bookmarks, UserInfo, Feeds, Tags
@@ -332,11 +332,10 @@ class RemoveTagFeed(webapp2.RequestHandler):
         self.redirect(self.request.referer)    
 
 class Script(webapp2.RequestHandler):
-    def get(self):
-        if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():
-            for feed in Feeds.query(): 
-                feed.digest = False
-                feed.put()
+    def get(self): 
+        for feed in Feeds.query(): 
+            feed.digest = False 
+            feed.put()
 
 class Empty_Trash(webapp2.RequestHandler):
     @utils.login_required
@@ -354,24 +353,21 @@ class CheckFeed(webapp2.RequestHandler):
         deferred.defer(utils.pop_feed, feed.key, _queue="admin")
 
 class CheckFeeds(webapp2.RequestHandler):
-    def get(self):
-        if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():
-            for feed in Feeds.query():   
-                deferred.defer(utils.pop_feed, feed.key, _target="worker", _queue="admin")
+    def get(self): 
+        for feed in Feeds.query(): 
+            deferred.defer(utils.pop_feed, feed.key, _target="worker", _queue="admin")
 
 class SendDigest(webapp2.RequestHandler):
-    def get(self):
-        if capabilities.CapabilitySet('datastore_v3', capabilities=['write']).is_enabled():        
-            for feed in Feeds.query(Feeds.digest == True):
-                deferred.defer(utils.feed_digest, feed.key, _target="worker", _queue="admin")
+    def get(self): 
+     for feed in Feeds.query(Feeds.digest == True): 
+        deferred.defer(utils.feed_digest, feed.key, _target="worker", _queue="admin")
 
 
 class SendDaily(webapp2.RequestHandler):
-    def get(self):
-        if capabilities.CapabilitySet('mail').is_enabled():
-            for ui in UserInfo.query():
-                if ui.daily:
-                    deferred.defer(utils.daily_digest, ui.user, _target="worker", _queue="admin")
+    def get(self): 
+        for ui in UserInfo.query(): 
+            if ui.daily: 
+                deferred.defer(utils.daily_digest, ui.user, _target="worker", _queue="admin")
 
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
