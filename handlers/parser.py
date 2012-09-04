@@ -4,11 +4,12 @@ from google.appengine.api import urlfetch, mail, app_identity
 from google.appengine.ext import deferred
 from handlers.models import Bookmarks
 
+
 def main_parser(bmk, db_user):
     import urlparse
     bm = bmk.get()
     # URLS 
-    result = urlfetch.fetch(url=bm.original, follow_redirects=True, allow_truncated=True) 
+    result = urlfetch.fetch(url=bm.original, follow_redirects=True, allow_truncated=True, deadline=600) 
     if result.status_code == 200 and result.final_url:
         a = result.final_url 
     else: 

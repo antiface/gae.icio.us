@@ -26,15 +26,15 @@ def pop_feed(feedk):
     f = urlfetch.fetch(url="%s" % feed.feed, deadline=60)
     p = parse(f.content)
     e = 0 
-    d = p.entries[e]
-    while feed.url != d.link and e < 5:
+    d = p['items'][e]
+    while feed.url != d['link'] and e < 10:
         deferred.defer(new_bm, d, feedk, _target="worker", _queue="importer")
         e += 1 
-        d = p.entries[e]
-    d = p.entries[0]
-    feed.url     = d.link
-    feed.title   = d.title.encode('utf-8')
-    feed.comment = d.description.encode('utf-8')
+        d = p['items'][e]
+    d = p['items'][0]
+    feed.url     = d['link']
+    feed.title   = d['title']
+    feed.comment = d['description']
     feed.put()
 
 def new_bm(d, feedk):
@@ -42,15 +42,14 @@ def new_bm(d, feedk):
     bm      = Bookmarks()
     bm.feed = feed.key
     bm.user = feed.user
+    bm.original = d['link']
+    bm.title    = d['title']
+    try:
+        bm.comment  = d['description']
+    except KeyError:
+        bm.comment = 'no comment'
+    bm.tags     = feed.tags
     bm.put()
-    def txn():    
-        bm.original = d.link
-        bm.url      = d.link
-        bm.title    = d.title.encode('utf-8')
-        bm.comment  = d.description.encode('utf-8')
-        bm.tags     = feed.tags
-        bm.put()
-    ndb.transaction(txn)
     deferred.defer(main_parser, bm.key, None, _target="worker", _queue="parser")
 
 
@@ -62,7 +61,7 @@ def daily_digest(user):
     bmq = ndb.gql("""SELECT * FROM Bookmarks 
         WHERE user = :1 AND create > :2 AND trashed = False
         ORDER BY create DESC""", user, period)
-    t = datetime.fromtimestamp(time.time()) 
+    t = datetime.datetime.fromtimestamp(time.time()) 
     t.strftime('%Y-%m-%d %H:%M:%S')
     title    = '(%s) 8 Daily digest for your activity: %s' % (app_identity.get_application_id(), t)
     template = jinja_environment.get_template('digest.html')  
@@ -82,8 +81,8 @@ def feed_digest(feedk):
     values   = {'bmq': bmq, 'title': title} 
     html     = template.render(values)
     if bmq.get():
-        deferred.defer(send_digest, feed.user.email(), html, title, _target="worker", _queue="emails")
-        ndb.delete_multi(bmq.fetch())
+        deferred.defer(send_digest, feed.user.email(), html, title, _target="worker", _queue="emails")        
+        ndb.delete_multi([bm.key for bm in bmq])
 
 
 def send_digest(email, html, title):

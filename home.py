@@ -241,7 +241,7 @@ class AddFeed(webapp2.RequestHandler):
                     feed.comment = d.description
                     feed.put()
                 ndb.transaction(txn)
-                deferred.defer(utils.new_bm, d, feed, _queue="admin")
+                deferred.defer(utils.new_bm, d, feed.key, _queue="admin")
             self.redirect(self.request.referer)
         else:
             self.redirect('/')
@@ -264,7 +264,7 @@ class AddBM(webapp2.RequestHandler):
             db_user = client.DropboxClient(sess) 
         else:
             db_user = None
-        deferred.defer(main_parser, bm.key, db_user, _queue="parser")
+        deferred.defer(main_parser, bm.key, db_user, _queue="parser", _target="worker")
         self.redirect('/')
 
 class ReceiveMail(webapp2.RequestHandler):
@@ -288,7 +288,7 @@ class ReceiveMail(webapp2.RequestHandler):
             db_user = client.DropboxClient(sess) 
         else:
             db_user = None
-        deferred.defer(main_parser, bm.key, db_user, _queue="parser")
+        deferred.defer(main_parser, bm.key, db_user, _queue="parser", _target="worker")
 
 
 class EditBM(webapp2.RequestHandler):
@@ -366,9 +366,14 @@ class SendDaily(webapp2.RequestHandler):
 
 class Script(webapp2.RequestHandler):
     def get(self):
-        db_user = None
-        for bm in Bookmarks.query(Bookmarks.archived == False, Bookmarks.trashed == False): 
-            deferred.defer(main_parser, bm.key, db_user, _queue="parser")
+        # db_user = None
+        # for bm in Bookmarks.query(Bookmarks.archived == False, Bookmarks.trashed == False): 
+            # deferred.defer(main_parser, bm.key, db_user, _queue="parser")
+        for feed in Feeds.query():
+            feed.url = None
+            feed.put()
+        ndb.delete_multi([bm.key for bm in Bookmarks.query()])
+
 
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
