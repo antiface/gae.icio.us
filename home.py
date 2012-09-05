@@ -221,7 +221,10 @@ class AddFeed(webapp2.RequestHandler):
         user = users.get_current_user()
         url = self.request.get('url')
         p = parse(str(url))
-        d = p.entries[0]
+        try:
+            d = p['items'][0]
+        except IndexError:
+            pass
         if user:
             q = ndb.gql("""SELECT * FROM Feeds
             WHERE user = :1 AND url = :2""", user, url)

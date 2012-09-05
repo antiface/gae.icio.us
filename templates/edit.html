@@ -1,29 +1,29 @@
 <hr>
 <form class="form-horizontal" action="/edit" id="save-{{ bm.id }}" >
-  <fieldset>
-    <div class="control-group hide">
-        <input type="number" class="span6" name="bm" value="{{ bm.id }}">
-    </div>
-    <div class="control-group">
-      <label class="control-label" for="Title">Title</label>
-      <div class="controls">
-        <input type="text" class="span6" name="title" value="{{ bm.title|e }}">
-      </div>
-    </div>
-    <div class="control-group">
-      <label class="control-label" for="Url">Url</label>
-      <div class="controls">
-        <input type="text" class="span6" name="url" value="{{ bm.url }}">
-      </div>
-    </div>
-    <div class="control-group">
-      <label class="control-label" for="comment">Comment</label>
-      <div class="controls">
-        <textarea class="span6" rows="10" name="comment" >{{ bm.comment }}</textarea></label>
-      </div>
-    </div>
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary" >Save changes</button>
-    </div>
-  </fieldset>
+    <fieldset>
+        <div class="control-group hide">
+            <input type="number" class="span6" name="bm" value="{{ bm.id }}">
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="Title">Title</label>
+            <div class="controls">
+                <input type="text" class="span6" name="title" value="{{ bm.title|e }}">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="Url">Url</label>
+            <div class="controls">
+                <input type="text" class="span6" name="url" value="{{ bm.url }}">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="comment">Comment</label>
+            <div class="controls">
+                <textarea class="span6" rows="10" name="comment" >{{ bm.comment }}</textarea></label>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" >Save changes</button>
+        </div>
+    </fieldset>
 </form>
