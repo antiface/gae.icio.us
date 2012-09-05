@@ -1,7 +1,6 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-
 import jinja2, os, webapp2
 from google.appengine.api import users, mail, app_identity
 from google.appengine.ext import ndb, deferred

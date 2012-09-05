@@ -69,7 +69,6 @@ def daily_digest(user):
         WHERE user = :1 AND create > :2 AND trashed = False
         ORDER BY create DESC""", user, period)
     t = datetime.datetime.fromtimestamp(time.time()) 
-    # t.strftime('%Y-%m-%d %H:%M:%S')
     title    = '(%s) Daily digest for your activity: %s' % (app_identity.get_application_id(), dtf(t))
     template = jinja_environment.get_template('digest.html')  
     values   = {'bmq': bmq, 'title': title} 
