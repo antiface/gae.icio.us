@@ -213,6 +213,18 @@ class TagCloudPage(BaseHandler):
         self.response.set_cookie('active-tab', 'tagcloud')
         self.generate('tagcloud.html', {})
 
+
+
+
+
+class AdminPage(BaseHandler):    
+    def get(self):
+        if users.is_current_user_admin(): 
+            self.generate('admin.html', {})
+        else: 
+            self.redirect('/')
+        
+
 #########################################################
 
 class AddFeed(webapp2.RequestHandler):
@@ -236,8 +248,6 @@ class AddFeed(webapp2.RequestHandler):
                     feed.user    = user
                     feed.feed    = url
                     feed.url     = d.link
-                    feed.title   = d.title
-                    feed.comment = d.description
                     feed.put()
                 ndb.transaction(txn)
                 deferred.defer(utils.new_bm, d, feed.key, _queue="admin")
@@ -263,7 +273,9 @@ class AddBM(webapp2.RequestHandler):
             db_user = client.DropboxClient(sess) 
         else:
             db_user = None
-        deferred.defer(main_parser, bm.key, db_user, _queue="parser", _target="worker")
+        deferred.defer(main_parser, bm.key, db_user, _target="worker", _queue="parser")
+        if bm.ha_mys(): 
+            deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")
         self.redirect('/')
 
 class ReceiveMail(webapp2.RequestHandler):
@@ -287,7 +299,9 @@ class ReceiveMail(webapp2.RequestHandler):
             db_user = client.DropboxClient(sess) 
         else:
             db_user = None
-        deferred.defer(main_parser, bm.key, db_user, _queue="parser", _target="worker")
+        deferred.defer(main_parser, bm.key, db_user, _target="worker", _queue="parser")
+        if bm.ha_mys(): 
+            deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")
 
 
 class EditBM(webapp2.RequestHandler):
@@ -352,8 +366,9 @@ class CheckFeeds(webapp2.RequestHandler):
 
 class SendDigest(webapp2.RequestHandler):
     def get(self): 
-     for feed in Feeds.query(Feeds.digest == True): 
-        deferred.defer(utils.feed_digest, feed.key, _target="worker", _queue="admin")
+        for feed in Feeds.query(): 
+            if feed.notify == 'digest': 
+                deferred.defer(utils.feed_digest, feed.key, _target="worker", _queue="admin")
 
 
 class SendDaily(webapp2.RequestHandler):
@@ -362,59 +377,78 @@ class SendDaily(webapp2.RequestHandler):
             if ui.daily: 
                 deferred.defer(utils.daily_digest, ui.user, _target="worker", _queue="admin")
 
+#####################################################################################
 
 class Script(webapp2.RequestHandler):
+    """change this handler for admin operations"""
     def get(self):
-        db_user = None
-        for bm in Bookmarks.query(Bookmarks.archived == False, Bookmarks.trashed == False): 
-            deferred.defer(main_parser, bm.key, db_user, _queue="parser")
-        # for feed in Feeds.query():
-            # feed.url = None
-            # feed.put()
-        # ndb.delete_multi([bm.key for bm in Bookmarks.query()])
+        for feed in Feeds.query():
+            ui = UserInfo.query(UserInfo.user == feed.user).get()
+            if feed.digest:
+                feed.notify = 'digest'
+            elif ui.mys:
+                feed.notify = 'email'
+            else:
+                feed.notify = 'web'
+            feed.put()
 
+class del_attr(webapp2.RequestHandler):
+    """delete old property from datastore"""
+    def post(self): 
+        model = self.request.get('model') 
+        prop = self.request.get('prop') 
+        q = ndb.gql("SELECT * FROM %s" % (model)) 
+        for r in q: 
+            deferred.defer(delatt, r.key, prop, _queue="admin", _target="worker") 
+        self.redirect('/adm')
 
+def delatt(rkey, prop): 
+    r = rkey.get() 
+    delattr(r, '%s' % prop) 
+    r.put()
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
-    ('/',           InboxPage),
-    ('/feeds',      FeedsPage),
-    ('/filter',     FilterPage),
-    ('/refine',     RefinePage),
-    ('/notag',      NotagPage),
-    ('/archived',   ArchivedPage),
-    ('/starred',    StarredPage),
-    ('/trashed',    TrashedPage),
-    ('/tagcloud',   TagCloudPage),
-    ('/setting',    SettingPage),
-    ('/feed',       AddFeed),
-    ('/submit',     AddBM),
-    ('/edit',       EditBM),
-    ('/deltag',     DeleteTag),
-    ('/atf',        AssTagFeed),
-    ('/rtf',        RemoveTagFeed),
-    ('/setmys',     ajax.SetMys),
-    ('/setdaily',   ajax.SetDaily),
-    ('/setdigest',  ajax.SetDigest),
-    ('/settwitt',   ajax.SetTwitt),
-    ('/archive',    ajax.ArchiveBM),
-    ('/trash',      ajax.TrashBM),
-    ('/star',       ajax.StarBM),
-    ('/addtag',     ajax.AddTag),
-    ('/removetag',  ajax.RemoveTag),
-    ('/assigntag',  ajax.AssignTag),
-    ('/gettags',    ajax.GetTags),
-    ('/gettagsfeed',ajax.GetTagsFeed),
-    ('/getcomment', ajax.GetComment),
-    ('/getedit',    ajax.GetEdit),
-    ('/empty_trash',Empty_Trash),
-    ('/adm/script', Script),
-    ('/adm/digest', SendDigest),
-    ('/adm/daily',  SendDaily),
-    ('/adm/check',  CheckFeeds),
-    ('/checkfeed',  CheckFeed),
-    ('/_ah/mail/post@.*',ReceiveMail),
+    ('/'                 , InboxPage),
+    ('/feeds'            , FeedsPage),
+    ('/filter'           , FilterPage),
+    ('/refine'           , RefinePage),
+    ('/notag'            , NotagPage),
+    ('/archived'         , ArchivedPage),
+    ('/starred'          , StarredPage),
+    ('/trashed'          , TrashedPage),
+    ('/tagcloud'         , TagCloudPage),
+    ('/setting'          , SettingPage),
+    ('/feed'             , AddFeed),
+    ('/submit'           , AddBM),
+    ('/edit'             , EditBM),
+    ('/deltag'           , DeleteTag),
+    ('/atf'              , AssTagFeed),
+    ('/rtf'              , RemoveTagFeed),
+    ('/setmys'           , ajax.SetMys),
+    ('/setdaily'         , ajax.SetDaily),
+    ('/setnotify'        , ajax.SetNotify),
+    ('/settwitt'         , ajax.SetTwitt),
+    ('/archive'          , ajax.ArchiveBM),
+    ('/trash'            , ajax.TrashBM),
+    ('/star'             , ajax.StarBM),
+    ('/addtag'           , ajax.AddTag),
+    ('/removetag'        , ajax.RemoveTag),
+    ('/assigntag'        , ajax.AssignTag),
+    ('/gettags'          , ajax.GetTags),
+    ('/gettagsfeed'      , ajax.GetTagsFeed),
+    ('/getcomment'       , ajax.GetComment),
+    ('/getedit'          , ajax.GetEdit),
+    ('/empty_trash'      , Empty_Trash),
+    ('/adm'              , AdminPage),
+    ('/adm/delattr'      , del_attr),
+    ('/adm/script'       , Script),
+    ('/adm/digest'       , SendDigest),
+    ('/adm/daily'        , SendDaily),
+    ('/adm/check'        , CheckFeeds),
+    ('/checkfeed'        , CheckFeed),
+    ('/_ah/mail/post@.*' , ReceiveMail),
     ], debug=debug)
 
 

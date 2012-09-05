@@ -40,16 +40,11 @@ class Feeds(ndb.Model):
     feed    = ndb.StringProperty()#url
     blog    = ndb.StringProperty(indexed=False)#feed.title
     root    = ndb.StringProperty(indexed=False)#feed.link
-    digest  = ndb.BooleanProperty(default=False)
-
+    notify  = ndb.StringProperty(choices=['web', 'email', 'digest'], default="web")
     url     = ndb.StringProperty()#link
-    title   = ndb.StringProperty()#title
-    comment = ndb.TextProperty()#description
-
     @property
     def id(self):
         return self.key.id()
-
     @property
     def other_tags(self):
         q = ndb.gql("SELECT name FROM Tags WHERE user = :1", self.user)

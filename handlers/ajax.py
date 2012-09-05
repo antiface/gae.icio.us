@@ -167,15 +167,9 @@ class SetTwitt(RequestHandler):
         self.response.write(html)
 
 
-class SetDigest(RequestHandler):
+class SetNotify(RequestHandler):
     @login_required
     def get(self):
         feed = Feeds.get_by_id(int(self.request.get('feed')))
-        if feed.digest  == False:
-            feed.digest = True
-            html        = '<strong>Digest</strong>'
-        else:
-            feed.digest = False
-            html        = '<strong>MYS</strong>'
+        feed.notify = self.request.get('notify')
         feed.put()
-        self.response.write(html)    

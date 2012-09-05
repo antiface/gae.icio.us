@@ -1,3 +1,23 @@
+$("#n-w-{{ feed.id }}").click(function() {
+    $.ajax({
+        url: "/setnotify",
+        data: { feed: '{{ feed.id }}', notify: 'web'}
+    })
+})
+$("#n-e-{{ feed.id }}").click(function() {
+    $.ajax({
+        url: "/setnotify",
+        data: { feed: '{{ feed.id }}', notify: 'email'}
+    })
+})
+$("#n-d-{{ feed.id }}").click(function() {
+    $.ajax({
+        url: "/setnotify",
+        data: { feed: '{{ feed.id }}', notify: 'digest'}
+    })
+})
+
+
 $("#tags-{{ feed.id }}").toggle(
     function() {
         $("#dashboard").html('<a>Associate a tag to the feed</a>');
@@ -15,15 +35,7 @@ $("#tags-{{ feed.id }}").toggle(
     }
 )
 
-$("#digest-{{ feed.id }}").click(function() {
-    $.ajax({
-        url: "/setdigest",
-        data: {feed: '{{ feed.id }}'},
-        success: function(html) {          
-        $("#digest-{{ feed.id }}").html(html);
-        }
-    })
-})
+
 
 if ($.cookie('tips-feed') == 'hide') {
     $("#tips-feed").addClass('hide');
@@ -54,4 +66,3 @@ $("#refresh-{{ feed.id }}").click(function(){
         }
     });
 });
-$('#digest-{{ feed.id }}').tooltip()

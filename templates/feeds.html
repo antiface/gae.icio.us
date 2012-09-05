@@ -45,11 +45,10 @@
                 <a class="btn btn-mini" id="refresh-{{ feed.id }}"> <i class="icon-refresh"></i> sync </a>
                 <a class="btn btn-mini" id="tags-{{ feed.id }}" >   <i class="icon-tags">   </i> tags </a>
             </div>
-            <div class="btn-group">
-                <a class="btn btn-mini" id="digest-{{ feed.id }}" rel="tooltip" data-placement="bottom" title="Digest send you an 8 hourly email digest while MYS is the default option and work normally, based on your personal setting">
-                    {% if feed.digest == true %} <strong>Digest</strong> {% else %} <strong>MYS</strong> {% endif %}
-
-                </a>
+            <div class="btn-group" data-toggle="buttons-radio" id="notify-{{ feed.id }}">
+                <button type="button" class="btn btn-mini" id="n-w-{{ feed.id }}">web</button>
+                <button type="button" class="btn btn-mini" id="n-e-{{ feed.id }}">email</button>
+                <button type="button" class="btn btn-mini" id="n-d-{{ feed.id }}">digest</button>
             </div>
             {% for tag in feed.tags %}
             <div class="btn-group">
@@ -62,7 +61,16 @@
     </dd>
     <dd id="comment-{{ feed.id }}" class=""></dd>
 </div>
-<script>{% include "feeds.js" %}</script>
+
+    <script>{% include "feeds.js" %}</script>
+    {% if feed.notify == 'digest' %}
+    <script>$("#n-d-{{ feed.id }}").button('toggle')</script>
+    {% elif feed.notify == 'email' %}
+    <script>$("#n-e-{{ feed.id }}").button('toggle')</script>
+    {% else  %}
+    <script>$("#n-w-{{ feed.id }}").button('toggle')</script>
+    {% endif %}
+
 {% endfor %}
 
 </div><!-- span9 -->

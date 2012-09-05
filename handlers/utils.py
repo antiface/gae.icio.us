@@ -40,8 +40,6 @@ def pop_feed(feedk):
             pass
     d = p['items'][0]
     feed.url     = d['link']
-    feed.title   = d['title']
-    feed.comment = d['description']
     feed.put()
 
 def new_bm(d, feedk):
@@ -58,12 +56,14 @@ def new_bm(d, feedk):
     bm.tags     = feed.tags
     bm.put()
     deferred.defer(main_parser, bm.key, None, _target="worker", _queue="parser")
+    if feed.notify == 'email': 
+        deferred.defer(send_bm, bm.key, _target="worker", _queue="emails")
 
 
 
 def daily_digest(user):
     import datetime, time
-    timestamp = time.time() - 86400
+    timestamp = time.time() - 87000
     period    = datetime.datetime.fromtimestamp(timestamp)
     bmq = ndb.gql("""SELECT * FROM Bookmarks 
         WHERE user = :1 AND create > :2 AND trashed = False
