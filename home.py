@@ -19,12 +19,9 @@ sess          = session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
 request_token = sess.obtain_request_token()
 
 
-#Jinja2 staff
-def dtf(value, format='%d-%m-%Y %H:%M'):
-    return value.strftime(format)
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader('templates'))
-jinja_environment.filters['dtf'] = dtf
+jinja_environment.filters['dtf'] = utils.dtf
 
 
 class BaseHandler(webapp2.RequestHandler):
@@ -366,13 +363,13 @@ class SendDaily(webapp2.RequestHandler):
 
 class Script(webapp2.RequestHandler):
     def get(self):
-        # db_user = None
-        # for bm in Bookmarks.query(Bookmarks.archived == False, Bookmarks.trashed == False): 
-            # deferred.defer(main_parser, bm.key, db_user, _queue="parser")
-        for feed in Feeds.query():
-            feed.url = None
-            feed.put()
-        ndb.delete_multi([bm.key for bm in Bookmarks.query()])
+        db_user = None
+        for bm in Bookmarks.query(Bookmarks.archived == False, Bookmarks.trashed == False): 
+            deferred.defer(main_parser, bm.key, db_user, _queue="parser")
+        # for feed in Feeds.query():
+            # feed.url = None
+            # feed.put()
+        # ndb.delete_multi([bm.key for bm in Bookmarks.query()])
 
 
 

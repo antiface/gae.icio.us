@@ -1,8 +1,9 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
-from google.appengine.api import urlfetch, mail, app_identity
+from google.appengine.api import urlfetch
 from google.appengine.ext import deferred
-from handlers.models import Bookmarks
+from models import Bookmarks
+import utils
 
 
 def main_parser(bmk, db_user):
@@ -59,27 +60,10 @@ def main_parser(bmk, db_user):
             bm.feed.get().digest == True
             pass
         except:
-            deferred.defer(send_bm, bm.key, _target="worker", _queue="emails")
+            deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")
     # DROPBOX
     if db_user is not None:
         if bm.url.split('.')[-1] == '.jpg' or '.mp3' or '.avi' or '.pdf':
-            deferred.defer(db_put, bmk, db_user, _target="worker", _queue="dropbox")
+            deferred.defer(utils.db_put, bmk, db_user, _target="worker", _queue="dropbox")
 
 
-def db_put(bmk, db_user):
-    bm        = bmk.get()
-    file_name = bm.url.split('/')[-1]        
-    f         = urlfetch.fetch(url="%s" % bm.url, deadline=600)
-    db_user.put_file('/%s' % file_name, f.content )
-
-
-def send_bm(bmk):   
-    bm = bmk.get()
-    message         = mail.EmailMessage()
-    message.sender  = 'action@' + "%s" % app_identity.get_application_id() + '.appspotmail.com'
-    message.to      = bm.user.email()
-    message.subject =  "(%s) %s" % (app_identity.get_application_id(), bm.title)
-    message.html    = """
-%s (%s)<br>%s<br><br>%s
-""" % (bm.title, bm.data, bm.url, bm.comment)
-    message.send()

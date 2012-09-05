@@ -7,8 +7,12 @@ from google.appengine.ext import deferred, ndb
 from models import Bookmarks
 from parser import main_parser
 
+
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader('templates'))
+
+def dtf(value, format='%d/%m/%Y - %H:%M UTC'):
+    return value.strftime(format)
 
 def login_required(handler_method):
     def check_login(self):
@@ -30,7 +34,10 @@ def pop_feed(feedk):
     while feed.url != d['link'] and e < 10:
         deferred.defer(new_bm, d, feedk, _target="worker", _queue="importer")
         e += 1 
-        d = p['items'][e]
+        try:
+            d = p['items'][e]
+        except IndexError:
+            pass
     d = p['items'][0]
     feed.url     = d['link']
     feed.title   = d['title']
@@ -62,8 +69,8 @@ def daily_digest(user):
         WHERE user = :1 AND create > :2 AND trashed = False
         ORDER BY create DESC""", user, period)
     t = datetime.datetime.fromtimestamp(time.time()) 
-    t.strftime('%Y-%m-%d %H:%M:%S')
-    title    = '(%s) 8 Daily digest for your activity: %s' % (app_identity.get_application_id(), t)
+    # t.strftime('%Y-%m-%d %H:%M:%S')
+    title    = '(%s) Daily digest for your activity: %s' % (app_identity.get_application_id(), dtf(t))
     template = jinja_environment.get_template('digest.html')  
     values   = {'bmq': bmq, 'title': title} 
     html     = template.render(values)
@@ -74,16 +81,26 @@ def daily_digest(user):
 def feed_digest(feedk):
     feed = feedk.get()
     bmq = ndb.gql("""SELECT * FROM Bookmarks 
-        WHERE user = :1 AND feed = :2
+        WHERE user = :1 AND feed = :2 AND trashed = False
         ORDER BY data DESC""", feed.user, feed.key)
     title    = '(%s) 8 hourly digest for %s' % (app_identity.get_application_id(), feed.blog)
     template = jinja_environment.get_template('digest.html') 
     values   = {'bmq': bmq, 'title': title} 
     html     = template.render(values)
     if bmq.get():
-        deferred.defer(send_digest, feed.user.email(), html, title, _target="worker", _queue="emails")        
-        ndb.delete_multi([bm.key for bm in bmq])
+        deferred.defer(send_digest, feed.user.email(), html, title, _target="worker", _queue="emails")
 
+
+def send_bm(bmk): 
+    bm = bmk.get()
+    message         = mail.EmailMessage()
+    message.sender  = 'action@' + "%s" % app_identity.get_application_id() + '.appspotmail.com'
+    message.to      = bm.user.email()
+    message.subject =  "(%s) %s" % (app_identity.get_application_id(), bm.title)
+    message.html    = """
+%s (%s)<br>%s<br><br>%s
+""" % (bm.title, dtf(bm.data), bm.url, bm.comment)
+    message.send()
 
 def send_digest(email, html, title):
     message         = mail.EmailMessage()
@@ -93,6 +110,11 @@ def send_digest(email, html, title):
     message.html    = html
     message.send()
 
+def db_put(bmk, db_user):
+    bm        = bmk.get()
+    file_name = bm.url.split('/')[-1] 
+    f         = urlfetch.fetch(url="%s" % bm.url, deadline=600)
+    db_user.put_file('/%s' % file_name, f.content )
 
 def tag_set(bmq):
     tagset = []
