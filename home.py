@@ -111,6 +111,7 @@ class ArchivedPage(BaseHandler):
         self.response.set_cookie('active-tab', 'archive')
         self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
 
+
 class StarredPage(BaseHandler):
     @utils.login_required
     def get(self):
@@ -125,6 +126,7 @@ class StarredPage(BaseHandler):
             next_c = None
         self.response.set_cookie('active-tab', 'starred')
         self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+
 
 class TrashedPage(BaseHandler):
     @utils.login_required
@@ -141,6 +143,7 @@ class TrashedPage(BaseHandler):
         self.response.set_cookie('active-tab', 'trash')
         self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
 
+
 class NotagPage(BaseHandler):
     @utils.login_required
     def get(self):
@@ -155,6 +158,7 @@ class NotagPage(BaseHandler):
             next_c = None
         self.response.set_cookie('active-tab', 'untagged')
         self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+
 
 class FilterPage(BaseHandler):
     @utils.login_required
@@ -179,6 +183,7 @@ class FilterPage(BaseHandler):
         else:
             self.redirect('/')
 
+
 class RefinePage(BaseHandler):
     @utils.login_required
     def get(self):
@@ -199,6 +204,7 @@ class RefinePage(BaseHandler):
             next_c = None
         self.generate('home.html', {'bms' : bms, 'tag_obj': None, 'c': next_c })
 
+
 class FeedsPage(BaseHandler):
     @utils.login_required
     def get(self):
@@ -207,14 +213,12 @@ class FeedsPage(BaseHandler):
         self.response.set_cookie('active-tab', 'feeds')
         self.generate('feeds.html', {'feeds': feeds})
 
+
 class TagCloudPage(BaseHandler):
     @utils.login_required
     def get(self):   
         self.response.set_cookie('active-tab', 'tagcloud')
         self.generate('tagcloud.html', {})
-
-
-
 
 
 class AdminPage(BaseHandler):    
@@ -224,7 +228,6 @@ class AdminPage(BaseHandler):
         else: 
             self.redirect('/')
         
-
 #########################################################
 
 class AddFeed(webapp2.RequestHandler):
@@ -258,6 +261,7 @@ class AddFeed(webapp2.RequestHandler):
         feed = Feeds.get_by_id(int(self.request.get('id')))
         feed.key.delete()
 
+
 class AddBM(webapp2.RequestHandler):
     @utils.login_required
     def get(self):
@@ -277,6 +281,7 @@ class AddBM(webapp2.RequestHandler):
         if bm.ha_mys(): 
             deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")
         self.redirect('/')
+
 
 class ReceiveMail(webapp2.RequestHandler):
     def post(self):
@@ -316,12 +321,14 @@ class EditBM(webapp2.RequestHandler):
             ndb.transaction(txn)
         self.redirect('/')
 
+
 class DeleteTag(webapp2.RequestHandler):
     def get(self):
         tag = Tags.get_by_id(int(self.request.get('tag')))
         if users.get_current_user() == tag.user:
             tag.key.delete()
         self.redirect(self.request.referer)
+
 
 class AssTagFeed(webapp2.RequestHandler):
     def get(self):
@@ -335,6 +342,7 @@ class AssTagFeed(webapp2.RequestHandler):
                 feed.put()
         self.redirect(self.request.referer)
 
+
 class RemoveTagFeed(webapp2.RequestHandler):
     def get(self):
         feed = Feeds.get_by_id(int(self.request.get('feed')))
@@ -343,6 +351,7 @@ class RemoveTagFeed(webapp2.RequestHandler):
             feed.tags.remove(tag.key)
             feed.put()
         self.redirect(self.request.referer)    
+
 
 class Empty_Trash(webapp2.RequestHandler):
     @utils.login_required
@@ -359,10 +368,12 @@ class CheckFeed(webapp2.RequestHandler):
         feed = Feeds.get_by_id(int(self.request.get('feed')))
         deferred.defer(utils.pop_feed, feed.key, _queue="admin")
 
+
 class CheckFeeds(webapp2.RequestHandler):
     def get(self): 
         for feed in Feeds.query(): 
             deferred.defer(utils.pop_feed, feed.key, _target="worker", _queue="admin")
+
 
 class SendDigest(webapp2.RequestHandler):
     def get(self): 
@@ -391,6 +402,7 @@ class Script(webapp2.RequestHandler):
             else:
                 feed.notify = 'web'
             feed.put()
+
 
 class del_attr(webapp2.RequestHandler):
     """delete old property from datastore"""
@@ -422,6 +434,7 @@ app = webapp2.WSGIApplication([
     ('/setting'          , SettingPage),
     ('/feed'             , AddFeed),
     ('/submit'           , AddBM),
+    ('/submit2'          , AddBM2),
     ('/edit'             , EditBM),
     ('/deltag'           , DeleteTag),
     ('/atf'              , AssTagFeed),
