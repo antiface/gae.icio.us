@@ -4,8 +4,8 @@
 import jinja2, os, webapp2
 from google.appengine.api import users, mail, app_identity
 from google.appengine.ext import ndb, deferred
-from handlers import ajax, config, utils
-from handlers.models import Bookmarks, UserInfo, Feeds, Tags
+from handlers import ajax, config, utils, core
+from handlers.models import Bookmarks, UserInfo
 from handlers.parser import main_parser
 from dropbox import client, session
 
@@ -57,9 +57,12 @@ class BaseHandler(webapp2.RequestHandler):
 class SettingPage(BaseHandler):
     @utils.login_required
     def get(self):
-        
-        if self.request.get('oauth_token'):
-            access_token = sess.obtain_access_token(request_token)
+        ui = self.ui()
+        if not sess.is_linked():
+            if self.request.get('oauth_token'):
+                access_token = sess.obtain_access_token(request_token)            
+                ui.token = str(access_token)
+                ui.put()
 
         bookmarklet = """
 javascript:location.href=
@@ -71,7 +74,7 @@ javascript:location.href=
 
         callback    = "%s/setting" % (self.request.host_url) 
         dropbox_url = sess.build_authorize_url(request_token, oauth_callback=callback)
-                
+
         self.response.set_cookie('dropbox'   , '%s' % sess.is_linked())
         self.response.set_cookie('mys'       , '%s' % self.ui().mys)
         self.response.set_cookie('daily'     , '%s' % self.ui().daily)
@@ -233,38 +236,6 @@ class AdminPage(BaseHandler):
         
 #########################################################
 
-class AddFeed(webapp2.RequestHandler):
-    def post(self):
-        from libs.feedparser import parse
-        user = users.get_current_user()
-        url = self.request.get('url')
-        p = parse(str(url))
-        try:
-            d = p['items'][0]
-        except IndexError:
-            pass
-        if user:
-            q = ndb.gql("""SELECT * FROM Feeds
-            WHERE user = :1 AND url = :2""", user, url)
-            if q.get() is None:
-                feed = Feeds()
-                def txn():
-                    feed.blog    = p.feed.title
-                    feed.root    = p.feed.link
-                    feed.user    = user
-                    feed.feed    = url
-                    feed.url     = d.link
-                    feed.put()
-                ndb.transaction(txn)
-                deferred.defer(utils.new_bm, d, feed.key, _queue="admin")
-            self.redirect(self.request.referer)
-        else:
-            self.redirect('/')
-    def get(self):
-        feed = Feeds.get_by_id(int(self.request.get('id')))
-        feed.key.delete()
-
-
 class AddBM(webapp2.RequestHandler):
     @utils.login_required
     def get(self):
@@ -281,8 +252,6 @@ class AddBM(webapp2.RequestHandler):
         else:
             db_user = None
         deferred.defer(main_parser, bm.key, db_user, _target="worker", _queue="parser")
-        # if bm.ha_mys(): 
-            # deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")
         self.redirect('/')
 
 
@@ -308,119 +277,7 @@ class ReceiveMail(webapp2.RequestHandler):
         else:
             db_user = None
         deferred.defer(main_parser, bm.key, db_user, _target="worker", _queue="parser")
-        # if bm.ha_mys(): 
-            # deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")
 
-
-class EditBM(webapp2.RequestHandler):
-    def get(self):
-        bm = Bookmarks.get_by_id(int(self.request.get('bm')))
-        if users.get_current_user() == bm.user:
-            def txn():
-                bm.url     = self.request.get('url').encode('utf8')
-                bm.title   = self.request.get('title').encode('utf8')
-                bm.comment = self.request.get('comment').encode('utf8')
-                bm.put()
-            ndb.transaction(txn)
-        self.redirect('/')
-
-
-class DeleteTag(webapp2.RequestHandler):
-    def get(self):
-        tag = Tags.get_by_id(int(self.request.get('tag')))
-        if users.get_current_user() == tag.user:
-            tag.key.delete()
-        self.redirect(self.request.referer)
-
-
-class AssTagFeed(webapp2.RequestHandler):
-    def get(self):
-        feed = Feeds.get_by_id(int(self.request.get('feed')))
-        tag  = Tags.get_by_id(int(self.request.get('tag')))
-        if users.get_current_user() == feed.user:
-            if tag in feed.tags:
-                pass
-            else:
-                feed.tags.append(tag.key)
-                feed.put()
-        self.redirect(self.request.referer)
-
-
-class RemoveTagFeed(webapp2.RequestHandler):
-    def get(self):
-        feed = Feeds.get_by_id(int(self.request.get('feed')))
-        tag  = Tags.get_by_id(int(self.request.get('tag')))
-        if users.get_current_user() == feed.user:
-            feed.tags.remove(tag.key)
-            feed.put()
-        self.redirect(self.request.referer)    
-
-
-class Empty_Trash(webapp2.RequestHandler):
-    @utils.login_required
-    def get(self):
-        bmq = ndb.gql("""SELECT __key__ FROM Bookmarks
-            WHERE user = :1 AND trashed = True 
-            ORDER BY data DESC""", users.get_current_user())
-        ndb.delete_multi(bmq.fetch())
-        self.redirect(self.request.referer)
-
-
-class CheckFeed(webapp2.RequestHandler):
-    def get(self):
-        feed = Feeds.get_by_id(int(self.request.get('feed')))
-        deferred.defer(utils.pop_feed, feed.key, _queue="admin")
-
-
-class CheckFeeds(webapp2.RequestHandler):
-    def get(self): 
-        for feed in Feeds.query(): 
-            deferred.defer(utils.pop_feed, feed.key, _target="worker", _queue="admin")
-
-
-class SendDigest(webapp2.RequestHandler):
-    def get(self): 
-        for feed in Feeds.query(): 
-            if feed.notify == 'digest': 
-                deferred.defer(utils.feed_digest, feed.key, _target="worker", _queue="admin")
-
-
-class SendDaily(webapp2.RequestHandler):
-    def get(self): 
-        for ui in UserInfo.query(): 
-            if ui.daily: 
-                deferred.defer(utils.daily_digest, ui.user, _target="worker", _queue="admin")
-
-#####################################################################################
-
-class Script(webapp2.RequestHandler):
-    """change this handler for admin operations"""
-    def get(self):
-        for feed in Feeds.query():
-            ui = UserInfo.query(UserInfo.user == feed.user).get()
-            if feed.digest:
-                feed.notify = 'digest'
-            elif ui.mys:
-                feed.notify = 'email'
-            else:
-                feed.notify = 'web'
-            feed.put()
-
-
-class del_attr(webapp2.RequestHandler):
-    """delete old property from datastore"""
-    def post(self): 
-        model = self.request.get('model') 
-        prop = self.request.get('prop') 
-        q = ndb.gql("SELECT * FROM %s" % (model)) 
-        for r in q: 
-            deferred.defer(delatt, r.key, prop, _queue="admin", _target="worker") 
-        self.redirect('/adm')
-
-def delatt(rkey, prop): 
-    r = rkey.get() 
-    delattr(r, '%s' % prop) 
-    r.put()
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
@@ -435,12 +292,14 @@ app = webapp2.WSGIApplication([
     ('/trashed'          , TrashedPage),
     ('/tagcloud'         , TagCloudPage),
     ('/setting'          , SettingPage),
-    ('/feed'             , AddFeed),
+    ('/adm'              , AdminPage),
     ('/submit'           , AddBM),
-    ('/edit'             , EditBM),
-    ('/deltag'           , DeleteTag),
-    ('/atf'              , AssTagFeed),
-    ('/rtf'              , RemoveTagFeed),
+    ('/_ah/mail/post@.*' , ReceiveMail),
+    ('/feed'             , core.AddFeed),
+    ('/edit'             , core.EditBM),
+    ('/deltag'           , core.DeleteTag),
+    ('/atf'              , core.AssTagFeed),
+    ('/rtf'              , core.RemoveTagFeed),
     ('/setmys'           , ajax.SetMys),
     ('/setdaily'         , ajax.SetDaily),
     ('/setnotify'        , ajax.SetNotify),
@@ -455,15 +314,13 @@ app = webapp2.WSGIApplication([
     ('/gettagsfeed'      , ajax.GetTagsFeed),
     ('/getcomment'       , ajax.GetComment),
     ('/getedit'          , ajax.GetEdit),
-    ('/empty_trash'      , Empty_Trash),
-    ('/adm'              , AdminPage),
-    ('/adm/delattr'      , del_attr),
-    ('/adm/script'       , Script),
-    ('/adm/digest'       , SendDigest),
-    ('/adm/daily'        , SendDaily),
-    ('/adm/check'        , CheckFeeds),
-    ('/checkfeed'        , CheckFeed),
-    ('/_ah/mail/post@.*' , ReceiveMail),
+    ('/empty_trash'      , core.Empty_Trash),
+    ('/adm/script'       , core.Script),
+    ('/adm/digest'       , core.SendDigest),
+    ('/adm/daily'        , core.SendDaily),
+    ('/adm/check'        , core.CheckFeeds),
+    ('/adm/delattr'      , core.del_attr),
+    ('/checkfeed'        , core.CheckFeed),
     ], debug=debug)
 
 
