@@ -9,12 +9,10 @@ import utils
 def main_parser(bmk, db_user):
     import urlparse
     bm = bmk.get()
-    # URLS 
-    try:
-        result = urlfetch.fetch(url=bm.original, follow_redirects=True, allow_truncated=True, deadline=600) 
-        if result.status_code == 200 and result.final_url:
-            a = result.final_url 
-    except:
+    result = urlfetch.fetch(url=bm.original, follow_redirects=True, allow_truncated=True, deadline=600) 
+    if result.status_code == 200 and result.final_url:
+        a = result.final_url 
+    else:
         a = bm.original 
     b = a.split('?utm_source')[0]
     c = b.split('&feature')[0]
@@ -49,8 +47,8 @@ def main_parser(bmk, db_user):
         bm.comment = '''<iframe src="http://player.vimeo.com/video/%s?color=ffffff" 
         width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen 
         allowFullScreen></iframe>''' % video
-    if bm.url.split('.')[-1] == '.jpg':
-        bm.comment = '<img src="%s" alt="some_text"/>' % bm.url      
+    if bm.url.split('.')[-1] == 'jpg':
+        bm.comment = '<img src="%s" />' % bm.url      
     # TITLE
     if bm.title == '':
         bm.title = url_parsed.path
@@ -65,7 +63,5 @@ def main_parser(bmk, db_user):
 
     # DROPBOX
     if db_user is not None:
-        if bm.url.split('.')[-1] == '.jpg' or '.mp3' or '.avi' or '.pdf':
+        if bm.url.split('.')[-1] == 'jpg' or 'mp3' or 'avi' or 'pdf':
             deferred.defer(utils.db_put, bmk, db_user, _target="worker", _queue="dropbox")
-
-
