@@ -40,7 +40,7 @@ indexes:
   - name: feed
   - name: trashed
   - name: user
-  - name: data
+  - name: create
     direction: desc
 
 - kind: Bookmarks

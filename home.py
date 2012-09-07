@@ -14,7 +14,7 @@ from dropbox import client, session
 APP_KEY       = config.APP_KEY # "DELETE 'config.APP_KEY' AND PUT HERE YOUR APP_KEY"
 APP_SECRET    = config.APP_SECRET #"DELETE 'config.APP_SECRET' AND PUT HERE YOUR APP_SECRET"
 ACCESS_TYPE   = 'app_folder'
-sess          = session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)    
+sess          = session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE) 
 request_token = sess.obtain_request_token()
 
 
@@ -24,6 +24,7 @@ jinja_environment.filters['dtf'] = utils.dtf
 
 
 class BaseHandler(webapp2.RequestHandler):
+    
     def ui(self):
         if users.get_current_user():
             q = UserInfo.query(UserInfo.user == users.get_current_user())
@@ -56,8 +57,10 @@ class BaseHandler(webapp2.RequestHandler):
 class SettingPage(BaseHandler):
     @utils.login_required
     def get(self):
+        
         if self.request.get('oauth_token'):
             access_token = sess.obtain_access_token(request_token)
+
         bookmarklet = """
 javascript:location.href=
 '%s/submit?url='+encodeURIComponent(location.href)+
@@ -278,8 +281,8 @@ class AddBM(webapp2.RequestHandler):
         else:
             db_user = None
         deferred.defer(main_parser, bm.key, db_user, _target="worker", _queue="parser")
-        if bm.ha_mys(): 
-            deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")
+        # if bm.ha_mys(): 
+            # deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")
         self.redirect('/')
 
 
@@ -305,8 +308,8 @@ class ReceiveMail(webapp2.RequestHandler):
         else:
             db_user = None
         deferred.defer(main_parser, bm.key, db_user, _target="worker", _queue="parser")
-        if bm.ha_mys(): 
-            deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")
+        # if bm.ha_mys(): 
+            # deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")
 
 
 class EditBM(webapp2.RequestHandler):
@@ -434,7 +437,6 @@ app = webapp2.WSGIApplication([
     ('/setting'          , SettingPage),
     ('/feed'             , AddFeed),
     ('/submit'           , AddBM),
-    ('/submit2'          , AddBM2),
     ('/edit'             , EditBM),
     ('/deltag'           , DeleteTag),
     ('/atf'              , AssTagFeed),

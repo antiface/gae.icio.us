@@ -54,6 +54,13 @@ def main_parser(bmk, db_user):
     if bm.title == '':
         bm.title = url_parsed.path
     bm.put()
+    try:
+        if bm.feed.get().notify == 'email': 
+            deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")
+    except:
+        if bm.ha_mys: 
+            deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")
+
     # DROPBOX
     if db_user is not None:
         if bm.url.split('.')[-1] == '.jpg' or '.mp3' or '.avi' or '.pdf':

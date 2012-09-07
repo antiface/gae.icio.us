@@ -8,11 +8,13 @@ from models import Bookmarks
 from parser import main_parser
 
 
-jinja_environment = jinja2.Environment(
-    loader=jinja2.FileSystemLoader('templates'))
 
 def dtf(value, format='%d/%m/%Y - %H:%M UTC'):
     return value.strftime(format)
+
+jinja_environment = jinja2.Environment(
+    loader=jinja2.FileSystemLoader('templates'))
+jinja_environment.filters['dtf'] = dtf
 
 def login_required(handler_method):
     def check_login(self):
@@ -30,7 +32,10 @@ def pop_feed(feedk):
     f = urlfetch.fetch(url="%s" % feed.feed, deadline=60)
     p = parse(f.content)
     e = 0 
-    d = p['items'][e]
+    try:
+        d = p['items'][e]
+    except IndexError:
+        pass
     while feed.url != d['link'] and e < 10:
         deferred.defer(new_bm, d, feedk, _target="worker", _queue="importer")
         e += 1 
@@ -38,26 +43,29 @@ def pop_feed(feedk):
             d = p['items'][e]
         except IndexError:
             pass
-    d = p['items'][0]
+    try:
+        d = p['items'][0]
+    except IndexError:
+        pass
     feed.url     = d['link']
     feed.put()
 
 def new_bm(d, feedk):
     feed = feedk.get()
-    bm      = Bookmarks()
-    bm.feed = feed.key
-    bm.user = feed.user
+    bm          = Bookmarks()
+    bm.feed     = feed.key
+    bm.user     = feed.user
     bm.original = d['link']
     bm.title    = d['title']
     try:
-        bm.comment  = d['description']
+        bm.comment = d['description']
     except KeyError:
         bm.comment = 'no comment'
-    bm.tags     = feed.tags
+    bm.tags = feed.tags
     bm.put()
     deferred.defer(main_parser, bm.key, None, _target="worker", _queue="parser")
-    if feed.notify == 'email': 
-        deferred.defer(send_bm, bm.key, _target="worker", _queue="emails")
+    # if feed.notify == 'email': 
+    #     deferred.defer(send_bm, bm.key, _target="worker", _queue="emails")
 
 
 
@@ -78,10 +86,13 @@ def daily_digest(user):
 
 
 def feed_digest(feedk):
+    import datetime, time
+    timestamp = time.time() - 30000
+    period    = datetime.datetime.fromtimestamp(timestamp)
     feed = feedk.get()
     bmq = ndb.gql("""SELECT * FROM Bookmarks 
         WHERE user = :1 AND feed = :2 AND trashed = False
-        ORDER BY data DESC""", feed.user, feed.key)
+        AND create > :3 ORDER BY create DESC""", feed.user, feed.key, period)
     title    = '(%s) 8 hourly digest for %s' % (app_identity.get_application_id(), feed.blog)
     template = jinja_environment.get_template('digest.html') 
     values   = {'bmq': bmq, 'title': title} 

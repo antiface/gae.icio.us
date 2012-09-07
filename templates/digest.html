@@ -7,7 +7,7 @@
 <table>
     <tbody>
         {% for bm in bmq %}
-        <tr> <td>{{ bm.title }}</td> </tr>
+        <tr> <td>{{ bm.title }} ({{ bm.create|dtf }})</td> </tr>
         <tr> <td>{{ bm.url }}</td> </tr>
         <tr><hr /></tr>
         {% endfor %}
