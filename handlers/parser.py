@@ -10,10 +10,11 @@ def main_parser(bmk, db_user):
     import urlparse
     bm = bmk.get()
     # URLS 
-    result = urlfetch.fetch(url=bm.original, follow_redirects=True, allow_truncated=True, deadline=600) 
-    if result.status_code == 200 and result.final_url:
-        a = result.final_url 
-    else: 
+    try:
+        result = urlfetch.fetch(url=bm.original, follow_redirects=True, allow_truncated=True, deadline=600) 
+        if result.status_code == 200 and result.final_url:
+            a = result.final_url 
+    except:
         a = bm.original 
     b = a.split('?utm_source')[0]
     c = b.split('&feature')[0]
@@ -54,6 +55,7 @@ def main_parser(bmk, db_user):
     if bm.title == '':
         bm.title = url_parsed.path
     bm.put()
+    # Notify
     try:
         if bm.feed.get().notify == 'email': 
             deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")

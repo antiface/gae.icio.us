@@ -64,8 +64,6 @@ def new_bm(d, feedk):
     bm.tags = feed.tags
     bm.put()
     deferred.defer(main_parser, bm.key, None, _target="worker", _queue="parser")
-    # if feed.notify == 'email': 
-    #     deferred.defer(send_bm, bm.key, _target="worker", _queue="emails")
 
 
 
