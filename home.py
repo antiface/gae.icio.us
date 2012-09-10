@@ -33,7 +33,6 @@ class BaseHandler(webapp2.RequestHandler):
             else:
                 ui      = UserInfo()
                 ui.user = users.get_current_user()
-                ui.nick = users.get_current_user().nickname()
                 ui.put()
                 return ui
 
@@ -217,13 +216,13 @@ class RefinePage(BaseHandler):
     def get(self):
         tag_name = self.request.get('tag')
         refine = self.request.get('refine')
-        tag1 = ndb.gql("""SELECT __key__ FROM Tags 
-            WHERE user = :1 AND name = :2""", self.ui().user, tag_name).get()
-        tag2 = ndb.gql("""SELECT __key__ FROM Tags 
-            WHERE user = :1 AND name = :2""", self.ui().user, refine).get()
-        bmq = ndb.gql("""SELECT * FROM Bookmarks 
-            WHERE user = :1 AND tags = :2 AND tags = :3
-            ORDER BY data DESC""", self.ui().user, tag1, tag2)
+        tagq = Tags.query(Tags.user == users.get_current_user())
+        tag1 = tagq.filter(Tags.name == tag_name).get()
+        tag2 = tagq.filter(Tags.name == refine).get()
+        bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
+        bmq = bmq.filter(Bookmarks.tags == tag1.key)
+        bmq = bmq.filter(Bookmarks.tags == tag2.key)
+        bmq = bmq.order(-Bookmarks.data)
         c = ndb.Cursor(urlsafe=self.request.get('c'))
         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
         if more:
@@ -236,7 +235,7 @@ class StreamPage(BaseHandler):
     def get(self):
         bmq = Bookmarks.query(Bookmarks.shared == True, Bookmarks.trashed == False)
         bmq = bmq.filter(Bookmarks.user != users.get_current_user())
-        bmq = bmq.order(Bookmarks.user, Bookmarks.data, Bookmarks._key)
+        bmq = bmq.order(Bookmarks.user, -Bookmarks.data, Bookmarks._key)
         c = ndb.Cursor(urlsafe=self.request.get('c'))
         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
         if more:
@@ -245,39 +244,6 @@ class StreamPage(BaseHandler):
             next_c = None
         self.response.set_cookie('active-tab', 'stream')
         self.generate('public.html', {'bms' : bms, 'c': next_c })
-
-#TODO
-# class PersonalPage(BaseHandler):
-#     def get(self, nick):
-#         ui = UserInfo.query(UserInfo.nick == str(nick)).get()
-#         bmq = Bookmarks.query(Bookmarks.shared == True, Bookmarks.trashed == False)
-#         bmq = bmq.filter(Bookmarks.user_id == ui.user_id)
-#         bmq = bmq.order(Bookmarks.data)
-#         c = ndb.Cursor(urlsafe=self.request.get('c'))
-#         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-#         if more:
-#             next_c = next_curs.urlsafe()
-#         else:
-#             next_c = None
-#         self.response.set_cookie('active-tab', '')
-#         self.generate('public.html', {'bms' : bms, 'c': next_c })
-
-
-#TODO
-# class FriendsPage(BaseHandler):
-#     @utils.login_required
-#     def get(self):
-#         bmq = ndb.gql("""SELECT * FROM Bookmarks
-#             WHERE shared = True AND trashed = False 
-#             AND user_id = :1 ORDER BY data DESC""", self.ui().friends)
-#         c = ndb.Cursor(urlsafe=self.request.get('c'))
-#         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-#         if more:
-#             next_c = next_curs.urlsafe()
-#         else:
-#             next_c = None
-#         self.response.set_cookie('active-tab', 'friends')
-#         self.generate('public.html', {'bms' : bms, 'c': next_c })
 
 
 class FeedsPage(BaseHandler):
@@ -292,8 +258,10 @@ class FeedsPage(BaseHandler):
 class TagCloudPage(BaseHandler):
     @utils.login_required
     def get(self): 
+        q = Tags.query(Tags.user == users.get_current_user())
+        q = q.order(-Tags.counter)
         self.response.set_cookie('active-tab', '')
-        self.generate('tagcloud.html', {})
+        self.generate('tagcloud.html', {'q': q})
 
 
 class AdminPage(BaseHandler):    
@@ -380,7 +348,6 @@ app = webapp2.WSGIApplication([
     ('/starred'          , StarredPage),
     ('/shared'           , SharedPage),
     ('/trashed'          , TrashedPage),
-    # ('/friends'          , FriendsPage), #TODO
     ('/stream'           , StreamPage),
     ('/tagcloud'         , TagCloudPage),
     ('/setting'          , SettingPage),
@@ -408,7 +375,6 @@ app = webapp2.WSGIApplication([
     ('/gettagsfeed'      , ajax.GetTagsFeed),
     ('/getcomment'       , ajax.GetComment),
     ('/getedit'          , ajax.GetEdit),
-    ('/setnick'          , ajax.SetNick),
     ('/empty_trash'      , core.Empty_Trash),
     ('/adm/upgrade'      , core.Upgrade),
     ('/adm/script'       , core.Script),
@@ -417,7 +383,6 @@ app = webapp2.WSGIApplication([
     ('/adm/check'        , core.CheckFeeds),
     ('/adm/delattr'      , core.del_attr),
     ('/checkfeed'        , core.CheckFeed),
-    # (r'/(.+)'             , PersonalPage),  #TODO
     ], debug=debug)
 
 

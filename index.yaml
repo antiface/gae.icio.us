@@ -16,13 +16,6 @@ indexes:
   - name: trashed
   - name: user
   - name: data
-
-- kind: Bookmarks
-  properties:
-  - name: archived
-  - name: trashed
-  - name: user
-  - name: data
     direction: desc
 
 - kind: Bookmarks
@@ -38,21 +31,8 @@ indexes:
   - name: shared
   - name: trashed
   - name: user
-
-- kind: Bookmarks
-  properties:
-  - name: shared
-  - name: trashed
-  - name: user
   - name: data
     direction: desc
-
-- kind: Bookmarks
-  properties:
-  - name: shared
-  - name: trashed
-  - name: user_id
-  - name: data
 
 - kind: Bookmarks
   properties:
@@ -86,6 +66,17 @@ indexes:
   properties:
   - name: user
   - name: data
+    direction: desc
+
+- kind: Tags
+  properties:
+  - name: user
+  - name: counter
+
+- kind: Tags
+  properties:
+  - name: user
+  - name: counter
     direction: desc
 
 - kind: Tags

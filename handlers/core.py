@@ -19,8 +19,7 @@ class AddFeed(RequestHandler):
         except IndexError:
             pass
         if user:
-            q = ndb.gql("""SELECT * FROM Feeds
-            WHERE user = :1 AND url = :2""", user, url)
+            q = Feeds.query(Feeds.user == user, Feeds.url == url)
             if q.get() is None:
                 feed = Feeds()
                 def txn():
@@ -38,9 +37,6 @@ class AddFeed(RequestHandler):
     def get(self):
         feed = Feeds.get_by_id(int(self.request.get('id')))
         feed.key.delete()
-
-
-
 
 
 class EditBM(RequestHandler):
@@ -94,10 +90,10 @@ class RemoveTagFeed(RequestHandler):
 class Empty_Trash(RequestHandler):
     @utils.login_required
     def get(self):
-        bmq = ndb.gql("""SELECT __key__ FROM Bookmarks
-            WHERE user = :1 AND trashed = True 
-            ORDER BY data DESC""", users.get_current_user())
-        ndb.delete_multi(bmq.fetch())
+        bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
+        bmq = bmq.filter(Bookmarks.trashed == True)
+        bmq = bmq.order(-Bookmarks.data).fetch()
+        ndb.delete_multi([bmk.key for bmk in bmq])
         self.redirect(self.request.referer)
 
 
@@ -128,22 +124,20 @@ class SendDaily(RequestHandler):
                 deferred.defer(utils.daily_digest, ui.user, _target="worker", _queue="admin")
 
 
+#### don't care ###
 
 class Upgrade(RequestHandler):
     """change this handler for admin operations"""
     def get(self):
-        for item in Feeds.query():
-            deferred.defer(upgrade, item.key, _target="worker", _queue="admin") 
-        for item in Tags.query():
-            deferred.defer(upgrade, item.key, _target="worker", _queue="admin") 
-        for item in Bookmarks.query():
-            deferred.defer(upgrade, item.key, _target="worker", _queue="admin") 
+        for tag in Tags.query():
+            tag.put() 
 
 
 def upgrade(itemk):
-    item = itemk.get()
-    item.user_id = item.user.user_id()
-    item.put()
+    for tag in Tags.query():
+        tag.put()
+
+
 
 
 class Script(RequestHandler):     
@@ -160,7 +154,7 @@ class del_attr(RequestHandler):
         prop = self.request.get('prop') 
         q = ndb.gql("SELECT * FROM %s" % (model)) 
         for r in q: 
-            deferred.defer(delatt, r.key, prop, _queue="admin", _target="worker") 
+            deferred.defer(delatt, r.key, prop, _queue="admin") 
         self.redirect('/adm')
 
 def delatt(rkey, prop): 

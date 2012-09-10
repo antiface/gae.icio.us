@@ -32,19 +32,6 @@ $(document).ready(function() {
 })
 
 
-$("#nick").submit(function() {
-    var querystring = $(this).serialize();
-    event.preventDefault();
-    $.ajax({
-        url: "/setnick",
-        data: querystring,
-        success: function(form) { 
-            // $("#dashboard").html(dash);
-            $("#nick").html(form);
-        }
-    })
-})
-
 $("#mys-check").change(function() {
     $.ajax({
         url: "/setmys",
