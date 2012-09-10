@@ -33,6 +33,8 @@ class BaseHandler(webapp2.RequestHandler):
             else:
                 ui      = UserInfo()
                 ui.user = users.get_current_user()
+                ui.nick = users.get_current_user().nickname()
+                ui.uid  = users.get_current_user().user_id()
                 ui.put()
                 return ui
 
@@ -74,14 +76,14 @@ javascript:location.href=
 
         callback    = "%s/setting" % (self.request.host_url) 
         dropbox_url = sess.build_authorize_url(request_token, oauth_callback=callback)
+        host = self.request.host_url
 
         self.response.set_cookie('dropbox'   , '%s' % sess.is_linked())
         self.response.set_cookie('mys'       , '%s' % self.ui().mys)
         self.response.set_cookie('daily'     , '%s' % self.ui().daily)
         self.response.set_cookie('twitt'     , '%s' % self.ui().twitt)
-        self.response.set_cookie('active-tab', 'setting')
 
-        self.generate('setting.html', {'bookmarklet': bookmarklet, 'dropbox_url': dropbox_url})
+        self.generate('setting.html', {'host': host, 'bookmarklet': bookmarklet, 'dropbox_url': dropbox_url})
 
 
 class InboxPage(BaseHandler):
@@ -115,6 +117,22 @@ class ArchivedPage(BaseHandler):
         else:
             next_c = None
         self.response.set_cookie('active-tab', 'archive')
+        self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+
+
+class SharedPage(BaseHandler):
+    @utils.login_required
+    def get(self):
+        bmq = ndb.gql("""SELECT * FROM Bookmarks
+            WHERE user = :1 AND shared = True AND trashed = False 
+            ORDER BY data DESC""", self.ui().user)
+        c = ndb.Cursor(urlsafe=self.request.get('c'))
+        bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+        if more:
+            next_c = next_curs.urlsafe()
+        else:
+            next_c = None
+        self.response.set_cookie('active-tab', 'shared')
         self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
 
 
@@ -210,20 +228,64 @@ class RefinePage(BaseHandler):
             next_c = None
         self.generate('home.html', {'bms' : bms, 'tag_obj': None, 'c': next_c })
 
+class StreamPage(BaseHandler):
+    def get(self):
+        bmq = Bookmarks.query(Bookmarks.shared == True, Bookmarks.trashed == False)
+        bmq = bmq.filter(Bookmarks.user != users.get_current_user())
+        bmq = bmq.order(Bookmarks.user, Bookmarks._key)
+        c = ndb.Cursor(urlsafe=self.request.get('c'))
+        bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+        if more:
+            next_c = next_curs.urlsafe()
+        else:
+            next_c = None
+        self.response.set_cookie('active-tab', 'stream')
+        self.generate('public.html', {'bms' : bms, 'c': next_c })
+
+class PersonalPage(BaseHandler):
+    def get(self, nick):
+        ui = UserInfo.query(UserInfo.nick == nick).get()
+        bmq = ndb.gql("""SELECT * FROM Bookmarks
+            WHERE user = :1 AND shared = True AND trashed = False 
+            ORDER BY data DESC""", ui.user)        
+        c = ndb.Cursor(urlsafe=self.request.get('c'))
+        bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+        if more:
+            next_c = next_curs.urlsafe()
+        else:
+            next_c = None
+        self.response.set_cookie('active-tab', '')
+        self.generate('public.html', {'bms' : bms, 'c': next_c })
+
+
+#incomplete
+class FriendsPage(BaseHandler):
+    @utils.login_required
+    def get(self):
+        bmq = ndb.gql("""SELECT * FROM Bookmarks
+            WHERE shared = True AND trashed = False 
+            AND user_id = :1 ORDER BY data DESC""", self.ui().friends)
+        c = ndb.Cursor(urlsafe=self.request.get('c'))
+        bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+        if more:
+            next_c = next_curs.urlsafe()
+        else:
+            next_c = None
+        self.response.set_cookie('active-tab', 'friends')
+        self.generate('public.html', {'bms' : bms, 'c': next_c })
+
 
 class FeedsPage(BaseHandler):
     @utils.login_required
     def get(self):
         feeds = ndb.gql("""SELECT * FROM Feeds 
             WHERE user = :1 ORDER BY data DESC""", self.ui().user)
-        self.response.set_cookie('active-tab', 'feeds')
         self.generate('feeds.html', {'feeds': feeds})
 
 
 class TagCloudPage(BaseHandler):
     @utils.login_required
     def get(self):   
-        self.response.set_cookie('active-tab', 'tagcloud')
         self.generate('tagcloud.html', {})
 
 
@@ -233,7 +295,8 @@ class AdminPage(BaseHandler):
             self.generate('admin.html', {})
         else: 
             self.redirect('/')
-        
+
+
 #########################################################
 
 class AddBM(webapp2.RequestHandler):
@@ -251,7 +314,7 @@ class AddBM(webapp2.RequestHandler):
             db_user = client.DropboxClient(sess) 
         else:
             db_user = None
-        deferred.defer(main_parser, bm.key, db_user, _target="worker", _queue="parser")
+        deferred.defer(main_parser, bm.key, db_user, _queue="parser")
         self.redirect('/')
 
 
@@ -278,6 +341,28 @@ class ReceiveMail(webapp2.RequestHandler):
             db_user = None
         deferred.defer(main_parser, bm.key, db_user, _target="worker", _queue="parser")
 
+class CopyBM(webapp2.RequestHandler):
+    @utils.login_required
+    def get(self):
+        old = Bookmarks.get_by_id(int(self.request.get('bm')))
+        bm = Bookmarks()
+        def txn(): 
+            bm.original = old.original
+            bm.title    = old.title
+            bm.comment  = old.comment
+            bm.user     = users.get_current_user()
+            bm.put()
+        ndb.transaction(txn) 
+        if sess.is_linked():
+            db_user = client.DropboxClient(sess) 
+        else:
+            db_user = None
+        deferred.defer(main_parser, bm.key, db_user, _queue="parser")
+        # self.response.write('<i class="icon-eye-close"></i>')
+
+
+
+
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
@@ -289,12 +374,17 @@ app = webapp2.WSGIApplication([
     ('/notag'            , NotagPage),
     ('/archived'         , ArchivedPage),
     ('/starred'          , StarredPage),
+    ('/shared'           , SharedPage),
     ('/trashed'          , TrashedPage),
+    ('/friends'          , FriendsPage),
+    ('/personal'         , PersonalPage),
+    ('/stream'           , StreamPage),
     ('/tagcloud'         , TagCloudPage),
     ('/setting'          , SettingPage),
     ('/adm'              , AdminPage),
     ('/submit'           , AddBM),
     ('/_ah/mail/post@.*' , ReceiveMail),
+    ('/copy'             , CopyBM),
     ('/feed'             , core.AddFeed),
     ('/edit'             , core.EditBM),
     ('/deltag'           , core.DeleteTag),
@@ -307,6 +397,7 @@ app = webapp2.WSGIApplication([
     ('/archive'          , ajax.ArchiveBM),
     ('/trash'            , ajax.TrashBM),
     ('/star'             , ajax.StarBM),
+    ('/share'            , ajax.ShareBM),
     ('/addtag'           , ajax.AddTag),
     ('/removetag'        , ajax.RemoveTag),
     ('/assigntag'        , ajax.AssignTag),
@@ -314,13 +405,16 @@ app = webapp2.WSGIApplication([
     ('/gettagsfeed'      , ajax.GetTagsFeed),
     ('/getcomment'       , ajax.GetComment),
     ('/getedit'          , ajax.GetEdit),
+    ('/setnick'          , ajax.SetNick),
     ('/empty_trash'      , core.Empty_Trash),
+    ('/adm/upgrade'      , core.Upgrade),
     ('/adm/script'       , core.Script),
     ('/adm/digest'       , core.SendDigest),
     ('/adm/daily'        , core.SendDaily),
     ('/adm/check'        , core.CheckFeeds),
     ('/adm/delattr'      , core.del_attr),
     ('/checkfeed'        , core.CheckFeed),
+    ('/(.+)'             , PersonalPage),
     ], debug=debug)
 
 

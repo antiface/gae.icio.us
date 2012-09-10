@@ -84,6 +84,21 @@ class StarBM(RequestHandler):
             bm.put()
         self.response.write(html)
 
+class ShareBM(RequestHandler):
+    @login_required
+    def get(self):
+        bm = Bookmarks.get_by_id(int(self.request.get('bm')))
+        if users.get_current_user() == bm.user:
+            if bm.shared  == False:
+                bm.shared = True
+                html       = '<i class="icon-eye-open"></i> shared'
+            else:
+                bm.shared = False
+                html       = '<i class="icon-eye-close"></i>'
+            bm.put()
+        self.response.write(html)
+
+
 class AddTag(RequestHandler):
     @login_required
     def get(self):
@@ -173,3 +188,20 @@ class SetNotify(RequestHandler):
         feed = Feeds.get_by_id(int(self.request.get('feed')))
         feed.notify = self.request.get('notify')
         feed.put()
+
+class SetNick(RequestHandler):
+    @login_required
+    def get(self):
+        ui = UserInfo.query(UserInfo.user == users.get_current_user()).get() 
+        q = UserInfo.query(UserInfo.nick == self.request.get('nick'))
+        if q.get():
+            form = """<input type='text' name='nick' placeholder='%s'></input>
+             Nickname existing. Select another """ % str(ui.nick)  
+            self.response.write(form)
+        else:
+            ui.nick = self.request.get('nick')
+            ui.put() 
+            form = """
+            <input type='text' name='nick' placeholder='%s'></input> <a href="/%s">%s/%s</a>
+            """ % (str(ui.nick), str(ui.nick), self.request.host_url, str(ui.nick) )
+            self.response.write(form)

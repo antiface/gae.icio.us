@@ -4,13 +4,16 @@
 from google.appengine.ext import ndb
 
 class UserInfo(ndb.Model):
-    user  = ndb.UserProperty() 
-    email = ndb.ComputedProperty(lambda self: self.user.email())
-    data  = ndb.DateTimeProperty(auto_now=True)
-    mys   = ndb.BooleanProperty(default=False)
-    daily = ndb.BooleanProperty(default=False)
-    twitt = ndb.BooleanProperty(default=False)
-    token = ndb.StringProperty()
+    user     = ndb.UserProperty() 
+    user_id  = ndb.ComputedProperty(lambda self: self.user.user_id())
+    email    = ndb.ComputedProperty(lambda self: self.user.email())
+    data     = ndb.DateTimeProperty(auto_now=True)
+    mys      = ndb.BooleanProperty(default=False)
+    daily    = ndb.BooleanProperty(default=False)
+    twitt    = ndb.BooleanProperty(default=False)
+    token    = ndb.StringProperty()
+    nick     = ndb.StringProperty()
+    friends  = ndb.StringProperty(repeated=True)
     @property
     def tag_list(self):
         return Tags.query(Tags.user == self.user)
@@ -20,6 +23,13 @@ class Tags(ndb.Model):
     data = ndb.DateTimeProperty(auto_now=True)
     user = ndb.UserProperty(required=True)
     name = ndb.StringProperty()
+
+    @property
+    def user_id(self):
+        ui = UserInfo.query(UserInfo.user == self.user).get()
+        return ui.user_id
+
+
     @property
     def bm_set(self):
         return ndb.gql("""SELECT * FROM Bookmarks
@@ -35,7 +45,7 @@ class Tags(ndb.Model):
         return other
 
 class Feeds(ndb.Model):
-    user    = ndb.UserProperty() 
+    user    = ndb.UserProperty()     
     data    = ndb.DateTimeProperty(auto_now=True)
     tags    = ndb.KeyProperty(kind=Tags,repeated=True)
     feed    = ndb.StringProperty()#url
@@ -43,6 +53,12 @@ class Feeds(ndb.Model):
     root    = ndb.StringProperty(indexed=False)#feed.link
     notify  = ndb.StringProperty(choices=['web', 'email', 'digest'], default="web")
     url     = ndb.StringProperty()#link
+
+    @property
+    def user_id(self):
+        ui = UserInfo.query(UserInfo.user == self.user).get()
+        return ui.user_id
+
     @property
     def id(self):
         return self.key.id()
@@ -67,8 +83,19 @@ class Bookmarks(ndb.Model):
     tags      = ndb.KeyProperty(kind=Tags,repeated=True)
     archived  = ndb.BooleanProperty(default=False)
     starred   = ndb.BooleanProperty(default=False)
+    shared    = ndb.BooleanProperty(default=False)
     trashed   = ndb.BooleanProperty(default=False)
     have_tags = ndb.ComputedProperty(lambda self: bool(self.tags))
+
+    @property
+    def user_id(self):
+        ui = UserInfo.query(UserInfo.user == self.user).get()
+        return ui.user_id
+
+    @property
+    def nick(self):
+        ui = UserInfo.query(UserInfo.user == self.user).get()
+        return ui.nick
 
     @property
     def id(self):
@@ -81,6 +108,7 @@ class Bookmarks(ndb.Model):
         for tagk in self.tags:
             all_user_tags.remove(tagk)
         return all_user_tags
-
+    
+    @property
     def ha_mys(self):
         return UserInfo.query(UserInfo.user == self.user).get().mys

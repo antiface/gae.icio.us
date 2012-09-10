@@ -47,7 +47,8 @@ def main_parser(bmk, db_user):
         bm.comment = '''<iframe src="http://player.vimeo.com/video/%s?color=ffffff" 
         width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen 
         allowFullScreen></iframe>''' % video
-    if bm.url.split('.')[-1] == 'jpg':
+    ext = bm.url.split('.')[-1]
+    if ext == 'jpg' or ext == 'png':
         bm.comment = '<img src="%s" />' % bm.url      
     # TITLE
     if bm.title == '':
@@ -63,5 +64,5 @@ def main_parser(bmk, db_user):
 
     # DROPBOX
     if db_user is not None:
-        if bm.url.split('.')[-1] == 'jpg' or 'mp3' or 'avi' or 'pdf':
+        if ext == 'jpg' or 'mp3' or 'avi' or 'pdf' or 'png':
             deferred.defer(utils.db_put, bmk, db_user, _target="worker", _queue="dropbox")

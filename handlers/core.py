@@ -130,16 +130,36 @@ class SendDaily(RequestHandler):
 
 class Script(RequestHandler):
     """change this handler for admin operations"""
-    def get(self):
-        for feed in Feeds.query():
-            ui = UserInfo.query(UserInfo.user == feed.user).get()
-            if feed.digest:
-                feed.notify = 'digest'
-            elif ui.mys:
-                feed.notify = 'email'
-            else:
-                feed.notify = 'web'
+    def get(self):        
+        for item in UserInfo.query():
+            deferred.defer(upgrade, item.key, _target="worker", _queue="admin")
+
+class Upgrade(RequestHandler):
+    """change this handler for admin operations"""
+    def get(self):        
+        for item in UserInfo.query():
+            deferred.defer(upgrade, item.key, _target="worker", _queue="admin")
+        for item in Feeds.query():
+            deferred.defer(upgrade, item.key, _target="worker", _queue="admin") 
+        for item in Tags.query():
+            deferred.defer(upgrade, item.key, _target="worker", _queue="admin") 
+        for item in Bookmarks.query():
+            deferred.defer(upgrade, item.key, _target="worker", _queue="admin") 
+
+
+def upgrade(itemk):
+    item = itemk.get()
+    item.uid = item.user.user_id()
+    item.put()
+
+
+class Upgrade(RequestHandler):
+    """change this handler for admin operations"""
+    def get(self):        
+        for feed in UserInfo.query():
+            feed.uid = feed.user.user_id()
             feed.put()
+
 
 class del_attr(RequestHandler):
     """delete old property from datastore"""

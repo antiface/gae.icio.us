@@ -11,6 +11,17 @@ $(document).ready(function() {
     });
   })
 
+  $("#share-{{ bm.id }}").click(function() {
+    $.ajax({
+      url: "/share",
+      data: { bm: "{{ bm.id }}" },
+      success: function(html) {
+        $("#dashboard").html('<a>Share status changed</a>');
+        $("#share-{{ bm.id }}").html(html);
+      }
+    });
+  })
+
   $("#prev-{{ bm.id }}").toggle(  
     function() {
       $.ajax({

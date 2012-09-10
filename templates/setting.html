@@ -7,52 +7,58 @@
 <div class="span9">
 
 <legend>Setting</legend>
-<!-- Bookmarklet -->
+<!-- Username -->
+<span class="help-block">Change your nickname.</span>
+<form class="form-inline" id="nick" action="/setnick">
+    <input type="text" name="nick" placeholder="{{ui.nick}}"></input> 
+    <a href="/{{ui.nick}}">{{ host }}/{{ui.nick}}</a>
+</form>
+<hr><!-- Bookmarklet -->
 <form> 
-  <label><strong>Bookmarklet</strong></label>
-  <span class="help-block">Drag and drop in your bookmarks bar.</span>
-  <a class="btn btn-link disabled" id="bookmarklet" href="{{ bookmarklet }}" rel="tooltip" data-placement="bottom" title="This is a bookmarklet, drag and drop in your bookmarks bar"><i class="icon-bookmark"></i> {{ brand }} it!</a>  
+    <label><strong>Bookmarklet</strong></label>
+    <span class="help-block">Drag and drop in your bookmarks bar.</span>
+    <a class="btn btn-link disabled" id="bookmarklet" href="{{ bookmarklet }}" rel="tooltip" data-placement="bottom" title="This is a bookmarklet, drag and drop in your bookmarks bar"><i class="icon-bookmark"></i> {{ brand }} it!</a>  
 </form>
 <hr>
 <!-- mail yourself -->
 <form>  
-  <label><strong>Mail yourself</strong></label>
-  <span class="help-block">If enabled you will receive new bookmarks in your inbox.</span>
-  <label class="checkbox">    
-    <input type="checkbox" id="mys-check"><p id="mys-text"></p>
-  </label>
+    <label><strong>Mail yourself</strong></label>
+    <span class="help-block">If enabled you will receive new bookmarks in your inbox.</span>
+    <label class="checkbox">    
+        <input type="checkbox" id="mys-check"><p id="mys-text"></p>
+    </label>
 </form>
 <hr>
 <!-- daily digest -->
 <form>  
-  <label><strong>Daily Digest</strong></label>
-  <span class="help-block">If enabled you will receive a daily digest of your activity.</span>
-  <label class="checkbox">
-    <input type="checkbox" id="daily-check"><p id="daily-text"></p>
-  </label>
+    <label><strong>Daily Digest</strong></label>
+    <span class="help-block">If enabled you will receive a daily digest of your activity.</span>
+    <label class="checkbox">
+        <input type="checkbox" id="daily-check"><p id="daily-text"></p>
+    </label>
 </form>
 <hr>
 <!-- Dropbox Integration -->
-  <label><strong>Dropbox Integration</strong></label>
+<label><strong>Dropbox Integration</strong></label>
     <span class="help-block">If enabled gaeicious upload each file linked in the url field</span>
     <a class="btn" data-toggle="button" href='{{dropbox_url}}' id="dropbox-text"></a>
 <hr>
 <!-- Twitter buttons -->
 <form>  
-  <label><strong>Twitter buttons</strong></label>
-  <span class="help-block">If enabled you see a twitter share button for any bookmark.</span>
-  <label class="checkbox">    
-    <input type="checkbox" id="twitt-check"><p id="twitt-text"></p>
-  </label>
+    <label><strong>Twitter buttons</strong></label>
+    <span class="help-block">If enabled you see a twitter share button for any bookmark.</span>
+    <label class="checkbox">    
+        <input type="checkbox" id="twitt-check"><p id="twitt-text"></p>
+    </label>
 </form>
 <hr>
 <!-- Bookmark via email -->
 <label><strong>Bookmark via email</strong></label>
 <dl class="dl-horizontal">  
-  <dt>From:</dt><dd> the email used in {{brand}}</dd>
-  <dt>To:</dt><dd> post@{{brand}}.appspotmail.com</dd>
-  <dt>Subject:</dt><dd> the <em>title</em> of the Bookmark</dd>
-  <dt>Body:</dt><dd> the <em>link</em> of the Bookmark</dd>
+    <dt>From:</dt><dd> the email used in {{brand}}</dd>
+    <dt>To:</dt><dd> post@{{brand}}.appspotmail.com</dd>
+    <dt>Subject:</dt><dd> the <em>title</em> of the Bookmark</dd>
+    <dt>Body:</dt><dd> the <em>link</em> of the Bookmark</dd>
 </dl>
 <hr>
 

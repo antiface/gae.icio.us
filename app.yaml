@@ -22,8 +22,8 @@ handlers:
   static_dir: static
 
 - url: /favicon\.ico
-  static_files: /favicon.ico
-  upload: /favicon\.ico
+  static_files: static/img/favicon.ico
+  upload: static/img/favicon\.ico
   mime_type: image/x-icon
 
 - url: /_ah/mail/post@.*

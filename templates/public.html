@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+<div class="row-fluid">
+
+<!-- <div class="span3"> -->
+    {% include "sidebar.html" %}    
+<!-- </div> -->
+<div class="span9">
+
+<!-- <div class=""> -->
+    <!-- bookmarks -->
+    {% for bm in bms %}
+    <div class="well well-small" id="row-{{ bm.id }}"> 
+        <dt>
+            <i class="icon-bookmark"></i> <a href="{{ bm.url }}" target="_blank">{{ bm.title|e|truncate(70, killwords=true) }}</a> <div class="btn-group pull-right">
+                <button class="btn btn-mini" id="copy-{{ bm.id }}"><i class="icon-retweet"></i> copy</button>
+            </div>
+        </dt> 
+        <dd><i class="icon-user"></i> {{bm.nick}} 
+            
+        </dd>
+        <hr>
+        <dd>{{ bm.comment }}</dd>  
+    </div>
+    <script>
+    $("#copy-{{ bm.id }}").click(function() {
+        $.ajax({
+            url: "/copy",
+            data: { bm: "{{ bm.id }}" },
+            success: function() {
+                $("#dashboard").html('<a>Bookmark copied</a>');
+                $("#copy-{{ bm.id }}").html('<i class="icon-ok"></i> copied');
+            },
+        });
+    })
+    </script>
+    {% endfor %}
+
+    {% if c %}
+    <div class="well well-small">
+        <a  class="btn btn-block" href="?c={{c}}" type="button">more..</a>
+    </div> 
+    {% endif %} 
+</div>
+
+</div>
+</div>
+  
+
+{% endblock %}

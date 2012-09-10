@@ -60,6 +60,33 @@ indexes:
 
 - kind: Bookmarks
   properties:
+  - name: shared
+  - name: trashed
+  - name: data
+
+- kind: Bookmarks
+  properties:
+  - name: shared
+  - name: trashed
+  - name: data
+    direction: desc
+
+- kind: Bookmarks
+  properties:
+  - name: shared
+  - name: trashed
+  - name: user
+
+- kind: Bookmarks
+  properties:
+  - name: shared
+  - name: trashed
+  - name: user
+  - name: data
+    direction: desc
+
+- kind: Bookmarks
+  properties:
   - name: starred
   - name: trashed
   - name: user
