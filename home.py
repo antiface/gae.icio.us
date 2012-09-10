@@ -34,7 +34,6 @@ class BaseHandler(webapp2.RequestHandler):
                 ui      = UserInfo()
                 ui.user = users.get_current_user()
                 ui.nick = users.get_current_user().nickname()
-                ui.uid  = users.get_current_user().user_id()
                 ui.put()
                 return ui
 
@@ -242,37 +241,38 @@ class StreamPage(BaseHandler):
         self.response.set_cookie('active-tab', 'stream')
         self.generate('public.html', {'bms' : bms, 'c': next_c })
 
-class PersonalPage(BaseHandler):
-    def get(self, nick):
-        ui = UserInfo.query(UserInfo.nick == nick).get()
-        bmq = ndb.gql("""SELECT * FROM Bookmarks
-            WHERE user = :1 AND shared = True AND trashed = False 
-            ORDER BY data DESC""", ui.user)        
-        c = ndb.Cursor(urlsafe=self.request.get('c'))
-        bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-        if more:
-            next_c = next_curs.urlsafe()
-        else:
-            next_c = None
-        self.response.set_cookie('active-tab', '')
-        self.generate('public.html', {'bms' : bms, 'c': next_c })
+#TODO
+# class PersonalPage(BaseHandler):
+#     def get(self, nick):
+#         ui = UserInfo.query(UserInfo.nick == str(nick)).get()
+#         bmq = Bookmarks.query(Bookmarks.shared == True, Bookmarks.trashed == False)
+#         bmq = bmq.filter(Bookmarks.user_id == ui.user_id)
+#         bmq = bmq.order(Bookmarks.data)
+#         c = ndb.Cursor(urlsafe=self.request.get('c'))
+#         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+#         if more:
+#             next_c = next_curs.urlsafe()
+#         else:
+#             next_c = None
+#         self.response.set_cookie('active-tab', '')
+#         self.generate('public.html', {'bms' : bms, 'c': next_c })
 
 
-#incomplete
-class FriendsPage(BaseHandler):
-    @utils.login_required
-    def get(self):
-        bmq = ndb.gql("""SELECT * FROM Bookmarks
-            WHERE shared = True AND trashed = False 
-            AND user_id = :1 ORDER BY data DESC""", self.ui().friends)
-        c = ndb.Cursor(urlsafe=self.request.get('c'))
-        bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-        if more:
-            next_c = next_curs.urlsafe()
-        else:
-            next_c = None
-        self.response.set_cookie('active-tab', 'friends')
-        self.generate('public.html', {'bms' : bms, 'c': next_c })
+#TODO
+# class FriendsPage(BaseHandler):
+#     @utils.login_required
+#     def get(self):
+#         bmq = ndb.gql("""SELECT * FROM Bookmarks
+#             WHERE shared = True AND trashed = False 
+#             AND user_id = :1 ORDER BY data DESC""", self.ui().friends)
+#         c = ndb.Cursor(urlsafe=self.request.get('c'))
+#         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+#         if more:
+#             next_c = next_curs.urlsafe()
+#         else:
+#             next_c = None
+#         self.response.set_cookie('active-tab', 'friends')
+#         self.generate('public.html', {'bms' : bms, 'c': next_c })
 
 
 class FeedsPage(BaseHandler):
@@ -304,7 +304,7 @@ class AddBM(webapp2.RequestHandler):
     def get(self):
         bm = Bookmarks()
         def txn(): 
-            bm.original = self.request.get('url')
+            bm.original = self.request.get('url').encode('utf8')
             bm.title    = self.request.get('title')
             bm.comment  = self.request.get('comment')
             bm.user     = users.User(str(self.request.get('user')))
@@ -339,7 +339,7 @@ class ReceiveMail(webapp2.RequestHandler):
             db_user = client.DropboxClient(sess) 
         else:
             db_user = None
-        deferred.defer(main_parser, bm.key, db_user, _target="worker", _queue="parser")
+        deferred.defer(main_parser, bm.key, db_user, _queue="parser")
 
 class CopyBM(webapp2.RequestHandler):
     @utils.login_required
@@ -358,9 +358,6 @@ class CopyBM(webapp2.RequestHandler):
         else:
             db_user = None
         deferred.defer(main_parser, bm.key, db_user, _queue="parser")
-        # self.response.write('<i class="icon-eye-close"></i>')
-
-
 
 
 
@@ -376,8 +373,7 @@ app = webapp2.WSGIApplication([
     ('/starred'          , StarredPage),
     ('/shared'           , SharedPage),
     ('/trashed'          , TrashedPage),
-    ('/friends'          , FriendsPage),
-    ('/personal'         , PersonalPage),
+    # ('/friends'          , FriendsPage), #TODO
     ('/stream'           , StreamPage),
     ('/tagcloud'         , TagCloudPage),
     ('/setting'          , SettingPage),
@@ -414,7 +410,7 @@ app = webapp2.WSGIApplication([
     ('/adm/check'        , core.CheckFeeds),
     ('/adm/delattr'      , core.del_attr),
     ('/checkfeed'        , core.CheckFeed),
-    ('/(.+)'             , PersonalPage),
+    # (r'/(.+)'             , PersonalPage),  #TODO
     ], debug=debug)
 
 

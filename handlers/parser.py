@@ -9,17 +9,21 @@ import utils
 def main_parser(bmk, db_user):
     import urlparse
     bm = bmk.get()
-    result = urlfetch.fetch(url=bm.original, follow_redirects=True, allow_truncated=True, deadline=600) 
-    if result.status_code == 200 and result.final_url:
-        a = result.final_url 
-    else:
+    try:
+        result = urlfetch.fetch(url=bm.original, follow_redirects=True, allow_truncated=True, deadline=600) 
+        if result.status_code == 200 and result.final_url:
+            a = result.final_url 
+        else:
+            a = bm.original 
+    except:
         a = bm.original 
+
     b = a.split('?utm_source')[0]
     c = b.split('&feature')[0]
-    bm.url = c
+    bm.url = c.encode('utf8')
     # TAGS
-    q = Bookmarks.query(Bookmarks.user == bm.user, Bookmarks.original == bm.original).fetch()
-    if q.count > 1:
+    q = Bookmarks.query(Bookmarks.user == bm.user, Bookmarks.original == bm.original)#.fetch()
+    if q.count() > 1:
         tag_list = []
         for e in q:
             for t in e.tags:
@@ -48,7 +52,7 @@ def main_parser(bmk, db_user):
         width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen 
         allowFullScreen></iframe>''' % video
     ext = bm.url.split('.')[-1]
-    if ext == 'jpg' or ext == 'png':
+    if ext == 'jpg' or ext == 'png' or ext == 'jpeg':
         bm.comment = '<img src="%s" />' % bm.url      
     # TITLE
     if bm.title == '':

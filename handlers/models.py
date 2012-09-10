@@ -20,16 +20,11 @@ class UserInfo(ndb.Model):
 
 
 class Tags(ndb.Model):
-    data = ndb.DateTimeProperty(auto_now=True)
-    user = ndb.UserProperty(required=True)
-    name = ndb.StringProperty()
-
-    @property
-    def user_id(self):
-        ui = UserInfo.query(UserInfo.user == self.user).get()
-        return ui.user_id
-
-
+    data    = ndb.DateTimeProperty(auto_now=True)
+    user    = ndb.UserProperty(required=True)
+    name    = ndb.StringProperty()
+    user_id = ndb.StringProperty()
+    
     @property
     def bm_set(self):
         return ndb.gql("""SELECT * FROM Bookmarks
@@ -53,12 +48,8 @@ class Feeds(ndb.Model):
     root    = ndb.StringProperty(indexed=False)#feed.link
     notify  = ndb.StringProperty(choices=['web', 'email', 'digest'], default="web")
     url     = ndb.StringProperty()#link
-
-    @property
-    def user_id(self):
-        ui = UserInfo.query(UserInfo.user == self.user).get()
-        return ui.user_id
-
+    user_id = ndb.StringProperty()
+    
     @property
     def id(self):
         return self.key.id()
@@ -76,8 +67,8 @@ class Bookmarks(ndb.Model):
     create    = ndb.DateTimeProperty(auto_now_add=True)
     user      = ndb.UserProperty(required=True)
     original  = ndb.StringProperty()
-    url       = ndb.StringProperty(indexed=False)
-    title     = ndb.StringProperty(indexed=False)
+    url       = ndb.StringProperty()
+    title     = ndb.StringProperty()
     comment   = ndb.TextProperty(indexed=False)
     feed      = ndb.KeyProperty(kind=Feeds)
     tags      = ndb.KeyProperty(kind=Tags,repeated=True)
@@ -86,12 +77,8 @@ class Bookmarks(ndb.Model):
     shared    = ndb.BooleanProperty(default=False)
     trashed   = ndb.BooleanProperty(default=False)
     have_tags = ndb.ComputedProperty(lambda self: bool(self.tags))
-
-    @property
-    def user_id(self):
-        ui = UserInfo.query(UserInfo.user == self.user).get()
-        return ui.user_id
-
+    user_id   = ndb.StringProperty()
+    
     @property
     def nick(self):
         ui = UserInfo.query(UserInfo.user == self.user).get()

@@ -128,17 +128,10 @@ class SendDaily(RequestHandler):
                 deferred.defer(utils.daily_digest, ui.user, _target="worker", _queue="admin")
 
 
-class Script(RequestHandler):
-    """change this handler for admin operations"""
-    def get(self):        
-        for item in UserInfo.query():
-            deferred.defer(upgrade, item.key, _target="worker", _queue="admin")
 
 class Upgrade(RequestHandler):
     """change this handler for admin operations"""
-    def get(self):        
-        for item in UserInfo.query():
-            deferred.defer(upgrade, item.key, _target="worker", _queue="admin")
+    def get(self):
         for item in Feeds.query():
             deferred.defer(upgrade, item.key, _target="worker", _queue="admin") 
         for item in Tags.query():
@@ -149,16 +142,15 @@ class Upgrade(RequestHandler):
 
 def upgrade(itemk):
     item = itemk.get()
-    item.uid = item.user.user_id()
+    item.user_id = item.user.user_id()
     item.put()
 
 
-class Upgrade(RequestHandler):
-    """change this handler for admin operations"""
-    def get(self):        
-        for feed in UserInfo.query():
-            feed.uid = feed.user.user_id()
-            feed.put()
+class Script(RequestHandler):     
+    def get(self):
+        from parser import main_parser
+        for bm in Bookmarks.query(Bookmarks.archived == False):
+            deferred.defer(main_parser, bm.key, None, _queue="parser")
 
 
 class del_attr(RequestHandler):
@@ -174,4 +166,4 @@ class del_attr(RequestHandler):
 def delatt(rkey, prop): 
     r = rkey.get() 
     delattr(r, '%s' % prop) 
-    r.put()            
+    r.put()
