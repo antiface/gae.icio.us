@@ -3,7 +3,7 @@
 
 import jinja2
 from google.appengine.api import users, mail, app_identity, urlfetch
-from google.appengine.ext import deferred, ndb
+from google.appengine.ext import deferred
 from models import Bookmarks
 from parser import main_parser
 
@@ -71,9 +71,11 @@ def daily_digest(user):
     import datetime, time
     timestamp = time.time() - 87000
     period    = datetime.datetime.fromtimestamp(timestamp)
-    bmq = ndb.gql("""SELECT * FROM Bookmarks 
-        WHERE user = :1 AND create > :2 AND trashed = False
-        ORDER BY create DESC""", user, period)
+
+    bmq = Bookmarks.query(Bookmarks.user == user)
+    bmq = bmq.filter(Bookmarks.trashed == False)
+    bmq = bmq.filter(Bookmarks.create > period)
+    bmq = bmq.order(-Bookmarks.create)
     t = datetime.datetime.fromtimestamp(time.time()) 
     title    = '(%s) Daily digest for your activity: %s' % (app_identity.get_application_id(), dtf(t))
     template = jinja_environment.get_template('digest.html')  
@@ -88,9 +90,11 @@ def feed_digest(feedk):
     timestamp = time.time() - 30000
     period    = datetime.datetime.fromtimestamp(timestamp)
     feed = feedk.get()
-    bmq = ndb.gql("""SELECT * FROM Bookmarks 
-        WHERE user = :1 AND feed = :2 AND trashed = False
-        AND create > :3 ORDER BY create DESC""", feed.user, feed.key, period)
+    bmq = Bookmarks.query(Bookmarks.user == feed.user)
+    bmq = bmq.filter(Bookmarks.feed == feed.key)
+    bmq = bmq.filter(Bookmarks.trashed == False)
+    bmq = bmq.filter(Bookmarks.create > period)
+    bmq = bmq.order(-Bookmarks.create)
     title    = '(%s) 8 hourly digest for %s' % (app_identity.get_application_id(), feed.blog)
     template = jinja_environment.get_template('digest.html') 
     values   = {'bmq': bmq, 'title': title} 

@@ -5,7 +5,7 @@ import jinja2, os, webapp2
 from google.appengine.api import users, mail, app_identity
 from google.appengine.ext import ndb, deferred
 from handlers import ajax, config, utils, core
-from handlers.models import Bookmarks, UserInfo
+from handlers.models import Bookmarks, UserInfo, Feeds, Tags
 from handlers.parser import main_parser
 from dropbox import client, session
 
@@ -77,20 +77,21 @@ javascript:location.href=
         dropbox_url = sess.build_authorize_url(request_token, oauth_callback=callback)
         host = self.request.host_url
 
-        self.response.set_cookie('dropbox'   , '%s' % sess.is_linked())
-        self.response.set_cookie('mys'       , '%s' % self.ui().mys)
-        self.response.set_cookie('daily'     , '%s' % self.ui().daily)
-        self.response.set_cookie('twitt'     , '%s' % self.ui().twitt)
+        self.response.set_cookie('dropbox', '%s' % sess.is_linked())
+        self.response.set_cookie('mys'    , '%s' % self.ui().mys)
+        self.response.set_cookie('daily'  , '%s' % self.ui().daily)
+        self.response.set_cookie('twitt'  , '%s' % self.ui().twitt)
 
         self.generate('setting.html', {'host': host, 'bookmarklet': bookmarklet, 'dropbox_url': dropbox_url})
 
 
 class InboxPage(BaseHandler):
     def get(self):
-        if users.get_current_user():      
-            bmq = ndb.gql("""SELECT * FROM Bookmarks 
-                WHERE user = :1 AND archived = False AND trashed = False 
-                ORDER BY data DESC""", self.ui().user)
+        if users.get_current_user(): 
+            bmq = Bookmarks.query(Bookmarks.trashed == False)
+            bmq = bmq.filter(Bookmarks.archived == False)
+            bmq = bmq.filter(Bookmarks.user == users.get_current_user())
+            bmq = bmq.order(-Bookmarks.data)
             c = ndb.Cursor(urlsafe=self.request.get('c'))
             bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
             if more:
@@ -106,9 +107,10 @@ class InboxPage(BaseHandler):
 class ArchivedPage(BaseHandler):
     @utils.login_required
     def get(self):
-        bmq = ndb.gql("""SELECT * FROM Bookmarks
-            WHERE user = :1 AND archived = True AND trashed = False 
-            ORDER BY data DESC""", self.ui().user)
+        bmq = Bookmarks.query(Bookmarks.trashed == False)
+        bmq = bmq.filter(Bookmarks.archived == True)
+        bmq = bmq.filter(Bookmarks.user == users.get_current_user())
+        bmq = bmq.order(-Bookmarks.data)
         c = ndb.Cursor(urlsafe=self.request.get('c'))
         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
         if more:
@@ -122,9 +124,10 @@ class ArchivedPage(BaseHandler):
 class SharedPage(BaseHandler):
     @utils.login_required
     def get(self):
-        bmq = ndb.gql("""SELECT * FROM Bookmarks
-            WHERE user = :1 AND shared = True AND trashed = False 
-            ORDER BY data DESC""", self.ui().user)
+        bmq = Bookmarks.query(Bookmarks.trashed == False)
+        bmq = bmq.filter(Bookmarks.shared == True)
+        bmq = bmq.filter(Bookmarks.user == users.get_current_user())
+        bmq = bmq.order(-Bookmarks.data)
         c = ndb.Cursor(urlsafe=self.request.get('c'))
         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
         if more:
@@ -138,9 +141,10 @@ class SharedPage(BaseHandler):
 class StarredPage(BaseHandler):
     @utils.login_required
     def get(self):
-        bmq = ndb.gql("""SELECT * FROM Bookmarks
-            WHERE user = :1 AND starred = True AND trashed = False 
-            ORDER BY data DESC""", self.ui().user)
+        bmq = Bookmarks.query(Bookmarks.trashed == False)
+        bmq = bmq.filter(Bookmarks.starred == True)
+        bmq = bmq.filter(Bookmarks.user == users.get_current_user())
+        bmq = bmq.order(-Bookmarks.data)
         c = ndb.Cursor(urlsafe=self.request.get('c'))
         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
         if more:
@@ -154,9 +158,9 @@ class StarredPage(BaseHandler):
 class TrashedPage(BaseHandler):
     @utils.login_required
     def get(self):
-        bmq = ndb.gql("""SELECT * FROM Bookmarks
-            WHERE user = :1 AND trashed = True 
-            ORDER BY data DESC""", self.ui().user)
+        bmq = Bookmarks.query(Bookmarks.trashed == True)
+        bmq = bmq.filter(Bookmarks.user == users.get_current_user())
+        bmq = bmq.order(-Bookmarks.data)
         c = ndb.Cursor(urlsafe=self.request.get('c'))
         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
         if more:
@@ -170,9 +174,10 @@ class TrashedPage(BaseHandler):
 class NotagPage(BaseHandler):
     @utils.login_required
     def get(self):
-        bmq = ndb.gql("""SELECT * FROM Bookmarks
-            WHERE user = :1 AND have_tags = False AND trashed = False 
-            ORDER BY data DESC""", self.ui().user)
+        bmq = Bookmarks.query(Bookmarks.trashed == False)
+        bmq = bmq.filter(Bookmarks.have_tags == False)
+        bmq = bmq.filter(Bookmarks.user == users.get_current_user())
+        bmq = bmq.order(-Bookmarks.data)
         c = ndb.Cursor(urlsafe=self.request.get('c'))
         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
         if more:
@@ -187,11 +192,11 @@ class FilterPage(BaseHandler):
     @utils.login_required
     def get(self):
         tag_name = self.request.get('tag')
-        tag_obj = ndb.gql("""SELECT * FROM Tags 
-            WHERE user = :1 AND name = :2""", self.ui().user, tag_name).get()
-        bmq = ndb.gql("""SELECT * FROM Bookmarks 
-            WHERE user = :1 AND tags = :2
-            ORDER BY data DESC""", self.ui().user, tag_obj.key)
+        tag_obj = Tags.query(Tags.user == users.get_current_user())
+        tag_obj = tag_obj.filter(Tags.name == tag_name).get()
+        bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
+        bmq = bmq.filter(Bookmarks.tags == tag_obj.key)
+        bmq = bmq.order(-Bookmarks.data)
         if tag_obj:
             c = ndb.Cursor(urlsafe=self.request.get('c'))
             bms, next_curs, more = bmq.fetch_page(10, start_cursor=c)
@@ -231,7 +236,7 @@ class StreamPage(BaseHandler):
     def get(self):
         bmq = Bookmarks.query(Bookmarks.shared == True, Bookmarks.trashed == False)
         bmq = bmq.filter(Bookmarks.user != users.get_current_user())
-        bmq = bmq.order(Bookmarks.user, Bookmarks._key)
+        bmq = bmq.order(Bookmarks.user, Bookmarks.data, Bookmarks._key)
         c = ndb.Cursor(urlsafe=self.request.get('c'))
         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
         if more:
@@ -278,14 +283,16 @@ class StreamPage(BaseHandler):
 class FeedsPage(BaseHandler):
     @utils.login_required
     def get(self):
-        feeds = ndb.gql("""SELECT * FROM Feeds 
-            WHERE user = :1 ORDER BY data DESC""", self.ui().user)
+        feeds = Feeds.query(Feeds.user == users.get_current_user())
+        feeds = feeds.order(-Feeds.data)
+        self.response.set_cookie('active-tab', '')
         self.generate('feeds.html', {'feeds': feeds})
 
 
 class TagCloudPage(BaseHandler):
     @utils.login_required
-    def get(self):   
+    def get(self): 
+        self.response.set_cookie('active-tab', '')
         self.generate('tagcloud.html', {})
 
 

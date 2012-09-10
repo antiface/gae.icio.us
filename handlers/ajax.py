@@ -4,7 +4,6 @@
 import jinja2
 from webapp2 import RequestHandler
 from google.appengine.api import users
-from google.appengine.ext import ndb
 from utils import login_required
 from models import Bookmarks, UserInfo, Feeds, Tags
 
@@ -105,8 +104,7 @@ class AddTag(RequestHandler):
         user    = users.get_current_user()
         tag_str = self.request.get('tag')
         if user:
-            tag = ndb.gql("""SELECT * FROM Tags
-            WHERE user = :1 AND name = :2""", user, tag_str).get()
+            tag = Tags.query(Tags.user == user, Tags.name == tag_str).get()
             if tag is None:
                 newtag      = Tags()
                 newtag.name = tag_str

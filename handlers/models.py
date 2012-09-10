@@ -27,8 +27,10 @@ class Tags(ndb.Model):
     
     @property
     def bm_set(self):
-        return ndb.gql("""SELECT * FROM Bookmarks
-            WHERE tags = :1 ORDER BY data DESC""", self.key)
+        bmq = Bookmarks.query(Bookmarks.tags == self.key)
+        bmq = bmq.order(-Bookmarks.data)
+        return bmq
+        
     @property
     def refine_set(self):
         other = []

@@ -12,40 +12,15 @@ indexes:
 
 - kind: Bookmarks
   properties:
-  - name: Tags
-  - name: trashed
-  - name: user
-  - name: data
-    direction: desc
-
-- kind: Bookmarks
-  properties:
   - name: archived
-  - name: digest
   - name: trashed
   - name: user
   - name: data
-    direction: desc
 
 - kind: Bookmarks
   properties:
   - name: archived
   - name: trashed
-  - name: user
-  - name: data
-    direction: desc
-
-- kind: Bookmarks
-  properties:
-  - name: feed
-  - name: trashed
-  - name: user
-  - name: create
-    direction: desc
-
-- kind: Bookmarks
-  properties:
-  - name: feed
   - name: user
   - name: data
     direction: desc
@@ -62,27 +37,7 @@ indexes:
   properties:
   - name: shared
   - name: trashed
-  - name: data
-
-- kind: Bookmarks
-  properties:
-  - name: shared
-  - name: trashed
-  - name: data
-    direction: desc
-
-- kind: Bookmarks
-  properties:
-  - name: shared
-  - name: trashed
   - name: user
-
-- kind: Bookmarks
-  properties:
-  - name: shared
-  - name: trashed
-  - name: user
-  - name: data
 
 - kind: Bookmarks
   properties:
@@ -116,23 +71,8 @@ indexes:
 - kind: Bookmarks
   properties:
   - name: tags
-  - name: trashed
   - name: user
   - name: data
-    direction: desc
-
-- kind: Bookmarks
-  properties:
-  - name: tags
-  - name: user
-  - name: data
-    direction: desc
-
-- kind: Bookmarks
-  properties:
-  - name: trashed
-  - name: user
-  - name: create
     direction: desc
 
 - kind: Bookmarks
