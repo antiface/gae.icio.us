@@ -7,8 +7,8 @@ it's fairly self-explanatory.
 import re
 import json
 
-from dropbox.rest import ErrorResponse
-from dropbox.rest import RESTClient
+from libs.dropbox.rest import ErrorResponse
+from libs.dropbox.rest import RESTClient
 
 def format_path(path):
     """Normalize path for use with the Dropbox API.

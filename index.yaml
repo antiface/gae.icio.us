@@ -20,6 +20,14 @@ indexes:
 
 - kind: Bookmarks
   properties:
+  - name: feed
+  - name: trashed
+  - name: user
+  - name: create
+    direction: desc
+
+- kind: Bookmarks
+  properties:
   - name: have_tags
   - name: trashed
   - name: user
@@ -61,14 +69,6 @@ indexes:
   - name: user
   - name: data
     direction: desc
-
-- kind: Bookmarks
-  properties:
-  - name: feed
-  - name: trashed
-  - name: user
-  - name: create
-    direction: desc    
 
 - kind: Feeds
   properties:

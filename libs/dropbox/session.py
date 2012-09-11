@@ -12,7 +12,7 @@ import urllib
 # import oauth.oauth as oauth
 import oauth
 
-from dropbox import rest
+from libs.dropbox import rest
 
 class DropboxSession(object):
     API_VERSION = 1

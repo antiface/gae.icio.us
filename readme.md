@@ -1,6 +1,5 @@
 How to install
 ---
-
 - checkout the repository
 - create a new app in [appengine](https://appengine.google.com/)
 - change the app-id in app.yaml

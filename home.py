@@ -7,7 +7,7 @@ from google.appengine.ext import ndb, deferred
 from handlers import ajax, utils, core, config
 from handlers.models import Bookmarks, UserInfo, Feeds, Tags
 from handlers.parser import main_parser
-from dropbox import client, session
+from libs.dropbox import client, session
 
 
 #Dropbox staff
