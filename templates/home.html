@@ -5,40 +5,38 @@
 {% include "sidebar.html" %}
 
 <div class="span9">
-  <!-- empty trash -->
-  <div class="modal fade" id="empty_trash">
-    <div class="modal-header">
-      <h4>Are you sure?</h4>
+    <!-- empty trash -->
+    <div class="modal fade" id="empty_trash">
+        <div class="modal-header">
+            <h4>Are you sure?</h4>
+        </div>
+        <div class="modal-footer">
+            <a class="btn btn-danger" href="/empty_trash">Yes</a>
+            <a class="btn" href="#" data-dismiss="modal">No</a>
+        </div>
     </div>
-    <div class="modal-footer">
-      <a class="btn btn-danger" href="/empty_trash">Yes</a>
-      <a class="btn" href="#" data-dismiss="modal">No</a>
+    <div class="hide well well-small" id="empty_button">
+        <a  class=" btn btn-block" data-toggle="modal" data-target="#empty_trash" type="button">empty trash</a>
+    </div> 
+    <!-- bookmarks -->
+    {% for bm in bms %}
+    <div class="well well-small" id="row-{{ bm.id }}"> 
+        {% include "bookmark.html" %}  
+        <script>{% include "home.js" %}</script>
     </div>
-  </div>
-  <div class="hide well well-small" id="empty_button">
-    <a  class=" btn btn-block" data-toggle="modal" data-target="#empty_trash" type="button">empty trash</a>
-  </div> 
-  <!-- bookmarks -->
-  {% for bm in bms %}
-  <div class="well well-small" id="row-{{ bm.id }}"> 
-    {% include "bookmark.html" %}  
-    <script>{% include "home.js" %}</script>
-  </div>
-  {% endfor %}
+    {% endfor %}
 
-  {% if not tag_obj %}<!-- home pages -->
-  {% if c %}
-  <div class="well well-small">
-    <a  class="btn btn-block" href="?c={{c}}" type="button">more..</a>
-  </div> 
-  {% endif %}      
-  {% else %}<!-- filter pages -->
-  {% if c %}
-  <div class="well well-small">
-    <a  class="btn btn-block" href="/filter?tag={{tag_obj.name}}&c={{c}}" type="button">more..</a>
-  </div> 
-  {% endif %} 
-  {% endif %}
+    {% if c %}
+    {% if not tag_obj %} 
+    <div class="well well-small"> 
+        <a  class="btn btn-block" href="?c={{c}}" type="button">more...</a> 
+    </div> 
+    {% else %} 
+    <div class="well well-small"> 
+        <a  class="btn btn-block" href="/filter?tag={{tag_obj.name}}&c={{c}}" type="button">more...</a> 
+    </div> 
+    {% endif %}
+    {% endif %}
 </div>
 
 </div>

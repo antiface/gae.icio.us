@@ -98,7 +98,7 @@ class InboxPage(BaseHandler):
             else:
                 next_c = None
             self.response.set_cookie('active-tab', 'inbox')
-            self.generate('home.html', {'bms': bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+            self.generate('home.html', {'bms': bms, 'c': next_c })
         else:
             self.generate('git.html', {})
 
@@ -117,7 +117,7 @@ class ArchivedPage(BaseHandler):
         else:
             next_c = None
         self.response.set_cookie('active-tab', 'archive')
-        self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+        self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
 class SharedPage(BaseHandler):
@@ -134,7 +134,7 @@ class SharedPage(BaseHandler):
         else:
             next_c = None
         self.response.set_cookie('active-tab', 'shared')
-        self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+        self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
 class StarredPage(BaseHandler):
@@ -151,7 +151,7 @@ class StarredPage(BaseHandler):
         else:
             next_c = None
         self.response.set_cookie('active-tab', 'starred')
-        self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+        self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
 class TrashedPage(BaseHandler):
@@ -167,7 +167,7 @@ class TrashedPage(BaseHandler):
         else:
             next_c = None
         self.response.set_cookie('active-tab', 'trash')
-        self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+        self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
 class NotagPage(BaseHandler):
@@ -184,7 +184,7 @@ class NotagPage(BaseHandler):
         else:
             next_c = None
         self.response.set_cookie('active-tab', 'untagged')
-        self.generate('home.html', {'bms' : bms, 'tags': utils.tag_set(bmq), 'c': next_c })
+        self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
 class FilterPage(BaseHandler):
@@ -229,7 +229,7 @@ class RefinePage(BaseHandler):
             next_c = next_curs.urlsafe()
         else:
             next_c = None
-        self.generate('home.html', {'bms' : bms, 'tag_obj': None, 'c': next_c })
+        self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 class StreamPage(BaseHandler):
     def get(self):
@@ -387,7 +387,7 @@ app = webapp2.WSGIApplication([
 
 
 def main():
-        app.run()
+    app.run()
 
 if __name__ == "__main__":
-        main()
+    main()
