@@ -15,6 +15,8 @@ Goodies
     - Images, Youtube and Vimeo video is incorporated as comment
     - Urls is sanitized 
     - Mail yourself (You can receive an email for each bookmark)
+- Dropbox integration
+    - If dropbox integration is active, each url that point to an image, mp3 or avi is uploaded in to your dropbox.
 - Shared
     - The user can share a bookmark and other user can see it in "stream page"
 

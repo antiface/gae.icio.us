@@ -4,7 +4,7 @@
 import jinja2, os, webapp2
 from google.appengine.api import users, mail, app_identity
 from google.appengine.ext import ndb, deferred
-from handlers import ajax, config, utils, core
+from handlers import ajax, utils, core, config
 from handlers.models import Bookmarks, UserInfo, Feeds, Tags
 from handlers.parser import main_parser
 from dropbox import client, session
