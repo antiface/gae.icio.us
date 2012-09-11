@@ -121,7 +121,6 @@ class AssignTag(RequestHandler):
         if users.get_current_user() == bm.user:
             bm.tags.append(tag.key)
             bm.put()
-        tag.put()
         template = jinja_environment.get_template('tags.html')
         values   = {'bm': bm} 
         tags     = template.render(values)
@@ -135,7 +134,6 @@ class RemoveTag(RequestHandler):
         if users.get_current_user() == bm.user:
             bm.tags.remove(tag.key)
             bm.put()
-        tag.put()
         template = jinja_environment.get_template('tags.html')
         values   = {'bm': bm} 
         tags     = template.render(values)

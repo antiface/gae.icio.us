@@ -9,7 +9,7 @@
         {% if tag.bm_set.count() == 0 %}
         <a class="btn btn-link " href="/deltag?tag={{ tag.key.id() }}">
             {{ tag.name }} [{{ tag.bm_set.count() }}] <i class="icon-remove"></i></a>
-        {% elif tag.counter > 0 and tag.bm_set.count() <= 5 %}
+        {% elif tag.bm_set.count() > 0 and tag.bm_set.count() <= 5 %}
         <a class="btn btn-link " href="/filter?tag={{ tag.name }}"> 
             <h5>{{ tag.name }} [{{ tag.bm_set.count() }}]</h5></a>
         {% elif tag.bm_set.count() > 5 and tag.bm_set.count() <= 10 %}
