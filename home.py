@@ -259,7 +259,6 @@ class TagCloudPage(BaseHandler):
     @utils.login_required
     def get(self): 
         q = Tags.query(Tags.user == users.get_current_user())
-        q = q.order(-Tags.counter)
         self.response.set_cookie('active-tab', '')
         self.generate('tagcloud.html', {'q': q})
 

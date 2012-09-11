@@ -3,7 +3,7 @@
 
 from google.appengine.ext import ndb
 
-class UserInfo(ndb.Expando):
+class UserInfo(ndb.Model):
     user     = ndb.UserProperty() 
     email    = ndb.ComputedProperty(lambda self: self.user.email())
     data     = ndb.DateTimeProperty(auto_now=True)
@@ -17,20 +17,19 @@ class UserInfo(ndb.Expando):
         return Tags.query(Tags.user == self.user)
 
 
-class Tags(ndb.Expando):
+class Tags(ndb.Model):
     data    = ndb.DateTimeProperty(auto_now=True)
     user    = ndb.UserProperty(required=True)
     name    = ndb.StringProperty()
-    counter = ndb.ComputedProperty(lambda self: len(self.bm_set)) 
 
     @property
     def bm_set(self):
-        return Bookmarks.query(Bookmarks.tags == self.key).fetch()
+        return Bookmarks.query(Bookmarks.tags == self.key)
 
     @property
     def refine_set(self):
         other = []
-        for bm in self.bm_set:
+        for bm in self.bm_set.fetch():
             for tag in bm.tags:
                 if not tag in other:
                     other.append(tag)
@@ -38,7 +37,7 @@ class Tags(ndb.Expando):
         return other
 
 
-class Feeds(ndb.Expando):
+class Feeds(ndb.Model):
     user    = ndb.UserProperty()     
     data    = ndb.DateTimeProperty(auto_now=True)
     tags    = ndb.KeyProperty(kind=Tags,repeated=True)
@@ -61,7 +60,7 @@ class Feeds(ndb.Expando):
         return all_user_tags
 
 
-class Bookmarks(ndb.Expando):
+class Bookmarks(ndb.Model):
     data      = ndb.DateTimeProperty(auto_now=True)
     create    = ndb.DateTimeProperty(auto_now_add=True)
     user      = ndb.UserProperty(required=True)

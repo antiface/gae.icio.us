@@ -6,24 +6,24 @@
 
 <div class="span9">
     {% for tag in q %}
-        {% if tag.counter == 0 %}
+        {% if tag.bm_set.count() == 0 %}
         <a class="btn btn-link " href="/deltag?tag={{ tag.key.id() }}">
-            {{ tag.name }} [{{ tag.counter }}] <i class="icon-remove"></i></a>
-        {% elif tag.counter > 0 and tag.counter <= 5 %}
+            {{ tag.name }} [{{ tag.bm_set.count() }}] <i class="icon-remove"></i></a>
+        {% elif tag.counter > 0 and tag.bm_set.count() <= 5 %}
         <a class="btn btn-link " href="/filter?tag={{ tag.name }}"> 
-            <h5>{{ tag.name }} [{{ tag.counter }}]</h5></a>
-        {% elif tag.counter > 5 and tag.counter <= 10 %}
+            <h5>{{ tag.name }} [{{ tag.bm_set.count() }}]</h5></a>
+        {% elif tag.bm_set.count() > 5 and tag.bm_set.count() <= 10 %}
         <a class="btn btn-link " href="/filter?tag={{ tag.name }}"> 
-            <h4>{{ tag.name }} [{{ tag.counter }}]</h4></a>
-        {% elif tag.counter > 10 and tag.counter <= 20 %}
+            <h4>{{ tag.name }} [{{ tag.bm_set.count() }}]</h4></a>
+        {% elif tag.bm_set.count() > 10 and tag.bm_set.count() <= 20 %}
         <a class="btn btn-link " href="/filter?tag={{ tag.name }}"> 
-            <h3>{{ tag.name }} [{{ tag.counter }}]</h3></a>
-        {% elif tag.counter > 20 and tag.counter <= 50 %}
+            <h3>{{ tag.name }} [{{ tag.bm_set.count() }}]</h3></a>
+        {% elif tag.bm_set.count() > 20 and tag.bm_set.count() <= 50 %}
         <a class="btn btn-link " href="/filter?tag={{ tag.name }}"> 
-            <h2>{{ tag.name }} [{{ tag.counter }}]</h2></a>
+            <h2>{{ tag.name }} [{{ tag.bm_set.count() }}]</h2></a>
         {% else %}
         <a class="btn btn-link " href="/filter?tag={{ tag.name }}"> 
-            <h1>{{ tag.name }} [{{ tag.counter }}]</h1></a>      
+            <h1>{{ tag.name }} [{{ tag.bm_set.count() }}]</h1></a>      
         {% endif %}
     {% endfor %}
 </div>
