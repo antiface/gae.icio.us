@@ -27,18 +27,18 @@ handlers:
   mime_type: image/x-icon
 
 - url: /_ah/mail/post@.*
-  script: home.app
+  script: main.app
   login: admin
 
 - url: /adm/.*
-  script: home.app
+  script: main.app
   login: admin
 
 - url: /*
-  script: home.app
+  script: main.app
 
 - url: /.*
-  script: home.app
+  script: main.app
   login: required
 
 libraries:
