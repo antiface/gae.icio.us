@@ -1,12 +1,12 @@
 cron:
 - description: check new posts
-  url: /adm/check
+  url: /admin/check
   schedule: every 2 hours synchronized
 
 - description: check new digests
-  url: /adm/digest
+  url: /admin/digest
   schedule: every 8 hours synchronized
 
 - description: send daily digest
-  url: /adm/daily
+  url: /admin/daily
   schedule: every day 16:00

@@ -30,7 +30,7 @@ handlers:
   script: main.app
   login: admin
 
-- url: /adm/.*
+- url: /admin/.*
   script: main.app
   login: admin
 

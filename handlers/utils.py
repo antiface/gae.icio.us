@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import jinja2
-from google.appengine.api import users, mail, app_identity, urlfetch
+from google.appengine.api import mail, app_identity, urlfetch
 from google.appengine.ext import deferred
 from models import Bookmarks
 from parser import main_parser
@@ -15,15 +15,6 @@ def dtf(value, format='%d/%m/%Y - %H:%M UTC'):
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader('templates'))
 jinja_environment.filters['dtf'] = dtf
-
-def login_required(handler_method):
-    def check_login(self):
-        user = users.get_current_user()
-        if not user:
-            return self.redirect(users.create_login_url(self.request.url))
-        else:
-            handler_method(self)
-    return check_login
 
 
 def pop_feed(feedk):  
@@ -47,7 +38,7 @@ def pop_feed(feedk):
         d = p['items'][0]
     except IndexError:
         pass
-    feed.url     = d['link']
+    feed.url = d['link']
     feed.put()
 
 def new_bm(d, feedk):

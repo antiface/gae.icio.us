@@ -7,8 +7,7 @@ from google.appengine.api import users
 from google.appengine.ext import ndb, deferred
 from models import Feeds, Bookmarks, Tags, UserInfo
 
-class AddFeed(RequestHandler):
-    @utils.login_required
+class AddFeed(RequestHandler):    
     def post(self):
         from libs.feedparser import parse
         user = users.get_current_user()
@@ -39,8 +38,7 @@ class AddFeed(RequestHandler):
         feed.key.delete()
 
 
-class EditBM(RequestHandler):
-    @utils.login_required
+class EditBM(RequestHandler):    
     def get(self):
         bm = Bookmarks.get_by_id(int(self.request.get('bm')))
         if users.get_current_user() == bm.user:
@@ -53,8 +51,7 @@ class EditBM(RequestHandler):
         self.redirect('/')
 
 
-class DeleteTag(RequestHandler):
-    @utils.login_required
+class DeleteTag(RequestHandler):    
     def get(self):
         tag = Tags.get_by_id(int(self.request.get('tag')))
         if users.get_current_user() == tag.user:
@@ -62,8 +59,7 @@ class DeleteTag(RequestHandler):
         self.redirect(self.request.referer)
 
 
-class AssTagFeed(RequestHandler):
-    @utils.login_required
+class AssTagFeed(RequestHandler):    
     def get(self):
         feed = Feeds.get_by_id(int(self.request.get('feed')))
         tag  = Tags.get_by_id(int(self.request.get('tag')))
@@ -76,8 +72,7 @@ class AssTagFeed(RequestHandler):
         self.redirect(self.request.referer)
 
 
-class RemoveTagFeed(RequestHandler):
-    @utils.login_required
+class RemoveTagFeed(RequestHandler):    
     def get(self):
         feed = Feeds.get_by_id(int(self.request.get('feed')))
         tag  = Tags.get_by_id(int(self.request.get('tag')))
@@ -87,8 +82,7 @@ class RemoveTagFeed(RequestHandler):
         self.redirect(self.request.referer)    
 
 
-class Empty_Trash(RequestHandler):
-    @utils.login_required
+class Empty_Trash(RequestHandler):    
     def get(self):
         bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
         bmq = bmq.filter(Bookmarks.trashed == True)
@@ -96,9 +90,9 @@ class Empty_Trash(RequestHandler):
         ndb.delete_multi([bmk.key for bmk in bmq])
         self.redirect(self.request.referer)
 
+#### admin ###
 
-class CheckFeed(RequestHandler):
-    @utils.login_required
+class CheckFeed(RequestHandler):    
     def get(self):
         feed = Feeds.get_by_id(int(self.request.get('feed')))
         deferred.defer(utils.pop_feed, feed.key, _queue="admin")

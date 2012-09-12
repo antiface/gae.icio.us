@@ -1,8 +1,8 @@
 How to install
 ---
-- checkout the repository
+- checkout the [repository](https://github.com/presveva/gae.icio.us/zipball/master)
 - create a new app in [appengine](https://appengine.google.com/)
-- change the app-id in app.yaml
+- change the 'app-id' in app.yaml
 - [deploy](https://developers.google.com/appengine/docs/python/tools/uploadinganapp#Uploading_the_App) in google app engine
 
 Goodies

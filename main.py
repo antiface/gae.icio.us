@@ -55,7 +55,6 @@ class BaseHandler(webapp2.RequestHandler):
 
 
 class SettingPage(BaseHandler):
-    @utils.login_required
     def get(self):
         ui = self.ui()
         if not sess.is_linked():
@@ -103,8 +102,7 @@ class InboxPage(BaseHandler):
             self.generate('git.html', {})
 
 
-class ArchivedPage(BaseHandler):
-    @utils.login_required
+class ArchivedPage(BaseHandler):    
     def get(self):
         bmq = Bookmarks.query(Bookmarks.trashed == False)
         bmq = bmq.filter(Bookmarks.archived == True)
@@ -120,8 +118,7 @@ class ArchivedPage(BaseHandler):
         self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
-class SharedPage(BaseHandler):
-    @utils.login_required
+class SharedPage(BaseHandler):    
     def get(self):
         bmq = Bookmarks.query(Bookmarks.trashed == False)
         bmq = bmq.filter(Bookmarks.shared == True)
@@ -137,8 +134,7 @@ class SharedPage(BaseHandler):
         self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
-class StarredPage(BaseHandler):
-    @utils.login_required
+class StarredPage(BaseHandler):    
     def get(self):
         bmq = Bookmarks.query(Bookmarks.trashed == False)
         bmq = bmq.filter(Bookmarks.starred == True)
@@ -154,8 +150,7 @@ class StarredPage(BaseHandler):
         self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
-class TrashedPage(BaseHandler):
-    @utils.login_required
+class TrashedPage(BaseHandler):    
     def get(self):
         bmq = Bookmarks.query(Bookmarks.trashed == True)
         bmq = bmq.filter(Bookmarks.user == users.get_current_user())
@@ -170,8 +165,7 @@ class TrashedPage(BaseHandler):
         self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
-class NotagPage(BaseHandler):
-    @utils.login_required
+class NotagPage(BaseHandler):    
     def get(self):
         bmq = Bookmarks.query(Bookmarks.trashed == False)
         bmq = bmq.filter(Bookmarks.have_tags == False)
@@ -187,8 +181,7 @@ class NotagPage(BaseHandler):
         self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
-class FilterPage(BaseHandler):
-    @utils.login_required
+class FilterPage(BaseHandler):    
     def get(self):
         tag_name = self.request.get('tag')
         tag_obj = Tags.query(Tags.user == users.get_current_user())
@@ -211,8 +204,7 @@ class FilterPage(BaseHandler):
             self.redirect('/')
 
 
-class RefinePage(BaseHandler):
-    @utils.login_required
+class RefinePage(BaseHandler):    
     def get(self):
         tag_name = self.request.get('tag')
         refine = self.request.get('refine')
@@ -246,8 +238,7 @@ class StreamPage(BaseHandler):
         self.generate('public.html', {'bms' : bms, 'c': next_c })
 
 
-class FeedsPage(BaseHandler):
-    @utils.login_required
+class FeedsPage(BaseHandler):    
     def get(self):
         feeds = Feeds.query(Feeds.user == users.get_current_user())
         feeds = feeds.order(-Feeds.data)
@@ -255,8 +246,7 @@ class FeedsPage(BaseHandler):
         self.generate('feeds.html', {'feeds': feeds})
 
 
-class TagCloudPage(BaseHandler):
-    @utils.login_required
+class TagCloudPage(BaseHandler):    
     def get(self): 
         q = Tags.query(Tags.user == users.get_current_user())
         self.response.set_cookie('active-tab', '')
@@ -273,8 +263,7 @@ class AdminPage(BaseHandler):
 
 #########################################################
 
-class AddBM(webapp2.RequestHandler):
-    @utils.login_required
+class AddBM(webapp2.RequestHandler):    
     def get(self):
         bm = Bookmarks()
         def txn(): 
@@ -315,8 +304,7 @@ class ReceiveMail(webapp2.RequestHandler):
             db_user = None
         deferred.defer(main_parser, bm.key, db_user, _queue="parser")
 
-class CopyBM(webapp2.RequestHandler):
-    @utils.login_required
+class CopyBM(webapp2.RequestHandler):    
     def get(self):
         old = Bookmarks.get_by_id(int(self.request.get('bm')))
         bm = Bookmarks()
@@ -334,7 +322,6 @@ class CopyBM(webapp2.RequestHandler):
         deferred.defer(main_parser, bm.key, db_user, _queue="parser")
 
 
-
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
@@ -350,7 +337,7 @@ app = webapp2.WSGIApplication([
     ('/stream'           , StreamPage),
     ('/tagcloud'         , TagCloudPage),
     ('/setting'          , SettingPage),
-    ('/adm'              , AdminPage),
+    ('/admin'            , AdminPage),
     ('/submit'           , AddBM),
     ('/_ah/mail/post@.*' , ReceiveMail),
     ('/copy'             , CopyBM),
@@ -359,6 +346,8 @@ app = webapp2.WSGIApplication([
     ('/deltag'           , core.DeleteTag),
     ('/atf'              , core.AssTagFeed),
     ('/rtf'              , core.RemoveTagFeed),
+    ('/empty_trash'      , core.Empty_Trash),
+    ('/checkfeed'        , core.CheckFeed),
     ('/setmys'           , ajax.SetMys),
     ('/setdaily'         , ajax.SetDaily),
     ('/setnotify'        , ajax.SetNotify),
@@ -374,14 +363,12 @@ app = webapp2.WSGIApplication([
     ('/gettagsfeed'      , ajax.GetTagsFeed),
     ('/getcomment'       , ajax.GetComment),
     ('/getedit'          , ajax.GetEdit),
-    ('/empty_trash'      , core.Empty_Trash),
-    ('/adm/upgrade'      , core.Upgrade),
-    ('/adm/script'       , core.Script),
-    ('/adm/digest'       , core.SendDigest),
-    ('/adm/daily'        , core.SendDaily),
-    ('/adm/check'        , core.CheckFeeds),
-    ('/adm/delattr'      , core.del_attr),
-    ('/checkfeed'        , core.CheckFeed),
+    ('/admin/upgrade'    , core.Upgrade),
+    ('/admin/script'     , core.Script),
+    ('/admin/digest'     , core.SendDigest),
+    ('/admin/daily'      , core.SendDaily),
+    ('/admin/check'      , core.CheckFeeds),
+    ('/admin/delattr'    , core.del_attr),
     ], debug=debug)
 
 
