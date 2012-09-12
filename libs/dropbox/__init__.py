@@ -1,1 +1,3 @@
-import client, rest, session
+from __future__ import absolute_import
+
+from . import client, rest, session

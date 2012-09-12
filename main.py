@@ -43,7 +43,7 @@ class BaseHandler(webapp2.RequestHandler):
         else:
             url      = users.create_login_url(self.request.uri)
             linktext = 'Login'
-        values = {      
+        values = {
             'brand'   : app_identity.get_application_id(),
             'url'     : url,
             'linktext': linktext,
@@ -62,6 +62,8 @@ class SettingPage(BaseHandler):
                 access_token = sess.obtain_access_token(request_token)            
                 ui.token = str(access_token)
                 ui.put()
+            else:
+                access_token = ui.token
 
         bookmarklet = """
 javascript:location.href=
@@ -69,16 +71,16 @@ javascript:location.href=
 '&title='+encodeURIComponent(document.title)+
 '&user='+'%s'+
 '&comment='+document.getSelection().toString()
-""" % (self.request.host_url, self.ui().email)
+""" % (self.request.host_url, ui.email)
 
         callback    = "%s/setting" % (self.request.host_url) 
         dropbox_url = sess.build_authorize_url(request_token, oauth_callback=callback)
         host = self.request.host_url
 
         self.response.set_cookie('dropbox', '%s' % sess.is_linked())
-        self.response.set_cookie('mys'    , '%s' % self.ui().mys)
-        self.response.set_cookie('daily'  , '%s' % self.ui().daily)
-        self.response.set_cookie('twitt'  , '%s' % self.ui().twitt)
+        self.response.set_cookie('mys'    , '%s' % ui.mys)
+        self.response.set_cookie('daily'  , '%s' % ui.daily)
+        self.response.set_cookie('twitt'  , '%s' % ui.twitt)
 
         self.generate('setting.html', {'host': host, 'bookmarklet': bookmarklet, 'dropbox_url': dropbox_url})
 
