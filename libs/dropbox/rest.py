@@ -8,7 +8,7 @@ import httplib
 # import pkg_resources
 import re
 import socket
-import ssl
+# import ssl
 import sys
 import urllib
 import urlparse
