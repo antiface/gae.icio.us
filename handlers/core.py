@@ -111,7 +111,7 @@ class SendDigest(RequestHandler):
                 deferred.defer(utils.feed_digest, feed.key, _target="worker", _queue="admin")
 
 
-class SendDaily(RequestHandler):
+class SendActivity(RequestHandler):
     def get(self): 
         for ui in UserInfo.query(): 
             if ui.daily: 

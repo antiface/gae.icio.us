@@ -368,7 +368,7 @@ app = webapp2.WSGIApplication([
     ('/admin/upgrade'    , core.Upgrade),
     ('/admin/script'     , core.Script),
     ('/admin/digest'     , core.SendDigest),
-    ('/admin/daily'      , core.SendDaily),
+    ('/admin/activity'   , core.SendActivity),
     ('/admin/check'      , core.CheckFeeds),
     ('/admin/delattr'    , core.del_attr),
     ], debug=debug)

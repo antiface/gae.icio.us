@@ -78,7 +78,7 @@ def daily_digest(user):
 
 def feed_digest(feedk):
     import datetime, time
-    timestamp = time.time() - 30000
+    timestamp = time.time() - 87000
     period    = datetime.datetime.fromtimestamp(timestamp)
     feed = feedk.get()
     bmq = Bookmarks.query(Bookmarks.user == feed.user)
@@ -86,7 +86,7 @@ def feed_digest(feedk):
     bmq = bmq.filter(Bookmarks.trashed == False)
     bmq = bmq.filter(Bookmarks.create > period)
     bmq = bmq.order(-Bookmarks.create)
-    title    = '(%s) 8 hourly digest for %s' % (app_identity.get_application_id(), feed.blog)
+    title    = '(%s) Daily digest for %s' % (app_identity.get_application_id(), feed.blog)
     template = jinja_environment.get_template('digest.html') 
     values   = {'bmq': bmq, 'title': title} 
     html     = template.render(values)
