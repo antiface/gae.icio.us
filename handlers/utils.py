@@ -25,21 +25,15 @@ def pop_feed(feedk):
     e = 0 
     try:
         d = p['items'][e]
-    except IndexError:
-        pass
-    while feed.url != d['link'] and e < 10:
-        deferred.defer(new_bm, d, feedk, _target="worker", _queue="importer")
-        e += 1 
-        try:
+        while feed.url != d['link'] and e < 10:
+            deferred.defer(new_bm, d, feedk, _target="worker", _queue="importer")
+            e += 1 
             d = p['items'][e]
-        except IndexError:
-            pass
-    try:
-        d = p['items'][0]
+        s = p['items'][0]
+        feed.url = s['link']
+        feed.put()
     except IndexError:
         pass
-    feed.url = d['link']
-    feed.put()
 
 def new_bm(d, feedk):
     feed = feedk.get()

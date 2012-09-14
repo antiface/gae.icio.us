@@ -269,7 +269,8 @@ class AddBM(webapp2.RequestHandler):
     def get(self):
         bm = Bookmarks()
         def txn(): 
-            bm.original = self.request.get('url').encode('utf8')
+            bm.original = self.request.get('url')#.encode('utf8')
+            bm.url = self.request.get('url')#.encode('utf8')
             bm.title    = self.request.get('title')
             bm.comment  = self.request.get('comment')
             bm.user     = users.User(str(self.request.get('user')))
