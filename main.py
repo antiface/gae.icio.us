@@ -4,18 +4,10 @@
 import jinja2, os, webapp2
 from google.appengine.api import users, mail, app_identity
 from google.appengine.ext import ndb, deferred
-from handlers import ajax, utils, core, config
+from handlers import ajax, utils, core
 from handlers.models import Bookmarks, UserInfo, Feeds, Tags
 from handlers.parser import main_parser
-from libs.dropbox import client, session
 
-
-#Dropbox staff
-APP_KEY       = config.APP_KEY # "DELETE 'config.APP_KEY' AND PUT HERE YOUR APP_KEY"
-APP_SECRET    = config.APP_SECRET #"DELETE 'config.APP_SECRET' AND PUT HERE YOUR APP_SECRET"
-ACCESS_TYPE   = 'app_folder'
-sess          = session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE) 
-request_token = sess.obtain_request_token()
 
 
 jinja_environment = jinja2.Environment(
@@ -57,13 +49,6 @@ class BaseHandler(webapp2.RequestHandler):
 class SettingPage(BaseHandler):
     def get(self):
         ui = self.ui()
-        if not sess.is_linked():
-            if self.request.get('oauth_token'):
-                access_token = sess.obtain_access_token(request_token)            
-                ui.token = str(access_token)
-                ui.put()
-            else:
-                access_token = ui.token
 
         bookmarklet = """
 javascript:location.href=
@@ -72,17 +57,11 @@ javascript:location.href=
 '&user='+'%s'+
 '&comment='+document.getSelection().toString()
 """ % (self.request.host_url, ui.email)
-
-        callback    = "%s/setting" % (self.request.host_url) 
-        dropbox_url = sess.build_authorize_url(request_token, oauth_callback=callback)
-        host = self.request.host_url
-
-        self.response.set_cookie('dropbox', '%s' % sess.is_linked())
         self.response.set_cookie('mys'    , '%s' % ui.mys)
         self.response.set_cookie('daily'  , '%s' % ui.daily)
         self.response.set_cookie('twitt'  , '%s' % ui.twitt)
 
-        self.generate('setting.html', {'host': host, 'bookmarklet': bookmarklet, 'dropbox_url': dropbox_url})
+        self.generate('setting.html', {'bookmarklet': bookmarklet})
 
 
 class InboxPage(BaseHandler):
@@ -276,11 +255,7 @@ class AddBM(webapp2.RequestHandler):
             bm.user     = users.User(str(self.request.get('user')))
             bm.put()
         ndb.transaction(txn) 
-        if sess.is_linked():
-            db_user = client.DropboxClient(sess) 
-        else:
-            db_user = None
-        deferred.defer(main_parser, bm.key, db_user, _queue="parser")
+        deferred.defer(main_parser, bm.key, _queue="parser")
         self.redirect('/')
 
 
@@ -300,12 +275,8 @@ class ReceiveMail(webapp2.RequestHandler):
             bm.comment  = 'Sent via email'
             bm.user     = users.User(utils.parseaddr(message.sender)[1])
             bm.put()
-        ndb.transaction(txn) 
-        if sess.is_linked():
-            db_user = client.DropboxClient(sess) 
-        else:
-            db_user = None
-        deferred.defer(main_parser, bm.key, db_user, _queue="parser")
+        ndb.transaction(txn)
+        deferred.defer(main_parser, bm.key, _queue="parser")
 
 class CopyBM(webapp2.RequestHandler):    
     def get(self):
@@ -318,11 +289,7 @@ class CopyBM(webapp2.RequestHandler):
             bm.user     = users.get_current_user()
             bm.put()
         ndb.transaction(txn) 
-        if sess.is_linked():
-            db_user = client.DropboxClient(sess) 
-        else:
-            db_user = None
-        deferred.defer(main_parser, bm.key, db_user, _queue="parser")
+        deferred.defer(main_parser, bm.key, _queue="parser")
 
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')

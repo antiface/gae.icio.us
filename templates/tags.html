@@ -1,31 +1,31 @@
 <div class="btn-toolbar">
 {% for tag in bm.tags %}
 <div class="btn-group">
-  <a class="btn btn-mini btn-link disabled" href="/filter?tag={{ tag.get().name }}">
-    <i class="icon-tag"></i> {{ tag.get().name }}</a>
-  <a class="btn btn-mini btn-link disabled" id="removetag-{{ bm.id }}-{{ tag.id() }}">
-    <i class="icon-remove"></i></a>
+    <a class="btn btn-mini btn-link disabled" href="/filter?tag={{ tag.get().name }}">
+        <i class="icon-tag"></i> {{ tag.get().name }}</a>
+    <a class="btn btn-mini btn-link disabled" id="removetag-{{ bm.id }}-{{ tag.id() }}">
+        <i class="icon-remove"></i></a>
 </div>
 <script>
 $("#removetag-{{ bm.id }}-{{ tag.id() }}").click(
-  function() {
-    $.ajax({
-      url: "/removetag",
-      data: { bm: "{{ bm.id }}",
-              tag: "{{ tag.id() }}" },
-      success: function(tags) {
-        $("#tags-{{ bm.id }}").html(tags);
+    function() {
         $.ajax({
-          url: "/gettags", 
-          data: { bm: "{{ bm.id }}" }, 
-          success: function(other_tags) {
-            $("#comment-{{ bm.id }}").html(other_tags);
-            $("#dashboard").html('<a>Tag removed</a>');
-          } 
+            url: "/removetag",
+            data: { bm: "{{ bm.id }}",
+                    tag: "{{ tag.id() }}" },
+            success: function(tags) {
+                $("#tags-{{ bm.id }}").html(tags);
+                $.ajax({
+                    url: "/gettags", 
+                    data: { bm: "{{ bm.id }}" }, 
+                    success: function(other_tags) {
+                        $("#comment-{{ bm.id }}").html(other_tags);
+                        $("#dashboard").html('<a>Tag removed</a>');
+                    } 
+                });
+            }
         });
-      }
-    });
-  }
+    }
 )
 </script>
 {% endfor %}

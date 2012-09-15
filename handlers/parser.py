@@ -6,7 +6,7 @@ from models import Bookmarks
 import utils
 
 
-def main_parser(bmk, db_user):
+def main_parser(bmk):
     import urlparse
     bm = bmk.get()
     try:
@@ -65,8 +65,3 @@ def main_parser(bmk, db_user):
     except:
         if bm.ha_mys: 
             deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")
-
-    # DROPBOX
-    if db_user is not None:
-        if ext == 'jpg' or 'mp3' or 'avi' or 'pdf' or 'png':
-            deferred.defer(utils.db_put, bmk, db_user, _target="worker", _queue="dropbox")

@@ -25,7 +25,3 @@ queue:
 - name: emails
   rate: 5/s
   bucket_size: 20
-
-- name: dropbox
-  rate: 5/s
-  bucket_size: 20

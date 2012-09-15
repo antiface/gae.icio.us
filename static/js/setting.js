@@ -22,13 +22,6 @@ $(document).ready(function() {
         $("#twitt-text").html('<i class="icon-thumbs-down"></i> <strong>Disabled</strong>');  
         $("#twitt-check").prop("checked", false);
     }
-
-    if ($.cookie('dropbox') == 'True') {
-        $("#dropbox-text").html('<i class="icon-thumbs-up"></i> <strong>Enabled </strong>');
-        $("#dropbox-text").button('toggle')
-    } else {
-        $("#dropbox-text").html('<i class="icon-thumbs-down"></i> <strong>Disabled</strong>');
-    }
 })
 
 

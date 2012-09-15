@@ -10,7 +10,6 @@ class UserInfo(ndb.Model):
     mys      = ndb.BooleanProperty(default=False)
     daily    = ndb.BooleanProperty(default=False)
     twitt    = ndb.BooleanProperty(default=False)
-    token    = ndb.StringProperty()
 
     @property
     def tag_list(self):

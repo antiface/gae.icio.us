@@ -48,7 +48,7 @@ def new_bm(d, feedk):
         bm.comment = 'no comment'
     bm.tags = feed.tags
     bm.put()
-    deferred.defer(main_parser, bm.key, None, _target="worker", _queue="parser")
+    deferred.defer(main_parser, bm.key, _target="worker", _queue="parser")
 
 
 
@@ -106,12 +106,6 @@ def send_digest(email, html, title):
     message.subject =  title
     message.html    = html
     message.send()
-
-def db_put(bmk, db_user):
-    bm        = bmk.get()
-    file_name = bm.url.split('/')[-1] 
-    f         = urlfetch.fetch(url="%s" % bm.url, deadline=600)
-    db_user.put_file('/%s' % file_name, f.content )
 
 def tag_set(bmq):
     tagset = []
