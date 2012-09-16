@@ -28,8 +28,8 @@ $(document).ready(function() {
 $("#mys-check").change(function() {
     $.ajax({
         url: "/setmys",
-        success: function(html) {          
-        $("#mys-text").html(html);
+        success: function(html) {
+            $("#mys-text").html(html); 
         }
     })
 })
