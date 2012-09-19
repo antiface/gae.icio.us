@@ -31,17 +31,17 @@ class BaseHandler(webapp2.RequestHandler):
                 return ui
 
     def generate(self, template_name, template_values={}):
-        if users.get_current_user():      
+        if users.get_current_user(): 
             url = users.create_logout_url("/")
             linktext = 'Logout'
         else:
             url = users.create_login_url(self.request.uri)
             linktext = 'Login'
         values = {
-            'brand'   : app_identity.get_application_id(),
-            'url'     : url,
+            'brand' : app_identity.get_application_id(),
+            'url' : url,
             'linktext': linktext,
-            'ui'      : self.ui(),
+            'ui' : self.ui(),
             }
         values.update(template_values)
         template = jinja_environment.get_template(template_name)
@@ -85,7 +85,7 @@ class InboxPage(BaseHandler):
             self.generate('git.html', {})
 
 
-class ArchivedPage(BaseHandler):    
+class ArchivedPage(BaseHandler):
     def get(self):
         bmq = Bookmarks.query(Bookmarks.trashed == False)
         bmq = bmq.filter(Bookmarks.archived == True)
@@ -101,7 +101,7 @@ class ArchivedPage(BaseHandler):
         self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
-class SharedPage(BaseHandler):    
+class SharedPage(BaseHandler):
     def get(self):
         bmq = Bookmarks.query(Bookmarks.trashed == False)
         bmq = bmq.filter(Bookmarks.shared == True)
@@ -117,7 +117,7 @@ class SharedPage(BaseHandler):
         self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
-class StarredPage(BaseHandler):    
+class StarredPage(BaseHandler):
     def get(self):
         bmq = Bookmarks.query(Bookmarks.trashed == False)
         bmq = bmq.filter(Bookmarks.starred == True)
@@ -133,7 +133,7 @@ class StarredPage(BaseHandler):
         self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
-class TrashedPage(BaseHandler):    
+class TrashedPage(BaseHandler):
     def get(self):
         bmq = Bookmarks.query(Bookmarks.trashed == True)
         bmq = bmq.filter(Bookmarks.user == users.get_current_user())
@@ -148,7 +148,7 @@ class TrashedPage(BaseHandler):
         self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
-class NotagPage(BaseHandler):    
+class NotagPage(BaseHandler):
     def get(self):
         bmq = Bookmarks.query(Bookmarks.trashed == False)
         bmq = bmq.filter(Bookmarks.have_tags == False)
@@ -161,11 +161,10 @@ class NotagPage(BaseHandler):
         else:
             next_c = None
         self.response.set_cookie('active-tab', 'untagged')
-        self.generate('home.html', {'bms' : bms, 
-                                    'c': next_c })
+        self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
-class FilterPage(BaseHandler):    
+class FilterPage(BaseHandler):
     def get(self):
         tag_name = self.request.get('tag')
         tag_obj = Tags.query(Tags.user == users.get_current_user())
@@ -191,7 +190,7 @@ class FilterPage(BaseHandler):
             self.redirect('/')
 
 
-class RefinePage(BaseHandler):    
+class RefinePage(BaseHandler):
     def get(self):
         tag_name = self.request.get('tag')
         refine = self.request.get('refine')
@@ -225,7 +224,7 @@ class StreamPage(BaseHandler):
         self.generate('public.html', {'bms' : bms, 'c': next_c })
 
 
-class FeedsPage(BaseHandler):    
+class FeedsPage(BaseHandler):
     def get(self):
         feeds = Feeds.query(Feeds.user == users.get_current_user())
         feeds = feeds.order(-Feeds.data)
@@ -233,14 +232,14 @@ class FeedsPage(BaseHandler):
         self.generate('feeds.html', {'feeds': feeds})
 
 
-class TagCloudPage(BaseHandler):    
+class TagCloudPage(BaseHandler):
     def get(self): 
         q = Tags.query(Tags.user == users.get_current_user())
         self.response.set_cookie('active-tab', '')
         self.generate('tagcloud.html', {'q': q})
 
 
-class AdminPage(BaseHandler):    
+class AdminPage(BaseHandler): 
     def get(self):
         if users.is_current_user_admin(): 
             self.generate('admin.html', {})
@@ -248,7 +247,7 @@ class AdminPage(BaseHandler):
             self.redirect('/')
 
 
-class AddBM(webapp2.RequestHandler):    
+class AddBM(webapp2.RequestHandler): 
     def get(self):
         bm = Bookmarks()
         def txn(): 
@@ -259,7 +258,8 @@ class AddBM(webapp2.RequestHandler):
             bm.user = users.User(str(self.request.get('user')))
             bm.put()
         ndb.transaction(txn) 
-        deferred.defer(main_parser, bm.key, _queue="parser")
+        main_parser(bm.key)
+        # deferred.defer(main_parser, bm.key, _queue="parser")
         self.redirect('/')
 
 
@@ -282,7 +282,7 @@ class ReceiveMail(webapp2.RequestHandler):
         ndb.transaction(txn)
         deferred.defer(main_parser, bm.key, _queue="parser")
 
-class CopyBM(webapp2.RequestHandler):    
+class CopyBM(webapp2.RequestHandler):
     def get(self):
         old = Bookmarks.get_by_id(int(self.request.get('bm')))
         bm = Bookmarks()

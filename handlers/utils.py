@@ -17,7 +17,7 @@ jinja_environment = jinja2.Environment(
 jinja_environment.filters['dtf'] = dtf
 
 
-def pop_feed(feedk):  
+def pop_feed(feedk): 
     from libs.feedparser import parse
     feed = feedk.get()
     f = urlfetch.fetch(url="%s" % feed.feed, deadline=60)
@@ -63,7 +63,7 @@ def daily_digest(user):
     bmq = bmq.order(-Bookmarks.create)
     t = datetime.datetime.fromtimestamp(time.time()) 
     title = '(%s) Daily digest for your activity: %s' % (app_identity.get_application_id(), dtf(t))
-    template = jinja_environment.get_template('digest.html')  
+    template = jinja_environment.get_template('digest.html') 
     values = {'bmq': bmq, 'title': title} 
     html = template.render(values)
     if bmq.get():
@@ -73,14 +73,14 @@ def daily_digest(user):
 def feed_digest(feedk):
     import datetime, time
     timestamp = time.time() - 87000
-    period    = datetime.datetime.fromtimestamp(timestamp)
+    period = datetime.datetime.fromtimestamp(timestamp)
     feed = feedk.get()
     bmq = Bookmarks.query(Bookmarks.user == feed.user)
     bmq = bmq.filter(Bookmarks.feed == feed.key)
     bmq = bmq.filter(Bookmarks.trashed == False)
     bmq = bmq.filter(Bookmarks.create > period)
     bmq = bmq.order(-Bookmarks.create)
-    title    = '(%s) Daily digest for %s' % (app_identity.get_application_id(), feed.blog)
+    title = '(%s) Daily digest for %s' % (app_identity.get_application_id(), feed.blog)
     template = jinja_environment.get_template('digest.html') 
     values = {'bmq': bmq, 'title': title} 
     html = template.render(values)
@@ -93,7 +93,7 @@ def send_bm(bmk):
     message = mail.EmailMessage()
     message.sender = 'bm@' + "%s" % app_identity.get_application_id() + '.appspotmail.com'
     message.to = bm.user.email()
-    message.subject =  "(%s) %s" % (app_identity.get_application_id(), bm.title)
+    message.subject = "(%s) %s" % (app_identity.get_application_id(), bm.title)
     message.html = """
 %s (%s)<br>%s<br><br>%s
 """ % (bm.title, dtf(bm.data), bm.url, bm.comment)
@@ -103,7 +103,7 @@ def send_digest(email, html, title):
     message = mail.EmailMessage()
     message.sender = 'bm@' + "%s" % app_identity.get_application_id() + '.appspotmail.com'
     message.to = email
-    message.subject =  title
+    message.subject = title
     message.html = html
     message.send()
 
