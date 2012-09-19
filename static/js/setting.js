@@ -3,7 +3,7 @@ $(document).ready(function() {
         $("#mys-text").html('<i class="icon-thumbs-up"></i> <strong>Enabled </strong>');
         $("#mys-check").prop("checked", true);
     } else {
-        $("#mys-text").html('<i class="icon-thumbs-down"></i> <strong>Disabled</strong>');  
+        $("#mys-text").html('<i class="icon-thumbs-down"></i> <strong>Disabled</strong>'); 
         $("#mys-check").prop("checked", false);
     }
 
@@ -11,7 +11,7 @@ $(document).ready(function() {
         $("#daily-text").html('<i class="icon-thumbs-up"></i> <strong>Enabled </strong>');
         $("#daily-check").prop("checked", true);
     } else {
-        $("#daily-text").html('<i class="icon-thumbs-down"></i> <strong>Disabled</strong>');  
+        $("#daily-text").html('<i class="icon-thumbs-down"></i> <strong>Disabled</strong>'); 
         $("#daily-check").prop("checked", false);
     }
 
@@ -19,7 +19,7 @@ $(document).ready(function() {
         $("#twitt-text").html('<i class="icon-thumbs-up"></i> <strong>Enabled </strong>');
         $("#twitt-check").prop("checked", true);
     } else {
-        $("#twitt-text").html('<i class="icon-thumbs-down"></i> <strong>Disabled</strong>');  
+        $("#twitt-text").html('<i class="icon-thumbs-down"></i> <strong>Disabled</strong>'); 
         $("#twitt-check").prop("checked", false);
     }
 })
@@ -37,7 +37,7 @@ $("#mys-check").change(function() {
 $("#daily-check").change(function() {
     $.ajax({
         url: "/setdaily",
-        success: function(html) {          
+        success: function(html) {
         $("#daily-text").html(html);
         }
     })
@@ -46,7 +46,7 @@ $("#daily-check").change(function() {
 $("#twitt-check").change(function() {
     $.ajax({
         url: "/settwitt",
-        success: function(html) {          
+        success: function(html) {
         $("#twitt-text").html(html);
         }
     })

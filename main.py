@@ -1,7 +1,9 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-import jinja2, os, webapp2
+import os
+import webapp2
+import jinja2
 from google.appengine.api import users, mail, app_identity
 from google.appengine.ext import ndb, deferred
 from handlers import ajax, utils, core
@@ -23,17 +25,17 @@ class BaseHandler(webapp2.RequestHandler):
             if q.get():
                 return q.get()
             else:
-                ui      = UserInfo()
+                ui = UserInfo()
                 ui.user = users.get_current_user()
                 ui.put()
                 return ui
 
     def generate(self, template_name, template_values={}):
         if users.get_current_user():      
-            url      = users.create_logout_url("/")
+            url = users.create_logout_url("/")
             linktext = 'Logout'
         else:
-            url      = users.create_login_url(self.request.uri)
+            url = users.create_login_url(self.request.uri)
             linktext = 'Login'
         values = {
             'brand'   : app_identity.get_application_id(),
@@ -57,9 +59,9 @@ javascript:location.href=
 '&user='+'%s'+
 '&comment='+document.getSelection().toString()
 """ % (self.request.host_url, ui.email)
-        self.response.set_cookie('mys'    , '%s' % ui.mys)
-        self.response.set_cookie('daily'  , '%s' % ui.daily)
-        self.response.set_cookie('twitt'  , '%s' % ui.twitt)
+        self.response.set_cookie('mys' , '%s' % ui.mys)
+        self.response.set_cookie('daily' , '%s' % ui.daily)
+        self.response.set_cookie('twitt' , '%s' % ui.twitt)
 
         self.generate('setting.html', {'bookmarklet': bookmarklet})
 
@@ -159,7 +161,8 @@ class NotagPage(BaseHandler):
         else:
             next_c = None
         self.response.set_cookie('active-tab', 'untagged')
-        self.generate('home.html', {'bms' : bms, 'c': next_c })
+        self.generate('home.html', {'bms' : bms, 
+                                    'c': next_c })
 
 
 class FilterPage(BaseHandler):    
@@ -180,7 +183,10 @@ class FilterPage(BaseHandler):
             tagset = utils.tag_set(bmq)
             tagset.remove(tag_obj.key)
             self.response.set_cookie('active-tab', '')
-            self.generate('home.html', {'tag_obj': tag_obj, 'bms': bms, 'tags': tagset, 'c': next_c })
+            self.generate('home.html', {'tag_obj': tag_obj, 
+                                        'bms': bms, 
+                                        'tags': tagset, 
+                                        'c': next_c })
         else:
             self.redirect('/')
 
@@ -242,17 +248,15 @@ class AdminPage(BaseHandler):
             self.redirect('/')
 
 
-#TODO: use mamcache and blobstore
-
 class AddBM(webapp2.RequestHandler):    
     def get(self):
         bm = Bookmarks()
         def txn(): 
             bm.original = self.request.get('url')
-            bm.url      = self.request.get('url')
-            bm.title    = self.request.get('title')
-            bm.comment  = self.request.get('comment')
-            bm.user     = users.User(str(self.request.get('user')))
+            bm.url = self.request.get('url')
+            bm.title = self.request.get('title')
+            bm.comment = self.request.get('comment')
+            bm.user = users.User(str(self.request.get('user')))
             bm.put()
         ndb.transaction(txn) 
         deferred.defer(main_parser, bm.key, _queue="parser")
@@ -271,9 +275,9 @@ class ReceiveMail(webapp2.RequestHandler):
         bm = Bookmarks()
         def txn():
             bm.original = url
-            bm.title    = header.decode_header(message.subject)[0][0]
-            bm.comment  = 'Sent via email'
-            bm.user     = users.User(utils.parseaddr(message.sender)[1])
+            bm.title = header.decode_header(message.subject)[0][0]
+            bm.comment = 'Sent via email'
+            bm.user = users.User(utils.parseaddr(message.sender)[1])
             bm.put()
         ndb.transaction(txn)
         deferred.defer(main_parser, bm.key, _queue="parser")
@@ -284,9 +288,9 @@ class CopyBM(webapp2.RequestHandler):
         bm = Bookmarks()
         def txn(): 
             bm.original = old.original
-            bm.title    = old.title
-            bm.comment  = old.comment
-            bm.user     = users.get_current_user()
+            bm.title = old.title
+            bm.comment = old.comment
+            bm.user = users.get_current_user()
             bm.put()
         ndb.transaction(txn) 
         deferred.defer(main_parser, bm.key, _queue="parser")
