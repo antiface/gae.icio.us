@@ -7,7 +7,7 @@ from google.appengine.api import users
 from models import Bookmarks, UserInfo, Feeds, Tags
 
 jinja_environment = jinja2.Environment(
-    loader=jinja2.FileSystemLoader('templates'))
+    loader=jinja2.FileSystemLoader(['templates', 'partials']))
 
 class TrashBM(RequestHandler): 
     def get(self):

@@ -8,12 +8,11 @@ from models import Bookmarks
 from parser import main_parser
 
 
-
 def dtf(value, format='%d/%m/%Y - %H:%M UTC'):
     return value.strftime(format)
 
 jinja_environment = jinja2.Environment(
-    loader=jinja2.FileSystemLoader('templates'))
+    loader=jinja2.FileSystemLoader(['templates', 'partials']))
 jinja_environment.filters['dtf'] = dtf
 
 

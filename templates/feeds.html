@@ -41,14 +41,14 @@
     <dd>
         <div class="btn-toolbar">
             <div class="btn-group">
-                <a class="btn btn-mini" id="delete-{{ feed.id }}" > <i class="icon-remove"> </i> delete </a>
-                <a class="btn btn-mini" id="refresh-{{ feed.id }}"> <i class="icon-refresh"></i> sync </a>
-                <a class="btn btn-mini" id="tags-{{ feed.id }}" >   <i class="icon-tags">   </i> tags </a>
+                <a class="btn btn-mini" onclick="del_feed({{ feed.id }})"> <i class="icon-remove"></i> delete </a>
+                <a class="btn btn-mini" onclick="sync_feed({{ feed.id }})">  <i class="icon-refresh"></i> sync </a>
+                <a class="btn btn-mini" onclick="get_tags({{ feed.id }})"> <i class="icon-tags"></i> tags </a>
             </div>
-            <div class="btn-group" data-toggle="buttons-radio" id="notify-{{ feed.id }}">
-                <button type="button" class="btn btn-mini" id="n-w-{{ feed.id }}">web</button>
-                <button type="button" class="btn btn-mini" id="n-e-{{ feed.id }}">email</button>
-                <button type="button" class="btn btn-mini" id="n-d-{{ feed.id }}">digest</button>
+            <div class="btn-group" data-toggle="buttons-radio">
+                <button type="button" class="btn btn-mini" onclick="setnotify({{ feed.id }},'web')" id="n-w-{{ feed.id }}">web</button>
+                <button type="button" class="btn btn-mini" onclick="setnotify({{ feed.id }},'email')" id="n-e-{{ feed.id }}">email</button>
+                <button type="button" class="btn btn-mini" onclick="setnotify({{ feed.id }},'digest')" id="n-d-{{ feed.id }}">digest</button>
             </div>
             {% for tag in feed.tags %}
             <div class="btn-group">
@@ -61,8 +61,8 @@
     </dd>
     <dd id="comment-{{ feed.id }}" class=""></dd>
 </div>
-
-    <script>{% include "feeds.js" %}</script>
+    
+    <script src="js/feeds.js"></script>
     {% if feed.notify == 'digest' %}
     <script>$("#n-d-{{ feed.id }}").button('toggle')</script>
     {% elif feed.notify == 'email' %}
@@ -76,4 +76,8 @@
 </div><!-- span9 -->
 </div><!-- row -->
 </div><!-- container -->
+{% endblock %}
+
+{% block navbar %}
+{% include "navbar.html" %}
 {% endblock %}

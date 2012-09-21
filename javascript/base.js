@@ -26,11 +26,17 @@ $(document).ready(function() {
         $("#dashboard").html('<a>Our public stream</a>');
     }
     if (tab == 'hero') {
-        $("#dashboard").html('<a>Welcome to {{ brand }}</a>');
+        $("#dashboard").html('<a>Welcome!</a>');
     }
     if (tab == 'tagcloud') {
         $("#dashboard").html('<a>Your tagcloud</a>');
     }
+    if ($.cookie('tips-feed') == 'hide') {
+        $("#tips-feed").addClass('hide'); 
+    }
+    $('#tips-feed').bind('close', function () {
+        $.cookie('tips-feed', 'hide'); 
+    })
 
     $('#addtag').submit(function() {
         var querystring = $(this).serialize();

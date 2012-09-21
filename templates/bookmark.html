@@ -9,17 +9,16 @@
 
 <dt>      
 <div class="btn-toolbar visible-phone">
-    <div class="btn-group" data-toggle="button" >
-        <button class="btn btn-mini" id="prev-{{ bm.id }}"><i class="icon-comment"></i> comment</button>
-
-        <button class="btn btn-mini" id="arch-{{ bm.id }}">            
+    <div class="btn-group">
+        <button class="btn btn-mini" onclick="comment({{ bm.id }})"><i class="icon-comment"></i> comment</button>
+        <button class="btn btn-mini" onclick="archive({{ bm.id }})">            
         {% if bm.archived or bm.trashed %}
         <i class="icon-inbox"></i> inbox</button> 
         {% else %}
         <i class="icon-folder-close"></i> archive</button> 
         {% endif %}
 
-        <button class="btn btn-mini" id="trash-{{ bm.id }}">
+        <button class="btn btn-mini" onclick="trash({{ bm.id }})">
         {% if bm.trashed %}
         <i class="icon-remove"></i> delete</button>
         {% else %}
@@ -30,28 +29,28 @@
 
 <div class="btn-toolbar hidden-phone">
     <div class="btn-group" >
-        <button class="btn btn-mini" id="star-{{ bm.id }}">
+        <button class="btn btn-mini" onclick="star({{ bm.id }})" id="star-{{ bm.id }}">
             {% if bm.starred %}<i class="icon-star">{% else %}<i class="icon-star-empty">{% endif %}</i>
         </button>
-        <button class="btn btn-mini" id="share-{{ bm.id }}">
+        <button class="btn btn-mini" onclick="share({{ bm.id }})" id="share-{{ bm.id }}">
             {% if bm.shared %}<i class="icon-eye-open"></i> shared{% else %}<i class="icon-eye-close"></i>{% endif %}
         </button>
     </div>
 
-    <div class="btn-group" data-toggle="button" >
-        <button class="btn btn-mini" id="prev-{{ bm.id }}"><i class="icon-comment"></i> comment</button>
-        <button class="btn btn-mini" id="tags-butt-{{ bm.id }}"><i class="icon-tags"></i> tags</button>
-        <button class="btn btn-mini" id="edit-{{ bm.id }}"><i class="icon-edit"></i> edit</button>
+    <div class="btn-group">
+        <button class="btn btn-mini" onclick="comment({{ bm.id }})"> <i class="icon-comment"></i> comment</button>
+        <button class="btn btn-mini" onclick="tags({{ bm.id }})"> <i class="icon-tags"></i> tags</button>
+        <button class="btn btn-mini" onclick="edit({{ bm.id }})"> <i class="icon-edit"></i> edit</button>
     </div>
 
     <div class="btn-group" >
-        <button class="btn btn-mini" id="arch-{{ bm.id }}">
+        <button class="btn btn-mini" onclick="archive({{ bm.id }})">
         {% if bm.archived or bm.trashed %}
         <i class="icon-inbox"></i> inbox</button>
         {% else %}
         <i class="icon-folder-close"></i> archive</button>
         {% endif %}
-        <button class="btn btn-mini" id="trash-{{ bm.id }}">
+        <button class="btn btn-mini" onclick="trash({{ bm.id }})">
         {% if bm.trashed %}<i class="icon-remove"></i> delete</button>
         {% else %}<i class="icon-trash"></i> trash</button> {% endif %}
     </div>
