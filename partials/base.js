@@ -46,5 +46,7 @@ $(document).ready(function() {
       })
     })
 
+// $('#navbar').affix({offset: { x: 100 }})
+
 $('#bookmarklet').tooltip()
 });
