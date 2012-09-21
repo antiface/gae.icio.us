@@ -13,7 +13,7 @@ from handlers.parser import main_parser
 
 
 jinja_environment = jinja2.Environment(
-    loader=jinja2.FileSystemLoader('templates'))
+    loader=jinja2.FileSystemLoader(['templates', 'partials']))
 jinja_environment.filters['dtf'] = utils.dtf
 
 
@@ -59,6 +59,7 @@ javascript:location.href=
 '&user='+'%s'+
 '&comment='+document.getSelection().toString()
 """ % (self.request.host_url, ui.email)
+
         self.response.set_cookie('mys' , '%s' % ui.mys)
         self.response.set_cookie('daily' , '%s' % ui.daily)
         self.response.set_cookie('twitt' , '%s' % ui.twitt)
@@ -82,7 +83,8 @@ class InboxPage(BaseHandler):
             self.response.set_cookie('active-tab', 'inbox')
             self.generate('home.html', {'bms': bms, 'c': next_c })
         else:
-            self.generate('git.html', {})
+            self.response.set_cookie('active-tab', 'hero')
+            self.generate('hero.html', {})
 
 
 class ArchivedPage(BaseHandler):
@@ -259,7 +261,6 @@ class AddBM(webapp2.RequestHandler):
             bm.put()
         ndb.transaction(txn) 
         main_parser(bm.key)
-        # deferred.defer(main_parser, bm.key, _queue="parser")
         self.redirect('/')
 
 

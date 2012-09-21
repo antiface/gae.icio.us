@@ -29,6 +29,9 @@ $(document).ready(function() {
   if (tab == 'stream') {
     $("#dashboard").html('<a>Our public stream</a>');
   }
+  if (tab == 'hero') {
+    $("#dashboard").html('<a>Welcome to {{ brand }}</a>');
+  }
 
   $('#addtag').submit(function() {
     var querystring = $(this).serialize();
