@@ -22,14 +22,14 @@ $(document).ready(function() {
     if (tab == 'archive') {
         $("#dashboard").html('<a>Your archive</a>');
     }
-    if (tab == 'friends') {
-        $("#dashboard").html('<a>Your Friends shared items</a>');
-    }
     if (tab == 'stream') {
         $("#dashboard").html('<a>Our public stream</a>');
     }
     if (tab == 'hero') {
         $("#dashboard").html('<a>Welcome to {{ brand }}</a>');
+    }
+    if (tab == 'tagcloud') {
+        $("#dashboard").html('<a>Your tagcloud</a>');
     }
 
     $('#addtag').submit(function() {

@@ -237,7 +237,7 @@ class FeedsPage(BaseHandler):
 class TagCloudPage(BaseHandler):
     def get(self): 
         q = Tags.query(Tags.user == users.get_current_user())
-        self.response.set_cookie('active-tab', '')
+        self.response.set_cookie('active-tab', 'tagcloud')
         self.generate('tagcloud.html', {'q': q})
 
 
