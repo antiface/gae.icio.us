@@ -8,8 +8,27 @@
 </dt>
 
 <dt>      
-<div class="btn-toolbar">
+<div class="btn-toolbar visible-phone">
+    <div class="btn-group" data-toggle="button" >
+        <button class="btn btn-mini" id="prev-{{ bm.id }}"><i class="icon-comment"></i> comment</button>
 
+        <button class="btn btn-mini" id="arch-{{ bm.id }}">            
+        {% if bm.archived or bm.trashed %}
+        <i class="icon-inbox"></i> inbox</button> 
+        {% else %}
+        <i class="icon-folder-close"></i> archive</button> 
+        {% endif %}
+
+        <button class="btn btn-mini" id="trash-{{ bm.id }}">
+        {% if bm.trashed %}
+        <i class="icon-remove"></i> delete</button>
+        {% else %}
+        <i class="icon-trash"></i> trash</button> 
+        {% endif %}
+    </div>
+</div>
+
+<div class="btn-toolbar hidden-phone">
     <div class="btn-group" >
         <button class="btn btn-mini" id="star-{{ bm.id }}">
             {% if bm.starred %}<i class="icon-star">{% else %}<i class="icon-star-empty">{% endif %}</i>
@@ -40,10 +59,9 @@
     <div class="btn-group" >
         <button class="btn disabled btn-mini"><i class="icon-time"></i> {{ bm.data|dtf }}</button>
     </div>
-    
 </div>
-</dt>
 
+</dt>
     <dd id="tags-{{ bm.id }}"> {% include "tags.html" %} </dd>   
     <dd id="comment-{{ bm.id }}">
         {% if bm.tags == [] %}
