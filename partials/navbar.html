@@ -1,38 +1,51 @@
-<div class="nav-collapse">
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="/">{{ brand }}</a>
+            <div class="nav-collapse">
 
-<ul class="nav">
-    <li class="divider-vertical"></li>
-    <li id="dashboard"><a></a></li>    
-</ul>
+                <ul class="nav">
+                    <li class="divider-vertical"></li>
+                    <li id="dashboard"><a></a></li>    
+                </ul>
 
-<ul class="nav pull-right">    
-    <li class="divider-vertical"></li>
-    <form class="navbar-form pull-left" action="/addtag" method="get" id="addtag">
-        <input type="text" class="span2" name="tag" placeholder="new tag" allowBlank="true">
-    </form>
-    <li class="dropdown">
-        <a href="" class="dropdown-toggle" data-toggle="dropdown"> Menu <b class="caret"></b> </a>
-        <ul class="dropdown-menu">
-            <li><a href="/"        > Inbox    </a></li>
-            <li><a href="/starred" > Starred  </a></li>
-            <li><a href="/archived"> Archive  </a></li>
-            <li><a href="/trashed" > Trash    </a></li>
-            <li><a href="/stream"  > Stream   </a></li>
-            <li><a href="/shared"  > Shared   </a></li>
-            <li><a href="/tagcloud"> Tag cloud</a></li>
-            <li><a href="/notag"   > Untagged </a></li>
-        </ul>
-    </li>
-    <li class="dropdown">
-        <a href="" class="dropdown-toggle" data-toggle="dropdown">
-            <i class="icon-user"></i> {{ ui.user }} <b class="caret"></b>
-        </a>
-        <ul class="dropdown-menu">
-            <li><a id="subscription" href="/feeds"><i class="icon-fire"></i> Feeds</a></li>
-            <li><a id="setting" href="/setting"><i class="icon-wrench"></i> Setting</a></li> 
-            <li class="divider"></li>
-            <li><a href="{{ url }}"><i class="icon-off"></i> {{ linktext }}</a></li>
-        </ul>
-    </li>
-</ul>
+                <ul class="nav pull-right">    
+                    <li class="divider-vertical"></li>
+                    <form class="navbar-form pull-left" action="/addtag" method="get" id="addtag">
+                        <input type="text" class="span2" name="tag" placeholder="new tag" allowBlank="true">
+                    </form>
+                    <li class="dropdown">
+                        <a href="" class="dropdown-toggle" data-toggle="dropdown"> Menu <b class="caret"></b> </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/"        > Inbox    </a></li>
+                            <li><a href="/starred" > Starred  </a></li>
+                            <li><a href="/archived"> Archive  </a></li>
+                            <li><a href="/trashed" > Trash    </a></li>
+                            <li><a href="/stream"  > Stream   </a></li>
+                            <li><a href="/shared"  > Shared   </a></li>
+                            <li><a href="/tagcloud"> Tag cloud</a></li>
+                            <li><a href="/notag"   > Untagged </a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="" class="dropdown-toggle" data-toggle="dropdown">
+                            <i class="icon-user"></i> {{ ui.user }} <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a id="subscription" href="/feeds"><i class="icon-fire"></i> Feeds</a></li>
+                            <li><a id="setting" href="/setting"><i class="icon-wrench"></i> Setting</a></li> 
+                            <li class="divider"></li>
+                            <li><a href="{{ url }}"><i class="icon-off"></i> {{ linktext }}</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>        
+        </div>
+    </div>
 </div>
+

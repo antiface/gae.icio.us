@@ -31,6 +31,12 @@ $(document).ready(function() {
     if (tab == 'tagcloud') {
         $("#dashboard").html('<a>Your tagcloud</a>');
     }
+    if (tab == 'feeds') {
+        $("#dashboard").html('<a>Your Subscriprtion</a>');
+    }
+    if (tab == 'setting') {
+        $("#dashboard").html('<a>Your Setting</a>');
+    }
     if ($.cookie('tips-feed') == 'hide') {
         $("#tips-feed").addClass('hide'); 
     }

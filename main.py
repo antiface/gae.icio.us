@@ -63,6 +63,7 @@ javascript:location.href=
         self.response.set_cookie('mys' , '%s' % ui.mys)
         self.response.set_cookie('daily' , '%s' % ui.daily)
         self.response.set_cookie('twitt' , '%s' % ui.twitt)
+        self.response.set_cookie('active-tab', 'setting')
 
         self.generate('setting.html', {'bookmarklet': bookmarklet})
 
@@ -230,7 +231,7 @@ class FeedsPage(BaseHandler):
     def get(self):
         feeds = Feeds.query(Feeds.user == users.get_current_user())
         feeds = feeds.order(-Feeds.data)
-        self.response.set_cookie('active-tab', '')
+        self.response.set_cookie('active-tab', 'feeds')
         self.generate('feeds.html', {'feeds': feeds})
 
 
