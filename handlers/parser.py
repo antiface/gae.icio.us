@@ -39,26 +39,31 @@ def main_parser(bmk):
     # COMMENTS
     url_parsed = urlparse.urlparse(bm.original)
     query = urlparse.parse_qs(url_parsed.query)
+
     if url_parsed.netloc == 'www.youtube.com': 
         video = query["v"][0]
         bm.url = 'http://www.youtube.com/watch?v=%s' % video
         bm.comment = '''<iframe width="640" height="360" 
         src="http://www.youtube.com/embed/%s" frameborder="0"
         allowfullscreen></iframe>''' % video
+
     if url_parsed.netloc == 'vimeo.com': 
         video = url_parsed.path.split('/')[-1]
         bm.url = 'http://vimeo.com/%s' % video
         bm.comment = '''<iframe src="http://player.vimeo.com/video/%s?color=ffffff" 
         width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen 
         allowFullScreen></iframe>''' % video
+
     ext = bm.url.split('.')[-1]
     if ext == 'jpg' or ext == 'png' or ext == 'jpeg':
         bm.comment = '<img src="%s" />' % bm.url 
-    # TITLE
+
     if bm.title == '':
         bm.title = url_parsed.path
+        
+    bm.domain = url_parsed.netloc
     bm.put()
-    # Notify
+
     try:
         if bm.feed.get().notify == 'email': 
             deferred.defer(utils.send_bm, bm.key, _target="worker", _queue="emails")

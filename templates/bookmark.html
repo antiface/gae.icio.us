@@ -1,5 +1,6 @@
 
-<dt> <i class="icon-bookmark"></i> <a href="{{ bm.url }}" target="_blank">{{ bm.title|e|truncate(70, killwords=true) }}</a>
+<dt> <i class="icon-bookmark"></i> <a href="{{ bm.url }}" target="_blank">{{ bm.title|e }}</a>
+    - <em>{{ bm.domain }}</em> 
     {% if ui.twitt %}
     <div class="btn-group pull-right" >
         {% include "tweet.html" %}
@@ -64,6 +65,7 @@
     <dd id="tags-{{ bm.id }}"> {% include "tags.html" %} </dd>   
     <dd id="comment-{{ bm.id }}">
         {% if bm.tags == [] %}
-            {% include "other_tags.html" %}
+            {{bm.comment}}
+            <!-- {% include "other_tags.html" %} -->
         {% endif %}
     </dd>

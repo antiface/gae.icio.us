@@ -24,7 +24,7 @@ def pop_feed(feedk):
     e = 0 
     try:
         d = p['items'][e]
-        while feed.url != d['link'] and e < 10:
+        while feed.url != d['link'] and e < 15:
             deferred.defer(new_bm, d, feedk, _target="worker", _queue="importer")
             e += 1 
             d = p['items'][e]

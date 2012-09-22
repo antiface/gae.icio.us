@@ -118,7 +118,7 @@ class SendActivity(RequestHandler):
                 deferred.defer(utils.daily_digest, ui.user, _target="worker", _queue="admin")
 
 
-#### don't care ###
+#### Admin ###
 
 class Upgrade(RequestHandler):
     """change this handler for admin operations"""
@@ -136,9 +136,13 @@ def upgrade(itemk):
 
 class Script(RequestHandler): 
     def get(self):
-        from parser import main_parser
-        for bm in Bookmarks.query(Bookmarks.archived == False):
-            deferred.defer(main_parser, bm.key, None, _queue="parser")
+        import urlparse
+        for bm in Bookmarks.query():
+            url_parsed = urlparse.urlparse(bm.original)
+            bm.domain = url_parsed.netloc
+            bm.put()
+        # from parser import main_parser
+            # deferred.defer(main_parser, bm.key, None, _queue="parser")
 
 
 class del_attr(RequestHandler):

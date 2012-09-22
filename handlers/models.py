@@ -67,6 +67,7 @@ class Bookmarks(ndb.Model):
     url = ndb.StringProperty()
     title = ndb.StringProperty()
     comment = ndb.TextProperty(indexed=False)
+    domain = ndb.StringProperty()
     feed = ndb.KeyProperty(kind=Feeds)
     tags = ndb.KeyProperty(kind=Tags,repeated=True)
     archived = ndb.BooleanProperty(default=False)
