@@ -3,7 +3,7 @@ $(document).ready(function() {
     var tab = $.cookie('active-tab')    
 
     $('#'+tab).addClass('active');
-    
+
     if (tab == 'trash') {
         $("#dashboard").html('<a>Trashed items</a>');
         $('#empty_button').removeClass('hide');
@@ -35,7 +35,7 @@ $(document).ready(function() {
     if (tab == 'feeds') {
         $("#dashboard").html('<a>Your Subscriprtion</a>');
     }
-    if (tab == 'feeds') {
+    if (tab == 'admin') {
         $("#dashboard").html('<a>Administration</a>');
     }
     if (tab == 'setting') {
