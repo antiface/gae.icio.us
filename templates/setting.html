@@ -1,4 +1,9 @@
 {% extends "base.html" %}
+
+{% block navbar %}
+{% include "navbar.html" %}
+{% endblock %}
+
 {% block content %}
 
 <div class="container">
@@ -57,8 +62,3 @@
 </div>
 <script src="js/setting.js"></script>
 {% endblock %}
-
-{% block navbar %}
-{% include "navbar.html" %}
-{% endblock %}
-

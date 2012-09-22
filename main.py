@@ -34,6 +34,7 @@ class BaseHandler(webapp2.RequestHandler):
         if users.get_current_user(): 
             url = users.create_logout_url("/")
             linktext = 'Logout'
+
         else:
             url = users.create_login_url(self.request.uri)
             linktext = 'Login'
@@ -42,6 +43,7 @@ class BaseHandler(webapp2.RequestHandler):
             'url' : url,
             'linktext': linktext,
             'ui' : self.ui(),
+            'admin'  : users.is_current_user_admin()
             }
         values.update(template_values)
         template = jinja_environment.get_template(template_name)
@@ -245,6 +247,7 @@ class TagCloudPage(BaseHandler):
 class AdminPage(BaseHandler): 
     def get(self):
         if users.is_current_user_admin(): 
+            self.response.set_cookie('active-tab', 'admin')
             self.generate('admin.html', {})
         else: 
             self.redirect('/')

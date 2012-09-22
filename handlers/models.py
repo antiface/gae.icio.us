@@ -3,7 +3,7 @@
 
 from google.appengine.ext import ndb
 
-class UserInfo(ndb.Model):
+class UserInfo(ndb.Expando):
     user = ndb.UserProperty() 
     email = ndb.ComputedProperty(lambda self: self.user.email())
     data = ndb.DateTimeProperty(auto_now=True)

@@ -149,7 +149,7 @@ class del_attr(RequestHandler):
         q = ndb.gql("SELECT * FROM %s" % (model)) 
         for r in q: 
             deferred.defer(delatt, r.key, prop, _queue="admin") 
-        self.redirect('/adm')
+        self.redirect('/admin')
 
 def delatt(rkey, prop): 
     r = rkey.get() 
