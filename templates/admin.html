@@ -8,12 +8,23 @@
 <div class="container">
 <div class="row">
 {% include "sidebar.html" %}
-<div class="span10">
-    <form action="/admin/delattr" class="form-inline" method="post">
-        <input type="text" placeholder="Model" class="input-medium" name="model">
-        <input type="text" placeholder="Property" class="input-medium" name="prop">
-        <button type="submit" class="btn">Del Attr</button>
-    </form>
+<div class="span10"> 
+    <div> 
+        <form action="/admin/delattr" class="form-inline" method="post">
+            <input type="text" placeholder="Model" class="input-medium" name="model">
+            <input type="text" placeholder="Property" class="input-medium" name="prop">
+            <button type="submit" class="btn">Del Attr</button>
+        </form>
+    </div>
+    <hr>
+    <div> 
+        <a class="btn" href="/admin/script" > Script </a>
+        <a class="btn" href="/admin/digest" > digest </a>
+        <a class="btn" href="/admin/activity" > activity </a>
+        <a class="btn" href="/admin/check" > CheckFeeds </a>
+        <a class="btn" href="/admin/import" > Import Delicious </a>
+    </div>
+    <hr>
 </div>
 </div>
 </div>

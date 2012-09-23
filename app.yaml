@@ -43,7 +43,7 @@ handlers:
 - url: /tests/.*
   script: aeta.main.APP
   login: admin
-  
+
 - url: /.*
   script: main.app
   login: required
@@ -52,6 +52,8 @@ libraries:
 - name: jinja2
   version: latest
 - name: webapp2
+  version: latest
+- name: lxml
   version: latest
 
 builtins:

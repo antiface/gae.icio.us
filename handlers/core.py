@@ -90,6 +90,7 @@ class Empty_Trash(RequestHandler):
         ndb.delete_multi([bmk.key for bmk in bmq])
         self.redirect(self.request.referer)
 
+
 #### admin ###
 
 class CheckFeed(RequestHandler): 
@@ -118,33 +119,6 @@ class SendActivity(RequestHandler):
                 deferred.defer(utils.daily_digest, ui.user, _target="worker", _queue="admin")
 
 
-#### Admin ###
-
-class Upgrade(RequestHandler):
-    """change this handler for admin operations"""
-    def get(self):
-        for tag in Tags.query():
-            tag.put() 
-
-
-def upgrade(itemk):
-    for tag in Tags.query():
-        tag.put()
-
-
-
-
-class Script(RequestHandler): 
-    def get(self):
-        import urlparse
-        for bm in Bookmarks.query():
-            url_parsed = urlparse.urlparse(bm.original)
-            bm.domain = url_parsed.netloc
-            bm.put()
-        # from parser import main_parser
-            # deferred.defer(main_parser, bm.key, None, _queue="parser")
-
-
 class del_attr(RequestHandler):
     """delete old property from datastore"""
     def post(self): 
@@ -159,3 +133,31 @@ def delatt(rkey, prop):
     r = rkey.get() 
     delattr(r, '%s' % prop) 
     r.put()
+
+
+#### don't care ###
+
+class Upgrade(RequestHandler):
+    """change this handler for admin operations"""
+    def get(self):
+        for tag in Tags.query():
+            tag.put() 
+
+
+def upgrade(itemk):
+    for tag in Tags.query():
+        tag.put()
+
+
+class Script(RequestHandler): 
+    def get(self):
+        for bm in Bookmarks.query():
+            deferred.defer(add_domain, bm.key, _target="worker", _queue="admin")
+
+def add_domain(bmk):
+    import urlparse
+    bm = bmk.get()
+    url_parsed = urlparse.urlparse(bm.url)
+    if bm.domain != url_parsed.netloc:
+        bm.domain = url_parsed.netloc
+        bm.put()

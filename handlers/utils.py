@@ -3,7 +3,7 @@
 
 import jinja2
 from google.appengine.api import mail, app_identity, urlfetch
-from google.appengine.ext import deferred
+from google.appengine.ext import deferred, ndb
 from models import Bookmarks
 from parser import main_parser
 
@@ -49,7 +49,17 @@ def new_bm(d, feedk):
     bm.put()
     deferred.defer(main_parser, bm.key, _target="worker", _queue="parser")
 
-
+def delicious(tag, comment, user):
+    link = tag.a
+    bm = Bookmarks()
+    def txn():        
+        bm.original = link['href']
+        bm.title = link.text
+        bm.comment = comment
+        bm.user = user
+        bm.put()
+    ndb.transaction(txn)
+    deferred.defer(main_parser, bm.key, _target="worker", _queue="parser")  
 
 def daily_digest(user):
     import datetime, time

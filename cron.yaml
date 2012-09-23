@@ -3,7 +3,11 @@ cron:
   url: /admin/check
   schedule: every 90 minutes synchronized
 
-- description: check feed digests
+- description: import delicious
+  url: /admin/import
+  schedule: every 120 minutes synchronized
+
+- description: send feed digests
   url: /admin/digest
   schedule: every day 17:00
 

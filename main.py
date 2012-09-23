@@ -1,16 +1,16 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-import os
-import webapp2
 import jinja2
+import webapp2
+import os
 from google.appengine.api import users, mail, app_identity
-from google.appengine.ext import ndb, deferred
+from google.appengine.ext import ndb, deferred, blobstore
+from google.appengine.ext.webapp import blobstore_handlers
 from handlers import ajax, utils, core
 from handlers.models import Bookmarks, UserInfo, Feeds, Tags
 from handlers.parser import main_parser
-
-
+from libs.bs4 import BeautifulSoup
 
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(['templates', 'partials']))
@@ -53,6 +53,7 @@ class BaseHandler(webapp2.RequestHandler):
 class SettingPage(BaseHandler):
     def get(self):
         ui = self.ui()
+        upload_url = blobstore.create_upload_url('/upload')
 
         bookmarklet = """
 javascript:location.href=
@@ -67,7 +68,9 @@ javascript:location.href=
         self.response.set_cookie('twitt' , '%s' % ui.twitt)
         self.response.set_cookie('active-tab', 'setting')
 
-        self.generate('setting.html', {'bookmarklet': bookmarklet})
+        self.generate('setting.html', {'bookmarklet': bookmarklet,
+                                        'upload_url': upload_url,
+                                        })
 
 
 class InboxPage(BaseHandler):
@@ -245,7 +248,7 @@ class TagCloudPage(BaseHandler):
 
 
 class AdminPage(BaseHandler): 
-    def get(self):
+    def get(self):        
         if users.is_current_user_admin(): 
             self.response.set_cookie('active-tab', 'admin')
             self.generate('admin.html', {})
@@ -301,6 +304,43 @@ class CopyBM(webapp2.RequestHandler):
         deferred.defer(main_parser, bm.key, _queue="parser")
 
 
+class UploadDelicious(blobstore_handlers.BlobstoreUploadHandler):
+  def post(self):
+    user = users.get_current_user()
+    upload_files = self.get_uploads('file')
+    blob_info = upload_files[0]
+    ui = UserInfo.query(UserInfo.user == user).get()
+    ui.delicious = blob_info.key()
+    ui.put()
+    self.redirect('/setting')
+
+
+class ImportDelicious(BaseHandler): 
+    def get(self):
+        for ui in UserInfo.query():
+            if ui.delicious:
+                size = blobstore.BlobInfo.get(ui.delicious).size
+                if ui.cursor < size:
+                    self.parse(ui)
+
+    def parse(self, ui):
+        blob_reader = blobstore.BlobReader(ui.delicious)
+        blob_reader.seek(ui.cursor)
+        ui.cursor = ui.cursor + 9500
+        future = ui.put_async()
+        data = blob_reader.read(10000)
+        soup = BeautifulSoup(data)
+        future.get_result()
+        for tag in soup.findAll('dt'):
+            if tag.nextSibling and tag.nextSibling.name == 'dd':
+                comment = tag.nextSibling.text
+            else:
+                comment = ""
+            deferred.defer(utils.delicious, tag, comment, ui.user, _queue="admin")
+        
+
+
+
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
@@ -348,6 +388,8 @@ app = webapp2.WSGIApplication([
     ('/admin/activity'   , core.SendActivity),
     ('/admin/check'      , core.CheckFeeds),
     ('/admin/delattr'    , core.del_attr),
+    ('/upload'           , UploadDelicious),
+    ('/admin/import'     , ImportDelicious),
     ], debug=debug)
 
 

@@ -9,9 +9,9 @@
 <div class="container">
 <div class="row">
 {% include "sidebar.html" %}
-<div class="span10">
+<div class="span5">
 
-<legend>Setting</legend>
+<legend>Methods for submit bookmarks</legend>
 
 <!-- Bookmarklet -->
 <form> 
@@ -20,6 +20,35 @@
     <a class="btn btn-link disabled" id="bookmarklet" href="{{ bookmarklet }}" rel="tooltip" data-placement="bottom" title="This is a bookmarklet, drag and drop in your bookmarks bar"><i class="icon-bookmark"></i> {{ brand }} it!</a>  
 </form>
 <hr>
+<!-- Bookmark via email -->
+<label><strong>Bookmark via email</strong></label>
+<dl class="dl-horizontal"> 
+    <dt>From:</dt><dd> the email used in {{brand}}</dd>
+    <dt>To:</dt><dd> post@{{brand}}.appspotmail.com</dd>
+    <dt>Subject:</dt><dd> the <em>title</em> of the Bookmark</dd>
+    <dt>Body:</dt><dd> the <em>link</em> of the Bookmark</dd>
+</dl>
+<hr>
+<form action="{{upload_url}}" method="POST" enctype="multipart/form-data">
+<label><strong>Import from delicious file (delicious.html)</strong></label>
+<span class="help-block">
+    <a href="http://export.delicious.com/settings/bookmarks/export" >
+    Export the 'delicious.html'</a> file and upload here.
+</span>
+    <input type="file" name="file">
+    <input class="btn" type="submit"name="submit" value="Submit"> 
+</form>
+<hr>
+<label><strong>Feeds</strong></label>
+<dl class="dl-horizontal"> 
+    Add your prefered feeds to <a href="/feeds" >feeds page</a> and {{brand}} submit each new post for you.
+</dl>
+
+</div>
+
+<div class="span5">
+
+<legend>Setting</legend>
 <!-- mail yourself -->
 <form>  
     <label><strong>Mail yourself</strong></label>
@@ -47,15 +76,7 @@
     </label>
 </form>
 <hr>
-<!-- Bookmark via email -->
-<label><strong>Bookmark via email</strong></label>
-<dl class="dl-horizontal"> 
-    <dt>From:</dt><dd> the email used in {{brand}}</dd>
-    <dt>To:</dt><dd> post@{{brand}}.appspotmail.com</dd>
-    <dt>Subject:</dt><dd> the <em>title</em> of the Bookmark</dd>
-    <dt>Body:</dt><dd> the <em>link</em> of the Bookmark</dd>
-</dl>
-<hr>
+
 
 </div>
 </div>

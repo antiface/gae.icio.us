@@ -22,22 +22,23 @@ def main_parser(bmk):
     c = b.split('&feature')[0]
     bm.url = c.encode('utf8')
     # TAGS
-    q = Bookmarks.query(Bookmarks.user == bm.user, Bookmarks.original == bm.original)#.fetch()
+    q = Bookmarks.query(Bookmarks.user == bm.user, Bookmarks.original == bm.original)
     if q.count() > 1:
         tag_list = []
         for e in q:
             for t in e.tags:
                 if t not in tag_list:
                     tag_list.append(t)
-                    bm.tags = tag_list
+                    bm.tags = tag_list            
         ekeys = [e.key for e in q]
         ekeys.remove(bm.key)
         for ekey in ekeys:
             e = ekey.get()
+            e.tags = []
             e.trashed = True
             e.put() 
     # COMMENTS
-    url_parsed = urlparse.urlparse(bm.original)
+    url_parsed = urlparse.urlparse(bm.url)
     query = urlparse.parse_qs(url_parsed.query)
 
     if url_parsed.netloc == 'www.youtube.com': 
@@ -60,7 +61,7 @@ def main_parser(bmk):
 
     if bm.title == '':
         bm.title = url_parsed.path
-        
+
     bm.domain = url_parsed.netloc
     bm.put()
 

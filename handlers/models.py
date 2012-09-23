@@ -10,6 +10,8 @@ class UserInfo(ndb.Expando):
     mys = ndb.BooleanProperty(default=False)
     daily = ndb.BooleanProperty(default=False)
     twitt = ndb.BooleanProperty(default=False)
+    delicious = ndb.BlobKeyProperty()
+    cursor = ndb.IntegerProperty(default=0)
 
     @property
     def tag_list(self):
