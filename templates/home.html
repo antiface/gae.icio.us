@@ -9,7 +9,7 @@
 <div class="row">
 {% include "sidebar.html" %}
 
-<div class="span10">
+<div class="span9">
     <!-- empty trash -->
     <div class="modal fade" id="empty_trash">
         <div class="modal-header">
@@ -32,7 +32,11 @@
     {% endfor %}
 
     {% if c %}
-    {% if not tag_obj %} 
+    {% if dom %} 
+    <div class="well well-small"> 
+        <a  class="btn btn-block" href="/dom?dom={{dom}}&c={{c}}" type="button">more...</a> 
+    </div> 
+    {% elif not tag_obj %} 
     <div class="well well-small"> 
         <a  class="btn btn-block" href="?c={{c}}" type="button">more...</a> 
     </div> 

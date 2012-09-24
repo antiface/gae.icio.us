@@ -11,6 +11,15 @@ $(document).ready(function() {
     if (tab == 'untagged') {
         $("#dashboard").html('<a>Tagging is important!</a>');
     }
+    if (tab == 'dom-filter') {
+        $("#dashboard").html('<a>Bookmarks filtered by domain</a>');
+    }
+    if (tab == 'filter') {
+        $("#dashboard").html('<a>Bookmarks filtered by tag</a>');
+    }
+    if (tab == 'refine') {
+        $("#dashboard").html('<a>Bookmarks refinded by tag</a>');
+    }
     if (tab == 'inbox') {
         $("#dashboard").html('<a>Welcome to your Inbox</a>');
     }

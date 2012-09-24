@@ -1,6 +1,6 @@
 
 <dt> <i class="icon-bookmark"></i> <a href="{{ bm.url }}" target="_blank">{{ bm.title|e }}</a>
-    - <em>{{ bm.domain }}</em> 
+    <a class="btn btn-link btn-mini " href="/dom?dom={{ bm.domain }}"><em>{{ bm.domain }}</em> </a> 
     {% if ui.twitt %}
     <div class="btn-group pull-right" >
         {% include "tweet.html" %}

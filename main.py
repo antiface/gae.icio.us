@@ -76,10 +76,10 @@ javascript:location.href=
 class InboxPage(BaseHandler):
     def get(self):
         if users.get_current_user(): 
-            bmq = Bookmarks.query(Bookmarks.trashed == False)
-            bmq = bmq.filter(Bookmarks.archived == False)
-            bmq = bmq.filter(Bookmarks.user == users.get_current_user())
+            bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
+            bmq = bmq.filter(Bookmarks.trashed == False)
             bmq = bmq.order(-Bookmarks.data)
+            bmq = bmq.filter(Bookmarks.archived == False)
             c = ndb.Cursor(urlsafe=self.request.get('c'))
             bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
             if more:
@@ -95,10 +95,10 @@ class InboxPage(BaseHandler):
 
 class ArchivedPage(BaseHandler):
     def get(self):
-        bmq = Bookmarks.query(Bookmarks.trashed == False)
-        bmq = bmq.filter(Bookmarks.archived == True)
-        bmq = bmq.filter(Bookmarks.user == users.get_current_user())
+        bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
+        bmq = bmq.filter(Bookmarks.trashed == False)
         bmq = bmq.order(-Bookmarks.data)
+        bmq = bmq.filter(Bookmarks.archived == True)
         c = ndb.Cursor(urlsafe=self.request.get('c'))
         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
         if more:
@@ -111,10 +111,10 @@ class ArchivedPage(BaseHandler):
 
 class SharedPage(BaseHandler):
     def get(self):
-        bmq = Bookmarks.query(Bookmarks.trashed == False)
-        bmq = bmq.filter(Bookmarks.shared == True)
-        bmq = bmq.filter(Bookmarks.user == users.get_current_user())
+        bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
+        bmq = bmq.filter(Bookmarks.trashed == False)
         bmq = bmq.order(-Bookmarks.data)
+        bmq = bmq.filter(Bookmarks.shared == True)
         c = ndb.Cursor(urlsafe=self.request.get('c'))
         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
         if more:
@@ -127,10 +127,10 @@ class SharedPage(BaseHandler):
 
 class StarredPage(BaseHandler):
     def get(self):
-        bmq = Bookmarks.query(Bookmarks.trashed == False)
-        bmq = bmq.filter(Bookmarks.starred == True)
-        bmq = bmq.filter(Bookmarks.user == users.get_current_user())
+        bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
+        bmq = bmq.filter(Bookmarks.trashed == False)
         bmq = bmq.order(-Bookmarks.data)
+        bmq = bmq.filter(Bookmarks.starred == True)
         c = ndb.Cursor(urlsafe=self.request.get('c'))
         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
         if more:
@@ -143,8 +143,8 @@ class StarredPage(BaseHandler):
 
 class TrashedPage(BaseHandler):
     def get(self):
-        bmq = Bookmarks.query(Bookmarks.trashed == True)
-        bmq = bmq.filter(Bookmarks.user == users.get_current_user())
+        bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
+        bmq = bmq.filter(Bookmarks.trashed == True)
         bmq = bmq.order(-Bookmarks.data)
         c = ndb.Cursor(urlsafe=self.request.get('c'))
         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
@@ -158,10 +158,10 @@ class TrashedPage(BaseHandler):
 
 class NotagPage(BaseHandler):
     def get(self):
-        bmq = Bookmarks.query(Bookmarks.trashed == False)
-        bmq = bmq.filter(Bookmarks.have_tags == False)
-        bmq = bmq.filter(Bookmarks.user == users.get_current_user())
+        bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
+        bmq = bmq.filter(Bookmarks.trashed == False)
         bmq = bmq.order(-Bookmarks.data)
+        bmq = bmq.filter(Bookmarks.have_tags == False)
         c = ndb.Cursor(urlsafe=self.request.get('c'))
         bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
         if more:
@@ -171,6 +171,22 @@ class NotagPage(BaseHandler):
         self.response.set_cookie('active-tab', 'untagged')
         self.generate('home.html', {'bms' : bms, 'c': next_c })
 
+class DomainFilter(BaseHandler):
+    """docstring for DomainFilter"""
+    def get(self):
+        domain = self.request.get('dom')
+        bmq = Bookmarks.query(Bookmarks.domain == domain)
+        bmq = bmq.filter(Bookmarks.user == users.get_current_user())
+        bmq = bmq.order(-Bookmarks.data)
+        c = ndb.Cursor(urlsafe=self.request.get('c'))
+        bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+        if more:
+            next_c = next_curs.urlsafe()
+        else:
+            next_c = None
+        self.response.set_cookie('active-tab', 'dom-filter')
+        self.generate('home.html', {'bms' : bms, 'c': next_c, 'dom': domain })
+        
 
 class FilterPage(BaseHandler):
     def get(self):
@@ -189,7 +205,7 @@ class FilterPage(BaseHandler):
                 next_c = None
             tagset = utils.tag_set(bmq)
             tagset.remove(tag_obj.key)
-            self.response.set_cookie('active-tab', '')
+            self.response.set_cookie('active-tab', 'filter')
             self.generate('home.html', {'tag_obj': tag_obj, 
                                         'bms': bms, 
                                         'tags': tagset, 
@@ -215,6 +231,7 @@ class RefinePage(BaseHandler):
             next_c = next_curs.urlsafe()
         else:
             next_c = None
+        self.response.set_cookie('active-tab', 'refine')
         self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 class StreamPage(BaseHandler):
@@ -336,7 +353,7 @@ class ImportDelicious(BaseHandler):
                 comment = tag.nextSibling.text
             else:
                 comment = ""
-            deferred.defer(utils.delicious, tag, comment, ui.user, _queue="admin")
+            deferred.defer(utils.delicious, tag, comment, ui.user, _target="worker", _queue="admin")
         
 
 
@@ -346,6 +363,7 @@ debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 app = webapp2.WSGIApplication([
     ('/'                 , InboxPage),
     ('/feeds'            , FeedsPage),
+    ('/dom'              , DomainFilter),
     ('/filter'           , FilterPage),
     ('/refine'           , RefinePage),
     ('/notag'            , NotagPage),

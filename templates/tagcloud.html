@@ -9,7 +9,7 @@
 <div class="row">
 {% include "sidebar.html" %}
 
-<div class="span10">
+<div class="span9">
     {% for tag in q %}
         {% if tag.bm_set.count() == 0 %}
         <a class="btn btn-link " href="/deltag?tag={{ tag.key.id() }}">
