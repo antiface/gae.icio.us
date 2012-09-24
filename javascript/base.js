@@ -20,7 +20,7 @@ $(document).ready(function() {
     if (tab == 'refine') {
         $("#dashboard").html('<a>Bookmarks refinded by tag</a>');
     }
-    if (tab == 'inbox') {
+    if (tab == '') {
         $("#dashboard").html('<a>Welcome to your Inbox</a>');
     }
     if (tab == 'starred') {
@@ -29,7 +29,7 @@ $(document).ready(function() {
     if (tab == 'shared') {
         $("#dashboard").html('<a>Your shared items</a>');
     }
-    if (tab == 'archive') {
+    if (tab == 'archived') {
         $("#dashboard").html('<a>Your archive</a>');
     }
     if (tab == 'stream') {
@@ -53,23 +53,19 @@ $(document).ready(function() {
     if ($.cookie('tips-feed') == 'hide') {
         $("#tips-feed").addClass('hide'); 
     }
-    $('#tips-feed').bind('close', function () {
-        $.cookie('tips-feed', 'hide'); 
-    })
+    
 
-    $('#addtag').submit(function() {
-        var querystring = $(this).serialize();
-        event.preventDefault();
-        $.ajax({
-            url: '/addtag',
-            data: querystring,
-            success: function() {
-                $("#dashboard").html('<a>New tag created</a>');
-                $('#addtag input').val('');
-                }
-            })
+$('#addtag').submit(function() {
+    var querystring = $(this).serialize();
+    event.preventDefault();
+    $.ajax({
+        url: '/addtag',
+        data: querystring,
+        success: function() {
+            $("#dashboard").html('<a>New tag created</a>');
+            $('#addtag input').val('');
+            }
         })
-
-$('#bookmarklet').tooltip()
+    })
 
 });

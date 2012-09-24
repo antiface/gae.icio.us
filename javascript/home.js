@@ -1,3 +1,12 @@
+function getframe (page) {
+    $.ajax({
+        type: "POST",
+        url: "/",
+        data: { p: page },
+        success: function(html) {
+            $("#main_frame").html(html);
+        } }); }
+
 function archive (id) {
     $.ajax({
         url: "/archive",
@@ -59,3 +68,26 @@ function edit (id) {
             $("#dashboard").html('<a>Edit the item</a>');
             $("#comment-"+id).html(html);
         } }); }
+
+function removetag (bm, tag) {
+    $.ajax({
+        url: "/removetag",
+        data: { bm: bm, tag: tag },
+        success: function(tags) {
+            $("#tags-"+bm).html(tags);
+            $.ajax({
+                url: "/gettags", 
+                data: { bm: bm }, 
+                success: function(other_tags) {
+                    $("#tags-"+bm).html(other_tags);
+                    $("#dashboard").html('<a>Tag removed</a>');
+                } }); } }); }
+
+function assigntag (bm, tag) {
+    $.ajax({
+        url: "/assigntag", 
+        data: { bm: bm, tag: tag },
+        success: function(tags) {
+            $("#tags-"+bm).html(tags); 
+            comment(bm)
+            } }); }

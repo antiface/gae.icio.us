@@ -38,3 +38,9 @@ function sync_feed (id) {
         } 
     })
 }
+
+$('#tips-feed').bind('close', function () {
+    $.cookie('tips-feed', 'hide'); 
+})
+
+$('#bookmarklet').tooltip()

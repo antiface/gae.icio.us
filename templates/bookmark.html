@@ -62,10 +62,5 @@
 </div>
 
 </dt>
-    <dd id="tags-{{ bm.id }}"> {% include "tags.html" %} </dd>   
-    <dd id="comment-{{ bm.id }}">
-        {% if bm.tags == [] %}
-            {{bm.comment}}
-            <!-- {% include "other_tags.html" %} -->
-        {% endif %}
-    </dd>
+    <dd id="tags-{{ bm.id }}"> {% include "tags.html" %} </dd>
+    <dd id="comment-{{ bm.id }}"> {{ bm.comment}} </dd>

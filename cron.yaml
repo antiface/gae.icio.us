@@ -1,16 +1,16 @@
 cron:
-# - description: check new posts
-#   url: /admin/check
-#   schedule: every 90 minutes synchronized
+- description: check new posts
+  url: /admin/check
+  schedule: every 90 minutes synchronized
 
-# - description: import delicious
-#   url: /admin/import
-#   schedule: every 120 minutes synchronized
+- description: import delicious
+  url: /admin/import
+  schedule: every 120 minutes synchronized
 
-# - description: send feed digests
-#   url: /admin/digest
-#   schedule: every day 17:00
+- description: send feed digests
+  url: /admin/digest
+  schedule: every day 17:00
 
-# - description: send daily digest
-#   url: /admin/activity
-#   schedule: every day 16:00
+- description: send daily digest
+  url: /admin/activity
+  schedule: every day 16:00

@@ -107,9 +107,9 @@ class AssignTag(RequestHandler):
     def get(self):
         bm = Bookmarks.get_by_id(int(self.request.get('bm')))
         tag = Tags.get_by_id(int(self.request.get('tag')))
-        if users.get_current_user() == bm.user:
-            bm.tags.append(tag.key)
-            bm.put()
+        # if users.get_current_user() == bm.user:
+        bm.tags.append(tag.key)
+        bm.put()
         template = jinja_environment.get_template('tags.html')
         values = {'bm': bm} 
         tags = template.render(values)
@@ -119,9 +119,9 @@ class RemoveTag(RequestHandler):
     def get(self):
         bm = Bookmarks.get_by_id(int(self.request.get('bm')))
         tag = Tags.get_by_id(int(self.request.get('tag')))
-        if users.get_current_user() == bm.user:
-            bm.tags.remove(tag.key)
-            bm.put()
+        # if users.get_current_user() == bm.user:
+        bm.tags.remove(tag.key)
+        bm.put()
         template = jinja_environment.get_template('tags.html')
         values = {'bm': bm} 
         tags = template.render(values)

@@ -43,11 +43,66 @@ class BaseHandler(webapp2.RequestHandler):
             'url' : url,
             'linktext': linktext,
             'ui' : self.ui(),
-            'admin'  : users.is_current_user_admin()
+            'admin' : users.is_current_user_admin()
             }
         values.update(template_values)
         template = jinja_environment.get_template(template_name)
         self.response.write(template.render(values))
+
+
+
+class Main_Frame(BaseHandler):
+    def qbase(self):
+        if users.get_current_user(): 
+            qbase = Bookmarks.query(Bookmarks.user == users.get_current_user())
+            qbase = qbase.filter(Bookmarks.trashed == False)
+            qbase = qbase.order(-Bookmarks.data)
+        return qbase
+
+    def post(self):
+        if users.get_current_user():
+            page = self.request.get('p')
+            self.build(self.build_query(page), page, 'post')
+
+    def get(self):
+        if users.get_current_user():
+            page = self.request.get('p')
+            self.build(self.build_query(page), page, 'get')
+        else:
+            self.response.set_cookie('active-tab', 'hero')
+            self.generate('hero.html', {})
+
+    def build_query(self, page):
+        if page == 'archived':
+            bmq = self.qbase().filter(Bookmarks.archived == True)
+        elif page == 'shared':
+            bmq = self.qbase().filter(Bookmarks.shared == True)
+        elif page == 'starred':
+            bmq = self.qbase().filter(Bookmarks.starred == True)
+        elif page == 'untagged':
+            bmq = self.qbase().filter(Bookmarks.have_tags == False)
+        else:
+            bmq = self.qbase().filter(Bookmarks.archived == False)
+        return bmq
+
+
+    def build(self, bmq, page, method):
+        c = ndb.Cursor(urlsafe=self.request.get('c'))
+        bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
+        if more:
+            next_c = next_curs.urlsafe()
+        else:
+            next_c = None
+        if method == 'get':
+            self.response.set_cookie('active-tab', page)
+            self.generate('home.html', {'bms': bms, 'c': next_c })
+        else:
+            values = {'bms': bms, 'c': next_c, "ui": self.ui() }
+            template = jinja_environment.get_template('frame.html') 
+            self.response.write(template.render(values))
+            # html = self.generate('frame.html', {'bms': bms, 'c': next_c, "ui": ui} )
+            # self.response.write(html)
+
 
 
 class SettingPage(BaseHandler):
@@ -67,78 +122,9 @@ javascript:location.href=
         self.response.set_cookie('daily' , '%s' % ui.daily)
         self.response.set_cookie('twitt' , '%s' % ui.twitt)
         self.response.set_cookie('active-tab', 'setting')
-
         self.generate('setting.html', {'bookmarklet': bookmarklet,
                                         'upload_url': upload_url,
                                         })
-
-
-class InboxPage(BaseHandler):
-    def get(self):
-        if users.get_current_user(): 
-            bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
-            bmq = bmq.filter(Bookmarks.trashed == False)
-            bmq = bmq.order(-Bookmarks.data)
-            bmq = bmq.filter(Bookmarks.archived == False)
-            c = ndb.Cursor(urlsafe=self.request.get('c'))
-            bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-            if more:
-                next_c = next_curs.urlsafe()
-            else:
-                next_c = None
-            self.response.set_cookie('active-tab', 'inbox')
-            self.generate('home.html', {'bms': bms, 'c': next_c })
-        else:
-            self.response.set_cookie('active-tab', 'hero')
-            self.generate('hero.html', {})
-
-
-class ArchivedPage(BaseHandler):
-    def get(self):
-        bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
-        bmq = bmq.filter(Bookmarks.trashed == False)
-        bmq = bmq.order(-Bookmarks.data)
-        bmq = bmq.filter(Bookmarks.archived == True)
-        c = ndb.Cursor(urlsafe=self.request.get('c'))
-        bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-        if more:
-            next_c = next_curs.urlsafe()
-        else:
-            next_c = None
-        self.response.set_cookie('active-tab', 'archive')
-        self.generate('home.html', {'bms' : bms, 'c': next_c })
-
-
-class SharedPage(BaseHandler):
-    def get(self):
-        bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
-        bmq = bmq.filter(Bookmarks.trashed == False)
-        bmq = bmq.order(-Bookmarks.data)
-        bmq = bmq.filter(Bookmarks.shared == True)
-        c = ndb.Cursor(urlsafe=self.request.get('c'))
-        bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-        if more:
-            next_c = next_curs.urlsafe()
-        else:
-            next_c = None
-        self.response.set_cookie('active-tab', 'shared')
-        self.generate('home.html', {'bms' : bms, 'c': next_c })
-
-
-class StarredPage(BaseHandler):
-    def get(self):
-        bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
-        bmq = bmq.filter(Bookmarks.trashed == False)
-        bmq = bmq.order(-Bookmarks.data)
-        bmq = bmq.filter(Bookmarks.starred == True)
-        c = ndb.Cursor(urlsafe=self.request.get('c'))
-        bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-        if more:
-            next_c = next_curs.urlsafe()
-        else:
-            next_c = None
-        self.response.set_cookie('active-tab', 'starred')
-        self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
 class TrashedPage(BaseHandler):
@@ -156,20 +142,6 @@ class TrashedPage(BaseHandler):
         self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 
-class NotagPage(BaseHandler):
-    def get(self):
-        bmq = Bookmarks.query(Bookmarks.user == users.get_current_user())
-        bmq = bmq.filter(Bookmarks.trashed == False)
-        bmq = bmq.order(-Bookmarks.data)
-        bmq = bmq.filter(Bookmarks.have_tags == False)
-        c = ndb.Cursor(urlsafe=self.request.get('c'))
-        bms, next_curs, more = bmq.fetch_page(10, start_cursor=c) 
-        if more:
-            next_c = next_curs.urlsafe()
-        else:
-            next_c = None
-        self.response.set_cookie('active-tab', 'untagged')
-        self.generate('home.html', {'bms' : bms, 'c': next_c })
 
 class DomainFilter(BaseHandler):
     """docstring for DomainFilter"""
@@ -265,7 +237,7 @@ class TagCloudPage(BaseHandler):
 
 
 class AdminPage(BaseHandler): 
-    def get(self):        
+    def get(self): 
         if users.is_current_user_admin(): 
             self.response.set_cookie('active-tab', 'admin')
             self.generate('admin.html', {})
@@ -361,15 +333,11 @@ class ImportDelicious(BaseHandler):
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 
 app = webapp2.WSGIApplication([
-    ('/'                 , InboxPage),
+    ('/'                 , Main_Frame),
     ('/feeds'            , FeedsPage),
     ('/dom'              , DomainFilter),
     ('/filter'           , FilterPage),
     ('/refine'           , RefinePage),
-    ('/notag'            , NotagPage),
-    ('/archived'         , ArchivedPage),
-    ('/starred'          , StarredPage),
-    ('/shared'           , SharedPage),
     ('/trashed'          , TrashedPage),
     ('/stream'           , StreamPage),
     ('/tagcloud'         , TagCloudPage),

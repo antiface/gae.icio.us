@@ -1,18 +1,17 @@
-<div class="span3">
+<div class="span2">
     <ul class="nav nav-list hidden-phone" id="navbar">
-        <li id="inbox"     ><a href="/"        ><i class="icon-inbox"           ></i> Inbox    </a></li>
-        <li id="starred"   ><a href="/starred" ><i class="icon-star"            ></i> Starred  </a></li>
-        <li id="archive"   ><a href="/archived"><i class="icon-book"            ></i> Archive  </a></li> 
-        <li id="trash"     ><a href="/trashed" ><i class="icon-trash"           ></i> Trash    </a></li>
+        <li id="inbox" ><a onclick="getframe('inbox')" href="/#" ><i class="icon-inbox" ></i> Inbox </a></li>
+        <li id="starred" ><a onclick="getframe('starred')" href="/#" ><i class="icon-star"></i> Starred </a></li>
+        <li id="shared" ><a onclick="getframe('shared')" href="/#"><i class="icon-eye-open" ></i> Shared </a></li>
+        <li id="archive" ><a onclick="getframe('archived')" href="/#"><i class="icon-book" ></i> Archive </a></li> 
+        <li id="untagged" ><a onclick="getframe('untagged')" href="/#"><i class="icon-exclamation-sign"></i> Untagged </a></li>
+        <li id="trash" ><a href="/trashed" ><i class="icon-trash"></i> Trash </a></li>
+        <li class="divider"></li> 
+        <li id="stream" ><a href="/stream" ><i class="icon-globe" ></i> Stream </a></li>
         <li class="divider"></li>
-        <li id="stream"    ><a href="/stream"  ><i class="icon-globe"           ></i> Stream   </a></li>
-        <li id="shared"    ><a href="/shared"  ><i class="icon-eye-open"        ></i> Shared   </a></li>
-        <li class="divider"></li>
-        <li id="tagcloud"  ><a href="/tagcloud"><i class="icon-tags"            ></i> Tag cloud</a></li>
-        <li id="untagged"  ><a href="/notag"   ><i class="icon-exclamation-sign"></i> Untagged </a></li>
-        <li class="divider"></li>
-        <li id="feeds"     ><a href="/feeds"   ><i class="icon-fire"            ></i> Feeds    </a></li>
-        <li id="setting"   ><a href="/setting" ><i class="icon-wrench"          ></i> Setting  </a></li> 
+        <li id="tagcloud" ><a href="/tagcloud" ><i class="icon-tags" ></i> Tagcloud </a></li>
+        <li id="feeds" ><a href="/feeds" ><i class="icon-fire" ></i> Feeds </a></li>
+        <li id="setting" ><a href="/setting" ><i class="icon-wrench" ></i> Setting </a></li> 
         
         
         {% if admin %}

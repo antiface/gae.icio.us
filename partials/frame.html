@@ -1,0 +1,36 @@
+<!-- empty trash -->
+<div class="modal fade" id="empty_trash">
+    <div class="modal-header">
+        <h4>Are you sure?</h4>
+    </div>
+    <div class="modal-footer">
+        <a class="btn btn-danger" href="/empty_trash">Yes</a>
+        <a class="btn" href="#" data-dismiss="modal">No</a>
+    </div>
+</div>
+<div class="hide well well-small" id="empty_button">
+    <button class=" btn btn-block" data-toggle="modal" data-target="#empty_trash" type="button">empty trash</button>
+</div> 
+<!-- bookmarks -->
+{% for bm in bms %}
+<div class="well well-small" id="row-{{ bm.id }}"> 
+    {% include "bookmark.html" %} 
+    <script src="js/home.js"></script>
+</div>
+{% endfor %}
+
+{% if c %}
+{% if dom %} 
+<div class="well well-small"> 
+    <a  class="btn btn-block" href="/dom?dom={{dom}}&c={{c}}" type="button">more...</a> 
+</div> 
+{% elif not tag_obj %} 
+<div class="well well-small"> 
+    <a  class="btn btn-block" href="?c={{c}}" type="button">more...</a> 
+</div> 
+{% else %} 
+<div class="well well-small"> 
+    <a  class="btn btn-block" href="/filter?tag={{tag_obj.name}}&c={{c}}" type="button">more...</a> 
+</div> 
+{% endif %}
+{% endif %}

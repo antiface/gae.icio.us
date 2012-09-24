@@ -14,7 +14,7 @@ skip_files:
 - ^(.*/)?.*\.py[co]
 # - ^(.*/)?\..*
 
-default_expiration: "7d"
+# default_expiration: "7d"
 
 handlers:
 - url: /static
@@ -40,9 +40,9 @@ handlers:
 - url: /*
   script: main.app
 
-- url: /tests/.*
-  script: aeta.main.APP
-  login: admin
+# - url: /tests/.*
+#   script: aeta.main.APP
+#   login: admin
 
 - url: /.*
   script: main.app
